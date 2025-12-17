@@ -5,7 +5,7 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - 11-尝试同步最新版本
   pull_request: {}
 
 permissions:
@@ -29,6 +29,17 @@ jobs:
         id: release-name
         run: |
           echo "RELEASE_NAME=$(make name)" >> "$GITHUB_OUTPUT"
+      - name: Get Latest Tag
+        id: latest-tag
+        run: |
+          echo GIT_LATEST_TAG="$(git describe --tags "$(git rev-list --tags --max-count=1)")" >>"$GITHUB_OUTPUT"
+
+      - name: Compute Next Tag
+        id: next-tag
+        uses: docker://ghcr.io/dokku/semver-generator:latest
+        with:
+          bump: patch
+          input: ${{ steps.latest-tag.outputs.GIT_LATEST_TAG }}
 
   core-matrix:
     runs-on: ubuntu-24.04-arm
@@ -87,6 +98,7 @@ jobs:
     env:
       PLATFORM: ${{ matrix.toolchain }}
       RELEASE_NAME: ${{ needs.prepare.outputs.release-name }}
+      RELEASE_VERSION: ${{ needs.prepare.outputs.next-tag }}
     strategy:
       fail-fast: true
       matrix:
@@ -138,6 +150,19 @@ jobs:
         with:
           name: ${{ env.RELEASE_NAME }}-extras.zip
           path: releases/${{ env.RELEASE_NAME }}-extras.zip
+
+      - name: Generate prerelease notes
+        run: |
+          echo "NextUI quick prerelease build notes" > notes_zh.txt
+          echo "Built by CI on branch: $GITHUB_REF" >> notes_zh.txt
+          echo "Recent commits:" >> notes_zh.txt
+          git --no-pager log -n 20 --pretty=format:"- %s by @%an in %h" >> notes_zh.txt || true
+
+      - name: Upload prerelease notes
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: prerelease-${{ env.RELEASE_VERSION }}-notes
+          path: notes_zh.txt
 
       - name: Skip Attest for PRs from forks
         id: skip
