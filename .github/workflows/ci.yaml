@@ -17,7 +17,6 @@ jobs:
   prepare:
     runs-on: ubuntu-24.04-arm
     outputs:
-      next-tag: ${{ steps.next-tag.outputs.version }}
       release-name: ${{ steps.release-name.outputs.RELEASE_NAME }}
     steps:
       - name: Checkout
@@ -29,34 +28,7 @@ jobs:
         id: release-name
         run: |
           echo "RELEASE_NAME=$(make name)" >> "$GITHUB_OUTPUT"
-      - name: Get Latest Tag
-        id: latest-tag
-        run: |
-          echo GIT_LATEST_TAG="$(git describe --tags "$(git rev-list --tags --max-count=1)")" >>"$GITHUB_OUTPUT"
-
-      - name: Compute Next Tag (shell, no docker)
-        id: next-tag
-        run: |
-          # Compute a next patch version from the latest tag without requiring Docker
-          # Output written as "version=..." to $GITHUB_OUTPUT so subsequent jobs can use it
-          LATEST_TAG="${{ steps.latest-tag.outputs.GIT_LATEST_TAG }}"
-          # strip leading 'v' if present
-          ver="${LATEST_TAG#v}"
-          if [ -z "$ver" ] || [ "$ver" = "" ]; then
-            # no tags found, start at 0.1.0
-            echo "version=0.1.0" >> "$GITHUB_OUTPUT"
-          else
-            # Expect format: MAJOR.MINOR.PATCH (extra suffixes will be ignored)
-            IFS='.' read -r MAJOR MINOR PATCH_EXTRA <<< "$ver"
-            # PATCH_EXTRA may include suffix like "1-CN"; extract numeric prefix
-            PATCH=$(echo "$PATCH_EXTRA" | sed -E 's/^([0-9]+).*/\1/')
-            if ! echo "$PATCH" | grep -qE '^[0-9]+$'; then
-              PATCH=0
-            fi
-            NEXT_PATCH=$((PATCH + 1))
-            NEXT_VERSION="${MAJOR:-0}.${MINOR:-1}.${NEXT_PATCH}"
-            echo "version=${NEXT_VERSION}" >> "$GITHUB_OUTPUT"
-          fi
+      # removed tag generation (not needed for quick CI tests)
 
   core-matrix:
     runs-on: ubuntu-24.04-arm
