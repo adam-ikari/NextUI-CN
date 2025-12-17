@@ -87,7 +87,8 @@ jobs:
     env:
       PLATFORM: ${{ matrix.toolchain }}
       RELEASE_NAME: ${{ needs.prepare.outputs.release-name }}
-      RELEASE_VERSION: ${{ needs.prepare.outputs.next-tag }}
+      # Use the workflow run id as a stable, non-tag-based identifier for quick testing
+      RELEASE_VERSION: ${{ github.run_id }}
     strategy:
       fail-fast: true
       matrix:
@@ -125,19 +126,19 @@ jobs:
       - name: Upload All
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: ${{ env.RELEASE_NAME }}-all.zip
+          name: ${{ env.RELEASE_NAME }}-all-${{ env.RELEASE_VERSION }}.zip
           path: releases/${{ env.RELEASE_NAME }}-all.zip
 
       - name: Upload Base
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: ${{ env.RELEASE_NAME }}-base.zip
+          name: ${{ env.RELEASE_NAME }}-base-${{ env.RELEASE_VERSION }}.zip
           path: releases/${{ env.RELEASE_NAME }}-base.zip
 
       - name: Upload Extras
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: ${{ env.RELEASE_NAME }}-extras.zip
+          name: ${{ env.RELEASE_NAME }}-extras-${{ env.RELEASE_VERSION }}.zip
           path: releases/${{ env.RELEASE_NAME }}-extras.zip
 
       - name: Generate prerelease notes
