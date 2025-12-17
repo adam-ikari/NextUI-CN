@@ -126,19 +126,20 @@ jobs:
       - name: Upload All
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: ${{ env.RELEASE_NAME }}-all-${{ env.RELEASE_VERSION }}.zip
+          # Use ASCII-only artifact names (avoid branch names with non-ASCII)
+          name: nextui-${{ github.run_id }}-all.zip
           path: releases/${{ env.RELEASE_NAME }}-all.zip
 
       - name: Upload Base
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: ${{ env.RELEASE_NAME }}-base-${{ env.RELEASE_VERSION }}.zip
+          name: nextui-${{ github.run_id }}-base.zip
           path: releases/${{ env.RELEASE_NAME }}-base.zip
 
       - name: Upload Extras
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: ${{ env.RELEASE_NAME }}-extras-${{ env.RELEASE_VERSION }}.zip
+          name: nextui-${{ github.run_id }}-extras.zip
           path: releases/${{ env.RELEASE_NAME }}-extras.zip
 
       - name: Generate prerelease notes
@@ -151,7 +152,7 @@ jobs:
       - name: Upload prerelease notes
         uses: actions/upload-artifact@v4.6.2
         with:
-          name: prerelease-${{ env.RELEASE_VERSION }}-notes
+          name: nextui-prerelease-${{ github.run_id }}-notes
           path: notes_zh.txt
 
       - name: Skip Attest for PRs from forks
