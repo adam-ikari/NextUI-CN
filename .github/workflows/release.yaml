@@ -149,10 +149,12 @@ jobs:
           CHILLROUND_VERSION: v1.800
         run: |
           set -euo pipefail
-          URL="https://github.com/Warren2060/ChillRound/releases/download/${CHILLROUND_VERSION}/ChillRound-OTF+TTF.zip"
-          echo "Downloading: $URL"
           mkdir -p /tmp/chillround
-          curl -fsSL "$URL" -o /tmp/chillround/chillround.zip
+          ZIP_OUT=/tmp/chillround/chillround.zip
+
+          URL="https://github.com/Warren2060/ChillRound/releases/download/${CHILLROUND_VERSION}/ChillRoundM_v1.800.zip"
+          echo "Downloading: $URL"
+          curl -fL --retry 5 --retry-delay 2 --connect-timeout 20 -o "$ZIP_OUT" "$URL"
           unzip -q /tmp/chillround/chillround.zip -d /tmp/chillround
           SRC_DIR="/tmp/chillround"
           FONT_OTF="$(find "$SRC_DIR" -maxdepth 3 -type f -iname 'ChillRoundM.otf' | head -n 1 || true)"
