@@ -131,7 +131,10 @@ enum EntryType {
 };
 typedef struct Entry {
 	char* path;
+	// Internal identifier (used by icon/action mapping and asset names). Must remain stable.
 	char* name;
+	// Visible label (can be translated). If NULL, fall back to `name`.
+	char* display;
 	char* unique;
 	int type;
 	int alpha; // index in parent Directory's alphas Array, which points to the index of an Entry in its entries Array :sweat_smile:
@@ -143,6 +146,7 @@ static Entry* Entry_new(const char* path, int type) {
 	Entry* self = malloc(sizeof(Entry));
 	self->path = strdup(path);
 	self->name = strdup(display_name);
+	self->display = NULL;
 	self->unique = NULL;
 	self->type = type;
 	self->alpha = 0;
@@ -151,13 +155,18 @@ static Entry* Entry_new(const char* path, int type) {
 
 static Entry* Entry_newNamed(const char* path, int type, const char* displayName) {
 	Entry *self = Entry_new(path, type);
-	self->name = strdup(displayName);
+	self->display = strdup(displayName);
 	return self;
+}
+
+static inline const char* Entry_label(const Entry* self) {
+	return (self && self->display) ? self->display : (self ? self->name : "");
 }
 
 static void Entry_free(Entry* self) {
 	free(self->path);
 	free(self->name);
+	if (self->display) free(self->display);
 	if (self->unique) free(self->unique);
 	free(self);
 }
@@ -837,27 +846,50 @@ static Array* getQuickToggles(void) {
 	if (settings) {
 		// NOTE: quick-menu icon/action mapping matches on Entry->name (case-sensitive).
 		// Keep the internal identifier as upstream expects ("Settings"), and translate only
-		// the visible label via Entry_newNamed().
+		// the visible label via Entry->display.
 		if (settings->name) free(settings->name);
 		settings->name = strdup("Settings");
+		if (settings->display) free(settings->display);
+		settings->display = strdup(TR("settings"));
 		Array_push(entries, settings);
-		// If you want a translated label here later, introduce a separate display field and
-		// keep Entry->name stable for icon lookup.
 	}
 	
 	Entry *store = entryFromPakName("pak_store");
-	if (store)
+	if (store) {
+		// Internal name must stay "Pak Store" so ASSET_STORE path/mapping works.
+		if (store->name) free(store->name);
+		store->name = strdup("Pak Store");
+		if (store->display) free(store->display);
+		store->display = strdup(TR("pak_store"));
 		Array_push(entries, store);
+	}
 
 	// quick actions
-	if(WIFI_supported())
-		Array_push(entries, Entry_new("Wifi", ENTRY_DIP));
-	if(BT_supported())
-		Array_push(entries, Entry_new("Bluetooth", ENTRY_DIP));
-	if(PLAT_supportsDeepSleep() && !simple_mode)
-		Array_push(entries, Entry_new("Sleep", ENTRY_DIP));
-	Array_push(entries, Entry_new("Reboot", ENTRY_DIP));
-	Array_push(entries, Entry_new("Poweroff", ENTRY_DIP));
+	if(WIFI_supported()) {
+		Entry* e = Entry_new("Wifi", ENTRY_DIP);
+		e->display = strdup(TR("wifi"));
+		Array_push(entries, e);
+	}
+	if(BT_supported()) {
+		Entry* e = Entry_new("Bluetooth", ENTRY_DIP);
+		e->display = strdup(TR("bluetooth"));
+		Array_push(entries, e);
+	}
+	if(PLAT_supportsDeepSleep() && !simple_mode) {
+		Entry* e = Entry_new("Sleep", ENTRY_DIP);
+		e->display = strdup(TR("sleep"));
+		Array_push(entries, e);
+	}
+	{
+		Entry* e = Entry_new("Reboot", ENTRY_DIP);
+		e->display = strdup(TR("reboot"));
+		Array_push(entries, e);
+	}
+	{
+		Entry* e = Entry_new("Poweroff", ENTRY_DIP);
+		e->display = strdup(TR("poweroff"));
+		Array_push(entries, e);
+	}
 
 	return entries;
 }
@@ -2611,9 +2643,10 @@ int main (int argc, char *argv[]) {
 						}
 
 						int w, h;
-						GFX_sizeText(font.tiny, item->name, SCALE1(FONT_TINY), &w, &h);
+						const char* label = Entry_label(item);
+						GFX_sizeText(font.tiny, label, SCALE1(FONT_TINY), &w, &h);
 						SDL_Rect text_rect = {item_rect.x + (item_size - w) / 2, item_rect.y + item_size - h - SCALE1(BUTTON_MARGIN), w, h};
-						GFX_blitText(font.tiny, item->name, SCALE1(FONT_TINY), text_color, screen, &text_rect);
+						GFX_blitText(font.tiny, label, SCALE1(FONT_TINY), text_color, screen, &text_rect);
 
 						ox += item_rect.w + SCALE1(MENU_ITEM_MARGIN);
 					}
