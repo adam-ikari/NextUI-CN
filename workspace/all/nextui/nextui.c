@@ -11,6 +11,7 @@
 #include "api.h"
 #include "utils.h"
 #include "config.h"
+#include "i18n.h"
 #include <sys/resource.h>
 #include <pthread.h>
 #include <assert.h>
@@ -806,16 +807,17 @@ static Array* getCollections(void)
 
 static Array* getQuickEntries(void) {
 	Array* entries = Array_new();
+	I18N_init();
 
 	// We assume Menu_init was already called and populated this
 	if (recents && recents->count)
-		Array_push(entries, Entry_newNamed(FAUX_RECENT_PATH, ENTRY_DIR, "Recents"));
+		Array_push(entries, Entry_newNamed(FAUX_RECENT_PATH, ENTRY_DIR, TR("recents")));
 
 	if (hasCollections())
 		Array_push(entries, Entry_new(COLLECTIONS_PATH, ENTRY_DIR));
 
 	// Not sure we need this, its just a button press away (B)
-	Array_push(entries, Entry_newNamed(ROMS_PATH, ENTRY_DIR, "Games"));
+	Array_push(entries, Entry_newNamed(ROMS_PATH, ENTRY_DIR, TR("games")));
 
 	// Add tools if applicable
     if (hasTools() && !simple_mode) {
@@ -829,24 +831,25 @@ static Array* getQuickEntries(void) {
 
 static Array* getQuickToggles(void) {
 	Array *entries = Array_new();
+	I18N_init();
 
-	Entry *settings = entryFromPakName("Settings");
+	Entry *settings = entryFromPakName(TR("settings"));
 	if (settings)
 		Array_push(entries, settings);
 	
-	Entry *store = entryFromPakName("Pak Store");
+	Entry *store = entryFromPakName(TR("pak_store"));
 	if (store)
 		Array_push(entries, store);
 
 	// quick actions
 	if(WIFI_supported())
-		Array_push(entries, Entry_new("Wifi", ENTRY_DIP));
+		Array_push(entries, Entry_new(TR("wifi"), ENTRY_DIP));
 	if(BT_supported())
-		Array_push(entries, Entry_new("Bluetooth", ENTRY_DIP));
+		Array_push(entries, Entry_new(TR("bluetooth"), ENTRY_DIP));
 	if(PLAT_supportsDeepSleep() && !simple_mode)
-		Array_push(entries, Entry_new("Sleep", ENTRY_DIP));
-	Array_push(entries, Entry_new("Reboot", ENTRY_DIP));
-	Array_push(entries, Entry_new("Poweroff", ENTRY_DIP));
+		Array_push(entries, Entry_new(TR("sleep"), ENTRY_DIP));
+	Array_push(entries, Entry_new(TR("reboot"), ENTRY_DIP));
+	Array_push(entries, Entry_new(TR("poweroff"), ENTRY_DIP));
 
 	return entries;
 }

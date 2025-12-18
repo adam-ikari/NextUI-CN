@@ -117,6 +117,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
+      - name: Inject ChillRound fonts (CI-time)
+        shell: bash
+        env:
+          CHILLROUND_VERSION: v1.800
+        run: |
+          set -euo pipefail
+          URL="https://github.com/Warren2060/ChillRound/releases/download/${CHILLROUND_VERSION}/ChillRound-OTF+TTF.zip"
+          echo "Downloading: $URL"
+          mkdir -p /tmp/chillround
+          curl -fsSL "$URL" -o /tmp/chillround/chillround.zip
+          unzip -q /tmp/chillround/chillround.zip -d /tmp/chillround
+          SRC_DIR="/tmp/chillround"
+          FONT_OTF="$(find "$SRC_DIR" -maxdepth 3 -type f -iname 'ChillRoundM.otf' | head -n 1 || true)"
+          FONT_TTF="$(find "$SRC_DIR" -maxdepth 3 -type f \( -iname 'ChillRoundM.ttf' -o -iname 'ChillRound.ttf' \) | head -n 1 || true)"
+          if [[ -z "$FONT_OTF" || -z "$FONT_TTF" ]]; then
+            echo "Extracted files:"; find "$SRC_DIR" -maxdepth 3 -type f | sed 's#^#- #' || true
+            echo "::error::ChillRound fonts not found in release zip"
+            exit 1
+          fi
+          install -d skeleton/SYSTEM/res
+          cp -f "$FONT_OTF" skeleton/SYSTEM/res/BPreplayBold-unhinted_b.otf
+          cp -f "$FONT_TTF" skeleton/SYSTEM/res/font2.ttf
+          echo "Injected into skeleton/SYSTEM/res:";
+          ls -la skeleton/SYSTEM/res | sed 's#^#- #' || true
+
       - name: Install dependencies
         run: |
           sudo apt-get update

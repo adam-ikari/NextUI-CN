@@ -1,0 +1,13 @@
+# NextUI-CN downstream language file (UTF-8)
+# Format: key=value
+# Use stable keys so upstream text tweaks won't force re-translation.
+
+recents=最近
+games=游戏
+settings=设置
+pak_store=Pak 商店
+wifi=WiFi
+bluetooth=蓝牙
+sleep=睡眠
+reboot=重启
+poweroff=关机
