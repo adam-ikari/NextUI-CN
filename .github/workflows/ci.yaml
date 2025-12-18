@@ -67,6 +67,32 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
+      - name: Cache toolchains
+        uses: actions/cache@v4
+        with:
+          path: toolchains
+          key: toolchains-${{ runner.os }}-${{ env.PLATFORM }}-modernize
+
+      - name: Ensure toolchain repo (retry)
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -d "toolchains/${PLATFORM}-toolchain/.git" ]]; then
+            echo "Toolchain repo already present (from cache)."
+            exit 0
+          fi
+          mkdir -p toolchains
+          for i in 1 2 3 4 5; do
+            echo "Cloning toolchain (attempt $i)..."
+            if git clone -b modernize --depth 1 "https://github.com/LoveRetro/${PLATFORM}-toolchain/" "toolchains/${PLATFORM}-toolchain"; then
+              exit 0
+            fi
+            rm -rf "toolchains/${PLATFORM}-toolchain" || true
+            sleep $((i * 10))
+          done
+          echo "::error::Failed to clone toolchain repo after retries"
+          exit 1
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
