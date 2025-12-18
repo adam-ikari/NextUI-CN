@@ -73,14 +73,25 @@ static void unescape_inplace(char *s) {
 	*w = 0;
 }
 
+static char *i18n_strdup(const char *s) {
+	if (!s) return NULL;
+	// strdup is POSIX; some environments (notably MSVC) use _strdup.
+	// For maximum portability across toolchains, use a small local implementation.
+	size_t n = strlen(s) + 1;
+	char *d = (char*)malloc(n);
+	if (!d) return NULL;
+	memcpy(d, s, n);
+	return d;
+}
+
 static void I18N_put(const char *key, const char *val) {
 	if (!key || !*key) return;
 	if (!val) val = "";
 
 	I18N_Entry *e = (I18N_Entry*)calloc(1, sizeof(I18N_Entry));
 	if (!e) return;
-	e->key = _strdup(key);
-	e->val = _strdup(val);
+	e->key = i18n_strdup(key);
+	e->val = i18n_strdup(val);
 	if (!e->key || !e->val) {
 		free(e->key);
 		free(e->val);
