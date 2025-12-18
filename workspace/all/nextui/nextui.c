@@ -833,23 +833,23 @@ static Array* getQuickToggles(void) {
 	Array *entries = Array_new();
 	I18N_init();
 
-	Entry *settings = entryFromPakName(TR("settings"));
+	Entry *settings = entryFromPakName("settings");
 	if (settings)
 		Array_push(entries, settings);
 	
-	Entry *store = entryFromPakName(TR("pak_store"));
+	Entry *store = entryFromPakName("pak_store");
 	if (store)
 		Array_push(entries, store);
 
 	// quick actions
 	if(WIFI_supported())
-		Array_push(entries, Entry_new(TR("wifi"), ENTRY_DIP));
+		Array_push(entries, Entry_new("wifi", ENTRY_DIP));
 	if(BT_supported())
-		Array_push(entries, Entry_new(TR("bluetooth"), ENTRY_DIP));
+		Array_push(entries, Entry_new("bluetooth", ENTRY_DIP));
 	if(PLAT_supportsDeepSleep() && !simple_mode)
-		Array_push(entries, Entry_new(TR("sleep"), ENTRY_DIP));
-	Array_push(entries, Entry_new(TR("reboot"), ENTRY_DIP));
-	Array_push(entries, Entry_new(TR("poweroff"), ENTRY_DIP));
+		Array_push(entries, Entry_new("sleep", ENTRY_DIP));
+	Array_push(entries, Entry_new("reboot", ENTRY_DIP));
+	Array_push(entries, Entry_new("poweroff", ENTRY_DIP));
 
 	return entries;
 }
