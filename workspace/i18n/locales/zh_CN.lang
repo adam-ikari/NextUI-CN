@@ -5,6 +5,35 @@
 recents=最近
 games=游戏
 settings=设置
+
+# settings app (workspace/all/settings)
+settings.appearance=外观
+settings.font=字体
+settings.font.desc=用于渲染所有界面文字的字体。
+settings.main_color=主色
+settings.main_color.desc=用于渲染主要界面元素的颜色。
+settings.primary_accent=主强调色
+settings.primary_accent.desc=用于高亮重要内容的颜色。
+settings.secondary_accent=次强调色
+settings.secondary_accent.desc=辅助高亮颜色。
+settings.hint_color=提示信息颜色
+settings.hint_color.desc=按钮提示与信息文本的颜色。
+settings.list_text=列表文字
+settings.list_text.desc=列表文字颜色。
+settings.list_text_selected=列表文字（选中）
+settings.list_text_selected.desc=列表选中项文字颜色。
+settings.show_battery_percent=显示电量百分比
+settings.show_battery_percent.desc=在状态栏中以百分比显示电量。
+settings.show_menu_animations=菜单动画
+settings.show_menu_animations.desc=启用或禁用菜单动画。
+settings.show_menu_transitions=切换过渡动画
+settings.show_menu_transitions.desc=启用或禁用页面切换时的过渡动画。
+settings.show_recents=显示最近
+settings.show_recents.desc=在游戏列表中显示“最近游玩”入口。
+settings.show_tools=显示工具
+settings.show_tools.desc=在游戏列表中显示“工具”入口。
+settings.reset_defaults=恢复默认设置
+settings.reset_defaults.desc=将当前菜单中的选项恢复为默认值。
 pak_store=Pak 商店
 wifi=WiFi
 bluetooth=蓝牙

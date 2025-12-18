@@ -2,6 +2,8 @@ extern "C"
 {
 #include "msettings.h"
 
+#include "i18n.h"
+
 #include "defines.h"
 #include "api.h"
 #include "utils.h"
@@ -108,6 +110,38 @@ int main(int argc, char *argv[])
 {
     try
     {
+		I18N_init();
+
+        // TR() returns a const char*. To avoid any lifetime surprises (if TR() ever returns
+        // a transient buffer), we capture the translated strings we use in menus here.
+        static std::string tr_settings_appearance = std::string(TR("settings.appearance"));
+        static std::string tr_settings_font = std::string(TR("settings.font"));
+        static std::string tr_settings_font_desc = std::string(TR("settings.font.desc"));
+        static std::string tr_settings_main_color = std::string(TR("settings.main_color"));
+        static std::string tr_settings_main_color_desc = std::string(TR("settings.main_color.desc"));
+        static std::string tr_settings_primary_accent = std::string(TR("settings.primary_accent"));
+        static std::string tr_settings_primary_accent_desc = std::string(TR("settings.primary_accent.desc"));
+        static std::string tr_settings_secondary_accent = std::string(TR("settings.secondary_accent"));
+        static std::string tr_settings_secondary_accent_desc = std::string(TR("settings.secondary_accent.desc"));
+        static std::string tr_settings_hint_color = std::string(TR("settings.hint_color"));
+        static std::string tr_settings_hint_color_desc = std::string(TR("settings.hint_color.desc"));
+        static std::string tr_settings_list_text = std::string(TR("settings.list_text"));
+        static std::string tr_settings_list_text_desc = std::string(TR("settings.list_text.desc"));
+        static std::string tr_settings_list_text_selected = std::string(TR("settings.list_text_selected"));
+        static std::string tr_settings_list_text_selected_desc = std::string(TR("settings.list_text_selected.desc"));
+        static std::string tr_settings_show_battery_percent = std::string(TR("settings.show_battery_percent"));
+        static std::string tr_settings_show_battery_percent_desc = std::string(TR("settings.show_battery_percent.desc"));
+        static std::string tr_settings_show_menu_animations = std::string(TR("settings.show_menu_animations"));
+        static std::string tr_settings_show_menu_animations_desc = std::string(TR("settings.show_menu_animations.desc"));
+        static std::string tr_settings_show_menu_transitions = std::string(TR("settings.show_menu_transitions"));
+        static std::string tr_settings_show_menu_transitions_desc = std::string(TR("settings.show_menu_transitions.desc"));
+        static std::string tr_settings_show_recents = std::string(TR("settings.show_recents"));
+        static std::string tr_settings_show_recents_desc = std::string(TR("settings.show_recents.desc"));
+        static std::string tr_settings_show_tools = std::string(TR("settings.show_tools"));
+        static std::string tr_settings_show_tools_desc = std::string(TR("settings.show_tools.desc"));
+        static std::string tr_settings_reset_defaults = std::string(TR("settings.reset_defaults"));
+        static std::string tr_settings_reset_defaults_desc = std::string(TR("settings.reset_defaults.desc"));
+
         char* device = getenv("DEVICE");
         bool is_brick = exactMatch("brick", device);
 
@@ -148,32 +182,32 @@ int main(int argc, char *argv[])
             tz_labels.push_back(std::string(timezones[i]));
         }
 
-        auto appearanceMenu = new MenuList(MenuItemType::Fixed, "Appearance",
-            {new MenuItem{ListItemType::Generic, "Font", "The font to render all UI text.", {0, 1}, font_names, 
+        auto appearanceMenu = new MenuList(MenuItemType::Fixed, tr_settings_appearance.c_str(),
+            {new MenuItem{ListItemType::Generic, tr_settings_font.c_str(), tr_settings_font_desc.c_str(), {0, 1}, font_names, 
                 []() -> std::any{ return CFG_getFontId(); },
                 [](const std::any &value){ CFG_setFontId(std::any_cast<int>(value)); },
                 []() { CFG_setFontId(CFG_DEFAULT_FONT_ID);}},
-                new MenuItem{ListItemType::Color, "Main Color", "The color used to render main UI elements.", colors, color_strings, 
+                new MenuItem{ListItemType::Color, tr_settings_main_color.c_str(), tr_settings_main_color_desc.c_str(), colors, color_strings, 
                 []() -> std::any{ return CFG_getColor(1); }, 
                 [](const std::any &value){ CFG_setColor(1, std::any_cast<uint32_t>(value)); },
                 []() { CFG_setColor(1, CFG_DEFAULT_COLOR1);}},
-                new MenuItem{ListItemType::Color, "Primary Accent Color", "The color used to highlight important things in the user interface.", colors, color_strings, 
+                new MenuItem{ListItemType::Color, tr_settings_primary_accent.c_str(), tr_settings_primary_accent_desc.c_str(), colors, color_strings, 
                 []() -> std::any{ return CFG_getColor(2); }, 
                 [](const std::any &value){ CFG_setColor(2, std::any_cast<uint32_t>(value)); },
                 []() { CFG_setColor(2, CFG_DEFAULT_COLOR2);}},
-                new MenuItem{ListItemType::Color, "Secondary Accent Color", "A secondary highlight color.", colors, color_strings, 
+                new MenuItem{ListItemType::Color, tr_settings_secondary_accent.c_str(), tr_settings_secondary_accent_desc.c_str(), colors, color_strings, 
                 []() -> std::any{ return CFG_getColor(3); }, 
                 [](const std::any &value){ CFG_setColor(3, std::any_cast<uint32_t>(value)); },
                 []() { CFG_setColor(3, CFG_DEFAULT_COLOR3);}},
-                new MenuItem{ListItemType::Color, "Hint info Color", "Color for button hints and info", colors, color_strings, 
+                new MenuItem{ListItemType::Color, tr_settings_hint_color.c_str(), tr_settings_hint_color_desc.c_str(), colors, color_strings, 
                 []() -> std::any{ return CFG_getColor(6); }, 
                 [](const std::any &value){ CFG_setColor(6, std::any_cast<uint32_t>(value)); },
                 []() { CFG_setColor(6, CFG_DEFAULT_COLOR6);}},
-                new MenuItem{ListItemType::Color, "List Text", "List text color", colors, color_strings, 
+                new MenuItem{ListItemType::Color, tr_settings_list_text.c_str(), tr_settings_list_text_desc.c_str(), colors, color_strings, 
                 []() -> std::any{ return CFG_getColor(4); }, 
                 [](const std::any &value){ CFG_setColor(4, std::any_cast<uint32_t>(value)); },
                 []() { CFG_setColor(4, CFG_DEFAULT_COLOR4);}},
-                new MenuItem{ListItemType::Color, "List Text Selected", "List selected text color", colors, color_strings, 
+                new MenuItem{ListItemType::Color, tr_settings_list_text_selected.c_str(), tr_settings_list_text_selected_desc.c_str(), colors, color_strings, 
                 []() -> std::any { return CFG_getColor(5); }, 
                 [](const std::any &value) { CFG_setColor(5, std::any_cast<uint32_t>(value)); },
                 []() { CFG_setColor(5, CFG_DEFAULT_COLOR5);}},
@@ -181,15 +215,15 @@ int main(int argc, char *argv[])
                 //[]() -> std::any { return CFG_getColor(7); }, 
                 //[](const std::any &value) { CFG_setColor(7, std::any_cast<uint32_t>(value)); },
                 //[]() { CFG_setColor(7, CFG_DEFAULT_COLOR7);}},
-                new MenuItem{ListItemType::Generic, "Show battery percentage", "Show battery level as percent in the status pill", {false, true}, on_off, 
+                new MenuItem{ListItemType::Generic, tr_settings_show_battery_percent.c_str(), tr_settings_show_battery_percent_desc.c_str(), {false, true}, on_off, 
                 []() -> std::any { return CFG_getShowBatteryPercent(); },
                 [](const std::any &value) { CFG_setShowBatteryPercent(std::any_cast<bool>(value)); },
                 []() { CFG_setShowBatteryPercent(CFG_DEFAULT_SHOWBATTERYPERCENT);}},
-                new MenuItem{ListItemType::Generic, "Show menu animations", "Enable or disable menu animations", {false, true}, on_off, 
+                new MenuItem{ListItemType::Generic, tr_settings_show_menu_animations.c_str(), tr_settings_show_menu_animations_desc.c_str(), {false, true}, on_off, 
                 []() -> std::any{ return CFG_getMenuAnimations(); },
                 [](const std::any &value) { CFG_setMenuAnimations(std::any_cast<bool>(value)); },
                 []() { CFG_setMenuAnimations(CFG_DEFAULT_SHOWMENUANIMATIONS);}},
-                new MenuItem{ListItemType::Generic, "Show menu transitions", "Enable or disable animated transitions", {false, true}, on_off, 
+                new MenuItem{ListItemType::Generic, tr_settings_show_menu_transitions.c_str(), tr_settings_show_menu_transitions_desc.c_str(), {false, true}, on_off, 
                 []() -> std::any{ return CFG_getMenuTransitions(); },
                 [](const std::any &value) { CFG_setMenuTransitions(std::any_cast<bool>(value)); },
                 []() { CFG_setMenuTransitions(CFG_DEFAULT_SHOWMENUTRANSITIONS);}},
@@ -206,11 +240,11 @@ int main(int argc, char *argv[])
                 []() -> std::any { return CFG_getShowFolderNamesAtRoot(); },
                 [](const std::any &value) { CFG_setShowFolderNamesAtRoot(std::any_cast<bool>(value)); },
                 []() { CFG_setShowFolderNamesAtRoot(CFG_DEFAULT_SHOWFOLDERNAMESATROOT);}},
-                new MenuItem{ListItemType::Generic, "Show Recents", "Show \"Recently Played\" menu entry in game list.", {false, true}, on_off, 
+                new MenuItem{ListItemType::Generic, tr_settings_show_recents.c_str(), tr_settings_show_recents_desc.c_str(), {false, true}, on_off, 
                 []() -> std::any { return CFG_getShowRecents(); },
                 [](const std::any &value) { CFG_setShowRecents(std::any_cast<bool>(value)); },
                 []() { CFG_setShowRecents(CFG_DEFAULT_SHOWRECENTS);}},
-                new MenuItem{ListItemType::Generic, "Show Tools", "Show \"Tools\" menu entry in game list.", {false, true}, on_off, 
+                new MenuItem{ListItemType::Generic, tr_settings_show_tools.c_str(), tr_settings_show_tools_desc.c_str(), {false, true}, on_off, 
                 []() -> std::any { return CFG_getShowTools(); },
                 [](const std::any &value) { CFG_setShowTools(std::any_cast<bool>(value)); },
                 []() { CFG_setShowTools(CFG_DEFAULT_SHOWTOOLS);}},
@@ -235,7 +269,7 @@ int main(int argc, char *argv[])
                 // { CFG_setGameSwitcherScaling(std::any_cast<int>(value)); },
                 // []() { CFG_setGameSwitcherScaling(CFG_DEFAULT_GAMESWITCHERSCALING);}},
 
-                new MenuItem{ListItemType::Button, "Reset to defaults", "Resets all options in this menu to their default values.", ResetCurrentMenu},
+                new MenuItem{ListItemType::Button, tr_settings_reset_defaults.c_str(), tr_settings_reset_defaults_desc.c_str(), ResetCurrentMenu},
         });
 
         auto displayMenu = new MenuList(MenuItemType::Fixed, "Display",
