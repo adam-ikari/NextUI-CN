@@ -137,9 +137,9 @@ typedef struct Entry {
 	int alpha; // index in parent Directory's alphas Array, which points to the index of an Entry in its entries Array :sweat_smile:
 } Entry;
 
-static Entry* Entry_new(char* path, int type) {
+static Entry* Entry_new(const char* path, int type) {
 	char display_name[256];
-	getDisplayName(path, display_name);
+	getDisplayName((char*)path, display_name);
 	Entry* self = malloc(sizeof(Entry));
 	self->path = strdup(path);
 	self->name = strdup(display_name);
@@ -149,7 +149,7 @@ static Entry* Entry_new(char* path, int type) {
 	return self;
 }
 
-static Entry* Entry_newNamed(char* path, int type, char* displayName) {
+static Entry* Entry_newNamed(const char* path, int type, const char* displayName) {
 	Entry *self = Entry_new(path, type);
 	self->name = strdup(displayName);
 	return self;
@@ -512,7 +512,7 @@ static void addRecent(char* path, char* alias) {
 	saveRecents();
 }
 
-static Entry* entryFromPakName(char* pak_name)
+static Entry* entryFromPakName(const char* pak_name)
 {
 	char pak_path[256];
 	// Check in Tools
