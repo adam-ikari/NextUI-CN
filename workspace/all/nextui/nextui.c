@@ -834,8 +834,16 @@ static Array* getQuickToggles(void) {
 	I18N_init();
 
 	Entry *settings = entryFromPakName("settings");
-	if (settings)
+	if (settings) {
+		// NOTE: quick-menu icon/action mapping matches on Entry->name (case-sensitive).
+		// Keep the internal identifier as upstream expects ("Settings"), and translate only
+		// the visible label via Entry_newNamed().
+		if (settings->name) free(settings->name);
+		settings->name = strdup("Settings");
 		Array_push(entries, settings);
+		// If you want a translated label here later, introduce a separate display field and
+		// keep Entry->name stable for icon lookup.
+	}
 	
 	Entry *store = entryFromPakName("pak_store");
 	if (store)
