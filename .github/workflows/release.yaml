@@ -112,29 +112,6 @@ jobs:
           echo "::error::Failed to clone toolchain repo after retries"
           exit 1
 
-      - name: Login to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Pre-pull toolchain image (retry)
-        shell: bash
-        run: |
-          set -euo pipefail
-          IMAGE="ghcr.io/loveretro/${PLATFORM}-toolchain:modernize"
-          echo "Pre-pulling $IMAGE"
-          for i in 1 2 3 4 5; do
-            if docker pull "$IMAGE"; then
-              exit 0
-            fi
-            echo "Pull failed (attempt $i). Waiting before retry..."
-            sleep $((i * 10))
-          done
-          echo "::error::Failed to pull $IMAGE after retries"
-          exit 1
-
       - name: Setup
         run: make setup
 
