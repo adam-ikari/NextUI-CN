@@ -843,13 +843,13 @@ static Array* getQuickToggles(void) {
 
 	// quick actions
 	if(WIFI_supported())
-		Array_push(entries, Entry_new("wifi", ENTRY_DIP));
+		Array_push(entries, Entry_new("Wifi", ENTRY_DIP));
 	if(BT_supported())
-		Array_push(entries, Entry_new("bluetooth", ENTRY_DIP));
+		Array_push(entries, Entry_new("Bluetooth", ENTRY_DIP));
 	if(PLAT_supportsDeepSleep() && !simple_mode)
-		Array_push(entries, Entry_new("sleep", ENTRY_DIP));
-	Array_push(entries, Entry_new("reboot", ENTRY_DIP));
-	Array_push(entries, Entry_new("poweroff", ENTRY_DIP));
+		Array_push(entries, Entry_new("Sleep", ENTRY_DIP));
+	Array_push(entries, Entry_new("Reboot", ENTRY_DIP));
+	Array_push(entries, Entry_new("Poweroff", ENTRY_DIP));
 
 	return entries;
 }
