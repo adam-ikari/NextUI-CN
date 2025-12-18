@@ -2112,6 +2112,8 @@ int main (int argc, char *argv[]) {
 	simple_mode = exists(SIMPLE_MODE_PATH);
 
 	LOG_info("NextUI\n");
+	I18N_init();
+	LOG_info("i18n: %s (%s)\n", TR("recents"), I18N_loadedPath());
 	InitSettings();
 	
 	screen = GFX_init(MODE_MAIN);

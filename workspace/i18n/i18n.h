@@ -27,6 +27,10 @@ int I18N_load(const char *lang_file_path);
 // Lookup translation by key. Never returns NULL.
 const char *I18N_tr(const char *key);
 
+// Debug-only helper: returns the last path we attempted to load.
+// Empty string means I18N_init() hasn't run yet.
+const char *I18N_loadedPath(void);
+
 // Convenience macro.
 #define TR(KEY) I18N_tr((KEY))
 

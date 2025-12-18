@@ -21,6 +21,10 @@ typedef struct I18N_Entry {
 static I18N_Entry *g_table = NULL;
 static char g_loaded_path[512] = {0};
 
+const char *I18N_loadedPath(void) {
+	return g_loaded_path;
+}
+
 static void I18N_freeTable(void) {
 	I18N_Entry *e = g_table;
 	while (e) {
