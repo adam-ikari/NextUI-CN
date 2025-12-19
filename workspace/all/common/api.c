@@ -253,11 +253,25 @@ int GFX_loadSystemFont(const char *fontPath)
 	font.tiny = TTF_OpenFont(fontPath, SCALE1(FONT_TINY));
 	font.micro = TTF_OpenFont(fontPath, SCALE1(FONT_MICRO));
 
-	TTF_SetFontStyle(font.large, TTF_STYLE_BOLD);
-	TTF_SetFontStyle(font.medium, TTF_STYLE_BOLD);
-	TTF_SetFontStyle(font.small, TTF_STYLE_BOLD);
-	TTF_SetFontStyle(font.tiny, TTF_STYLE_BOLD);
-	TTF_SetFontStyle(font.micro, TTF_STYLE_BOLD);
+	// Many fonts (especially CJK) look overly thick or blurry when SDL_ttf "fake bold"
+	// is forced. Keep bold for the original UI font, but use normal + light hinting for
+	// the injected Next/CJK font (font2.ttf).
+	int style = TTF_STYLE_BOLD;
+	if (fontPath && strstr(fontPath, "/font2.ttf")) {
+		style = TTF_STYLE_NORMAL;
+	}
+	TTF_SetFontStyle(font.large, style);
+	TTF_SetFontStyle(font.medium, style);
+	TTF_SetFontStyle(font.small, style);
+	TTF_SetFontStyle(font.tiny, style);
+	TTF_SetFontStyle(font.micro, style);
+
+	// Light hinting usually improves readability at small pixel sizes.
+	TTF_SetFontHinting(font.large, TTF_HINTING_LIGHT);
+	TTF_SetFontHinting(font.medium, TTF_HINTING_LIGHT);
+	TTF_SetFontHinting(font.small, TTF_HINTING_LIGHT);
+	TTF_SetFontHinting(font.tiny, TTF_HINTING_LIGHT);
+	TTF_SetFontHinting(font.micro, TTF_HINTING_LIGHT);
 
 	return 0;
 }
