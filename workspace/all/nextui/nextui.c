@@ -932,7 +932,9 @@ static Array* getRoot(void) {
     if (hasTools() && CFG_getShowTools() && !simple_mode) {
 		char tools_path[256];
 		snprintf(tools_path, sizeof(tools_path), "%s/Tools/%s", SDCARD_PATH, PLATFORM);
-        Array_push(root, Entry_new(tools_path, ENTRY_DIR));
+		Entry* e = Entry_new(tools_path, ENTRY_DIR);
+		e->display = strdup(TR("tools"));
+		Array_push(root, e);
     }
 
     return root;

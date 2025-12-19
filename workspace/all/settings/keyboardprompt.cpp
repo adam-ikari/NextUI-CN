@@ -1,5 +1,15 @@
 #include "keyboardprompt.hpp"
 
+#include "i18n.h"
+
+static const char* keyboardKeyLabel(const std::string& key)
+{
+    if (key == "shift") return TR("keyboard.shift");
+    if (key == "space") return TR("keyboard.space");
+    if (key == "enter") return TR("keyboard.enter");
+    return key.c_str();
+}
+
 constexpr int keyboardRows = 5;
 constexpr int keyboardColumns = 14;
 // keyboard_layout_lowercase is the default keyboard layout
@@ -314,7 +324,7 @@ void KeyboardPrompt::drawKeyboard(SDL_Surface *screen, const AppState &state)
     const auto key = currentLayout->at(state.keyboard.row).at(state.keyboard.col);
 
     // draw the button group on the button-right
-    char *hints[] = {(char *)("Y"), (char *)("EXIT"), (char *)("X"), ((char *)"ENTER"), NULL};
+    char *hints[] = {(char *)("Y"), (char *)TR("common.exit"), (char *)("X"), (char *)TR("common.ok"), NULL};
     GFX_blitButtonGroup(hints, 1, screen, 1);
 
     // draw keyboard title
@@ -371,9 +381,9 @@ void KeyboardPrompt::drawKeyboard(SDL_Surface *screen, const AppState &state)
     // so we need to compute their width separately
     // compute them here to avoid doing it conditionally for each row
     int shift_width, space_width, enter_width;
-    TTF_SizeUTF8(font.medium, "shift", &shift_width, NULL);
-    TTF_SizeUTF8(font.medium, "space", &space_width, NULL);
-    TTF_SizeUTF8(font.medium, "enter", &enter_width, NULL);
+    TTF_SizeUTF8(font.medium, TR("keyboard.shift"), &shift_width, NULL);
+    TTF_SizeUTF8(font.medium, TR("keyboard.space"), &space_width, NULL);
+    TTF_SizeUTF8(font.medium, TR("keyboard.enter"), &enter_width, NULL);
     int special_key_width = std::max(shift_width, std::max(space_width, enter_width)) + (column_spacing * 4);
 
     for (int row = 0; row < num_rows; row++)
@@ -408,7 +418,8 @@ void KeyboardPrompt::drawKeyboard(SDL_Surface *screen, const AppState &state)
                 continue;
 
             SDL_Color text_color = (row == state.keyboard.row && col == state.keyboard.col) ? COLOR_BLACK : COLOR_WHITE;
-            SDL_Surface *key_text = TTF_RenderUTF8_Blended(font.medium, key.c_str(), text_color);
+            const char* label = keyboardKeyLabel(key);
+            SDL_Surface *key_text = TTF_RenderUTF8_Blended(font.medium, label, text_color);
 
             // special keys are not the same width as the other keys
             // so we need to compute their width separately

@@ -1,6 +1,11 @@
 #include "btmenu.hpp"
 #include "keyboardprompt.hpp"
 
+extern "C"
+{
+#include "i18n.h"
+}
+
 #include <unordered_set>
 #include <map>
 
@@ -13,17 +18,17 @@ typedef std::shared_lock<Lock> ReadLock;
 using namespace Bluetooth;
 using namespace std::placeholders;
 
-Menu::Menu(const int &globalQuit, int &globalDirty) : MenuList(MenuItemType::Fixed, "Network", {}), globalQuit(globalQuit), globalDirty(globalDirty)
+Menu::Menu(const int &globalQuit, int &globalDirty) : MenuList(MenuItemType::Fixed, TR("settings.bluetooth"), {}), globalQuit(globalQuit), globalDirty(globalDirty)
 {
-    toggleItem = new MenuItem(ListItemType::Generic, "Bluetooth", "Enable/disable Bluetooth", {false, true}, {"Off", "On"},
+    toggleItem = new MenuItem(ListItemType::Generic, TR("settings.bluetooth.toggle"), TR("settings.bluetooth.toggle.desc"), {false, true}, {TR("common.off"), TR("common.on")},
                               std::bind(&Menu::getBtToggleState, this),
                               std::bind(&Menu::setBtToggleState, this, std::placeholders::_1),
                               std::bind(&Menu::resetBtToggleState, this));
-    diagItem = new MenuItem(ListItemType::Generic, "Bluetooth diagnostics", "Enable/disable Bluetooth logging", {false, true}, {"Off", "On"},
+    diagItem = new MenuItem(ListItemType::Generic, TR("settings.bluetooth.diagnostics"), TR("settings.bluetooth.diagnostics.desc"), {false, true}, {TR("common.off"), TR("common.on")},
                               std::bind(&Menu::getBtDiagnosticsState, this),
                               std::bind(&Menu::setBtDiagnosticsState, this, std::placeholders::_1),
                               std::bind(&Menu::resetBtDiagnosticsState, this));
-    rateItem = new MenuItem(ListItemType::Generic, "Maximum sampling rate", "44100 Hz: better compatibility\n48000 Hz: better quality", {44100, 48000}, {"44100 Hz", "48000 Hz"},
+    rateItem = new MenuItem(ListItemType::Generic, TR("settings.bluetooth.max_sampling_rate"), TR("settings.bluetooth.max_sampling_rate.desc"), {44100, 48000}, {"44100 Hz", "48000 Hz"},
                               std::bind(&Menu::getSamplerateMaximum, this),
                               std::bind(&Menu::setSamplerateMaximum, this, std::placeholders::_1),
                               std::bind(&Menu::resetSamplerateMaximum, this));
@@ -168,7 +173,7 @@ void Menu::updater()
                     for (auto &[s, r] : scanMap)
                     {
                         MenuList *options;
-                        options = new MenuList(MenuItemType::List, "Options", {new PairNewItem(r, selectionDirty)});
+                        options = new MenuList(MenuItemType::List, TR("common.options"), {new PairNewItem(r, selectionDirty)});
                         auto itm = new PairableItem{r, options};
                         items.push_back(itm);
                     }
@@ -178,14 +183,14 @@ void Menu::updater()
                         MenuList *options;
                         if (r.is_connected)
                         {
-                            options = new MenuList(MenuItemType::List, "Options", {
+                            options = new MenuList(MenuItemType::List, TR("common.options"), {
                                                                                     new DisconnectKnownItem(r, selectionDirty),
                                                                                     new UnpairItem(r, selectionDirty),
                                                                                 });
                         }
                         else
                         {
-                            options = new MenuList(MenuItemType::List, "Options", {
+                            options = new MenuList(MenuItemType::List, TR("common.options"), {
                                                                                     new ConnectKnownItem(r, selectionDirty),
                                                                                     new UnpairItem(r, selectionDirty),
                                                                                 });
@@ -229,7 +234,7 @@ void Menu::updater()
 }
 
 PairNewItem::PairNewItem(BT_device d, bool& dirty)
-    : MenuItem(ListItemType::Button, "Pair", "Pair this device.", 
+    : MenuItem(ListItemType::Button, TR("settings.bluetooth.pair"), TR("settings.bluetooth.pair.desc"), 
         [&](AbstractMenuItem &item) -> InputReactionHint {
             BT_pair(dev.addr); 
             dirty = true;
@@ -238,7 +243,7 @@ PairNewItem::PairNewItem(BT_device d, bool& dirty)
 {}
 
 UnpairItem::UnpairItem(BT_devicePaired d, bool& dirty)
-    : MenuItem(ListItemType::Button, "Forget", "Forget this device.",
+    : MenuItem(ListItemType::Button, TR("settings.bluetooth.forget"), TR("settings.bluetooth.forget.desc"),
         [&](AbstractMenuItem &item) -> InputReactionHint {
             BT_unpair(dev.remote_addr); 
             dirty = true;
@@ -247,7 +252,7 @@ UnpairItem::UnpairItem(BT_devicePaired d, bool& dirty)
 {}
 
 ConnectKnownItem::ConnectKnownItem(BT_devicePaired d, bool& dirty)
-    : MenuItem(ListItemType::Button, "Connect", "Connect this device.",
+    : MenuItem(ListItemType::Button, TR("settings.bluetooth.connect"), TR("settings.bluetooth.connect.desc"),
         [&](AbstractMenuItem &item) -> InputReactionHint {
             BT_connect(dev.remote_addr); 
             dirty = true;
@@ -256,7 +261,7 @@ ConnectKnownItem::ConnectKnownItem(BT_devicePaired d, bool& dirty)
 {}
 
 DisconnectKnownItem::DisconnectKnownItem(BT_devicePaired d, bool& dirty)
-    : MenuItem(ListItemType::Button, "Disconnect", "Disconnect this device.",
+    : MenuItem(ListItemType::Button, TR("settings.bluetooth.disconnect"), TR("settings.bluetooth.disconnect.desc"),
         [&](AbstractMenuItem &item) -> InputReactionHint {
             BT_disconnect(dev.remote_addr); 
             dirty = true;

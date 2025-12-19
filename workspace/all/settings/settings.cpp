@@ -73,11 +73,7 @@ static const std::vector<std::string> color_strings = {
 static const std::vector<std::string> font_names = {"OG", "Next"};
 
 static const std::vector<std::any> timeout_secs = {0U, 5U, 10U, 15U, 30U, 45U, 60U, 90U, 120U, 240U, 360U, 600U};
-static const std::vector<std::string> timeout_labels = {"Never", "5s", "10s", "15s", "30s", "45s", "60s", "90s", "2m", "4m", "6m", "10m"};
 
-static const std::vector<std::string> on_off = {"Off", "On"};
-
-static const std::vector<std::string> scaling_strings = {"Fullscreen", "Fit", "Fill"};
 static const std::vector<std::any> scaling = {(int)GFX_SCALE_FULLSCREEN, (int)GFX_SCALE_FIT, (int)GFX_SCALE_FILL};
 
 namespace {
@@ -111,6 +107,10 @@ int main(int argc, char *argv[])
     try
     {
 		I18N_init();
+
+        const std::vector<std::string> on_off = {TR("common.off"), TR("common.on")};
+        const std::vector<std::string> timeout_labels = {TR("common.never"), "5s", "10s", "15s", "30s", "45s", "60s", "90s", "2m", "4m", "6m", "10m"};
+        const std::vector<std::string> scaling_strings = {TR("common.fullscreen"), TR("common.fit"), TR("common.fill")};
 
         // TR() returns a const char*. To avoid any lifetime surprises (if TR() ever returns
         // a transient buffer), we capture the translated strings we use in menus here.
@@ -227,16 +227,16 @@ int main(int argc, char *argv[])
                 []() -> std::any{ return CFG_getMenuTransitions(); },
                 [](const std::any &value) { CFG_setMenuTransitions(std::any_cast<bool>(value)); },
                 []() { CFG_setMenuTransitions(CFG_DEFAULT_SHOWMENUTRANSITIONS);}},
-                new MenuItem{ListItemType::Generic, "Game art corner radius", "Set the radius for the rounded corners of game art", 0, 24, "px",
+                new MenuItem{ListItemType::Generic, TR("settings.game_art_corner_radius"), TR("settings.game_art_corner_radius.desc"), 0, 24, "px",
                 []() -> std::any{ return CFG_getThumbnailRadius(); }, 
                 [](const std::any &value) { CFG_setThumbnailRadius(std::any_cast<int>(value)); },
                 []() { CFG_setThumbnailRadius(CFG_DEFAULT_THUMBRADIUS);}},
-                new MenuItem{ListItemType::Generic, "Game art width", "Set the percentage of screen width used for game art.\nUI elements might overrule this to avoid clipping.", 
+                new MenuItem{ListItemType::Generic, TR("settings.game_art_width"), TR("settings.game_art_width.desc"), 
                 5, 100, "%",
                 []() -> std::any{ return (int)(CFG_getGameArtWidth() * 100); }, 
                 [](const std::any &value) { CFG_setGameArtWidth((double)std::any_cast<int>(value) / 100.0); },
                 []() { CFG_setGameArtWidth(CFG_DEFAULT_GAMEARTWIDTH);}},
-                new MenuItem{ListItemType::Generic, "Show folder names at root", "Show folder names at root directory", {false, true}, on_off,
+                new MenuItem{ListItemType::Generic, TR("settings.show_folder_names_root"), TR("settings.show_folder_names_root.desc"), {false, true}, on_off,
                 []() -> std::any { return CFG_getShowFolderNamesAtRoot(); },
                 [](const std::any &value) { CFG_setShowFolderNamesAtRoot(std::any_cast<bool>(value)); },
                 []() { CFG_setShowFolderNamesAtRoot(CFG_DEFAULT_SHOWFOLDERNAMESATROOT);}},
@@ -248,17 +248,17 @@ int main(int argc, char *argv[])
                 []() -> std::any { return CFG_getShowTools(); },
                 [](const std::any &value) { CFG_setShowTools(std::any_cast<bool>(value)); },
                 []() { CFG_setShowTools(CFG_DEFAULT_SHOWTOOLS);}},
-                new MenuItem{ListItemType::Generic, "Show game art", "Show game artwork in the main menu", {false, true}, on_off, []() -> std::any
+                new MenuItem{ListItemType::Generic, TR("settings.show_game_art"), TR("settings.show_game_art.desc"), {false, true}, on_off, []() -> std::any
                 { return CFG_getShowGameArt(); },
                 [](const std::any &value)
                 { CFG_setShowGameArt(std::any_cast<bool>(value)); },
                 []() { CFG_setShowGameArt(CFG_DEFAULT_SHOWGAMEART);}},
-                new MenuItem{ListItemType::Generic, "Use folder background for ROMs", "If enabled, used the emulator background image. Otherwise uses the default.", {false, true}, on_off, []() -> std::any
+                new MenuItem{ListItemType::Generic, TR("settings.roms_use_folder_bg"), TR("settings.roms_use_folder_bg.desc"), {false, true}, on_off, []() -> std::any
                 { return CFG_getRomsUseFolderBackground(); },
                 [](const std::any &value)
                 { CFG_setRomsUseFolderBackground(std::any_cast<bool>(value)); },
                 []() { CFG_setRomsUseFolderBackground(CFG_DEFAULT_ROMSUSEFOLDERBACKGROUND);}},
-                new MenuItem{ListItemType::Generic, "Show Quickswitcher UI", "Show/hide Quickswitcher UI elements.\nWhen hidden, will only draw background images.", {false, true}, on_off, 
+                new MenuItem{ListItemType::Generic, TR("settings.show_quickswitcher_ui"), TR("settings.show_quickswitcher_ui.desc"), {false, true}, on_off, 
                 []() -> std::any{ return CFG_getShowQuickswitcherUI(); },
                 [](const std::any &value){ CFG_setShowQuickswitcherUI(std::any_cast<bool>(value)); },
                 []() { CFG_setShowQuickswitcherUI(CFG_DEFAULT_SHOWQUICKWITCHERUI);}},
@@ -272,177 +272,177 @@ int main(int argc, char *argv[])
                 new MenuItem{ListItemType::Button, tr_settings_reset_defaults.c_str(), tr_settings_reset_defaults_desc.c_str(), ResetCurrentMenu},
         });
 
-        auto displayMenu = new MenuList(MenuItemType::Fixed, "Display",
+        auto displayMenu = new MenuList(MenuItemType::Fixed, TR("settings.display"),
         {
-            new MenuItem{ListItemType::Generic, "Brightness", "Display brightness (0 to 10)", 0, 10, "",[]() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.brightness"), TR("settings.brightness.desc"), 0, 10, "",[]() -> std::any
             { return GetBrightness(); }, [](const std::any &value)
             { SetBrightness(std::any_cast<int>(value)); },
             []() { SetBrightness(SETTINGS_DEFAULT_BRIGHTNESS);}},
-            new MenuItem{ListItemType::Generic, "Color temperature", "Color temperature (0 to 40)", 0, 40, "",[]() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.color_temperature"), TR("settings.color_temperature.desc"), 0, 40, "",[]() -> std::any
             { return GetColortemp(); }, [](const std::any &value)
             { SetColortemp(std::any_cast<int>(value)); },
             []() { SetColortemp(SETTINGS_DEFAULT_COLORTEMP);}},
-            new MenuItem{ListItemType::Generic, "Contrast", "Contrast enhancement (-4 to 5)", -4, 5, "",[]() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.contrast"), TR("settings.contrast.desc"), -4, 5, "",[]() -> std::any
             { return GetContrast(); }, [](const std::any &value)
             { SetContrast(std::any_cast<int>(value)); },
             []() { SetContrast(SETTINGS_DEFAULT_CONTRAST);}},
-            new MenuItem{ListItemType::Generic, "Saturation", "Saturation enhancement (-5 to 5)", -5, 5, "",[]() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.saturation"), TR("settings.saturation.desc"), -5, 5, "",[]() -> std::any
             { return GetSaturation(); }, [](const std::any &value)
             { SetSaturation(std::any_cast<int>(value)); },
             []() { SetSaturation(SETTINGS_DEFAULT_SATURATION);}},
-            new MenuItem{ListItemType::Generic, "Exposure", "Exposure enhancement (-4 to 5)", -4, 5, "",[]() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.exposure"), TR("settings.exposure.desc"), -4, 5, "",[]() -> std::any
             { return GetExposure(); }, [](const std::any &value)
             { SetExposure(std::any_cast<int>(value)); },
             []() { SetExposure(SETTINGS_DEFAULT_EXPOSURE);}},
 
-            new MenuItem{ListItemType::Button, "Reset to defaults", "Resets all options in this menu to their default values.", ResetCurrentMenu},
+            new MenuItem{ListItemType::Button, tr_settings_reset_defaults.c_str(), tr_settings_reset_defaults_desc.c_str(), ResetCurrentMenu},
         });
 
-        auto systemMenu = new MenuList(MenuItemType::Fixed, "System",
+        auto systemMenu = new MenuList(MenuItemType::Fixed, TR("settings.system"),
         {
-            new MenuItem{ListItemType::Generic, "Volume", "Speaker volume", 
+            new MenuItem{ListItemType::Generic, TR("settings.volume"), TR("settings.volume.desc"), 
             {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}, 
-            {"Muted", "5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"}, 
+            {TR("settings.muted"), "5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"}, 
             []() -> std::any{ return GetVolume(); }, [](const std::any &value)
             { SetVolume(std::any_cast<int>(value)); },
             []() { SetVolume(SETTINGS_DEFAULT_VOLUME);}},
-            new MenuItem{ListItemType::Generic, "Screen timeout", "Time before screen turns off (0-600s)", timeout_secs, timeout_labels, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.screen_timeout"), TR("settings.screen_timeout.desc"), timeout_secs, timeout_labels, []() -> std::any
             { return CFG_getScreenTimeoutSecs(); }, [](const std::any &value)
             { CFG_setScreenTimeoutSecs(std::any_cast<uint32_t>(value)); },
             []() { CFG_setScreenTimeoutSecs(CFG_DEFAULT_SCREENTIMEOUTSECS);}},
-            new MenuItem{ListItemType::Generic, "Suspend timeout", "Time before device goes to sleep (0-600s)", timeout_secs, timeout_labels, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.suspend_timeout"), TR("settings.suspend_timeout.desc"), timeout_secs, timeout_labels, []() -> std::any
             { return CFG_getSuspendTimeoutSecs(); }, [](const std::any &value)
             { CFG_setSuspendTimeoutSecs(std::any_cast<uint32_t>(value)); },
             []() { CFG_setSuspendTimeoutSecs(CFG_DEFAULT_SUSPENDTIMEOUTSECS);}},
-            new MenuItem{ListItemType::Generic, "Haptic feedback", "Enable or disable haptic feedback on certain actions in the OS", {false, true}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.haptics"), TR("settings.haptics.desc"), {false, true}, on_off, []() -> std::any
             { return CFG_getHaptics(); }, [](const std::any &value)
             { CFG_setHaptics(std::any_cast<bool>(value)); },
             []() { CFG_setHaptics(CFG_DEFAULT_HAPTICS);}},
-            new MenuItem{ListItemType::Generic, "Default view", "The initial view to show on boot", 
+            new MenuItem{ListItemType::Generic, TR("settings.default_view"), TR("settings.default_view.desc"), 
             {(int)SCREEN_GAMELIST, (int)SCREEN_GAMESWITCHER, (int)SCREEN_QUICKMENU}, 
-            {"Content List","Game Switcher","Quick Menu"}, 
+            {TR("settings.default_view.content_list"), TR("settings.default_view.game_switcher"), TR("settings.default_view.quick_menu")}, 
             []() -> std::any { return CFG_getDefaultView(); }, 
             [](const std::any &value){ CFG_setDefaultView(std::any_cast<int>(value)); },
             []() { CFG_setDefaultView(CFG_DEFAULT_VIEW);}},
-            new MenuItem{ListItemType::Generic, "Show 24h time format", "Show clock in the 24hrs time format", {false, true}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.clock_24h"), TR("settings.clock_24h.desc"), {false, true}, on_off, []() -> std::any
             { return CFG_getClock24H(); },
             [](const std::any &value)
             { CFG_setClock24H(std::any_cast<bool>(value)); },
             []() { CFG_setClock24H(CFG_DEFAULT_CLOCK24H);}},
-            new MenuItem{ListItemType::Generic, "Show clock", "Show clock in the status pill", {false, true}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.show_clock"), TR("settings.show_clock.desc"), {false, true}, on_off, []() -> std::any
             { return CFG_getShowClock(); },
             [](const std::any &value)
             { CFG_setShowClock(std::any_cast<bool>(value)); },
             []() { CFG_setShowClock(CFG_DEFAULT_SHOWCLOCK);}},
-            new MenuItem{ListItemType::Generic, "Set time and date automatically", "Automatically adjust system time\nwith NTP (requires internet access)", {false, true}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.ntp"), TR("settings.ntp.desc"), {false, true}, on_off, []() -> std::any
             { return TIME_getNetworkTimeSync(); }, [](const std::any &value)
             { TIME_setNetworkTimeSync(std::any_cast<bool>(value)); },
             []() { TIME_setNetworkTimeSync(false);}}, // default from stock
-            new MenuItem{ListItemType::Generic, "Time zone", "Your time zone", tz_values, tz_labels, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.time_zone"), TR("settings.time_zone.desc"), tz_values, tz_labels, []() -> std::any
             { return std::string(TIME_getCurrentTimezone()); }, [](const std::any &value)
             { TIME_setCurrentTimezone(std::any_cast<std::string>(value).c_str()); },
             []() { TIME_setCurrentTimezone("Asia/Shanghai");}}, // default from Stock
-            new MenuItem{ListItemType::Generic, "Save format", "The save format to use.\nMinUI: Game.gba.sav, Retroarch: Game.srm, Generic: Game.sav", 
+            new MenuItem{ListItemType::Generic, TR("settings.save_format"), TR("settings.save_format.desc"), 
             {(int)SAVE_FORMAT_SAV, (int)SAVE_FORMAT_SRM, (int)SAVE_FORMAT_SRM_UNCOMPRESSED, (int)SAVE_FORMAT_GEN}, 
-            {"MinUI (default)", "Retroarch (compressed)", "Retroarch (uncompressed)", "Generic"}, []() -> std::any
+            {TR("settings.save_format.minui"), TR("settings.save_format.ra_comp"), TR("settings.save_format.ra_uncomp"), TR("settings.save_format.generic")}, []() -> std::any
             { return CFG_getSaveFormat(); }, [](const std::any &value)
             { CFG_setSaveFormat(std::any_cast<int>(value)); },
             []() { CFG_setSaveFormat(CFG_DEFAULT_SAVEFORMAT);}},
-            new MenuItem{ListItemType::Generic, "Save state format", "The save state format to use. MinUI: Game.st0, \nRetroarch-ish: Game.state.0, Retroarch: Game.state0", 
+            new MenuItem{ListItemType::Generic, TR("settings.state_format"), TR("settings.state_format.desc"), 
             {(int)STATE_FORMAT_SAV, (int)STATE_FORMAT_SRM_EXTRADOT, (int)STATE_FORMAT_SRM_UNCOMRESSED_EXTRADOT, (int)STATE_FORMAT_SRM, (int)STATE_FORMAT_SRM_UNCOMRESSED}, 
-            {"MinUI (default)", "Retroarch-ish (compressed)", "Retroarch-ish (uncompressed)", "Retroarch (compressed)", "Retroarch (uncompressed)"}, []() -> std::any
+            {TR("settings.state_format.minui"), TR("settings.state_format.raish_comp"), TR("settings.state_format.raish_uncomp"), TR("settings.state_format.ra_comp"), TR("settings.state_format.ra_uncomp")}, []() -> std::any
             { return CFG_getStateFormat(); }, [](const std::any &value)
             { CFG_setStateFormat(std::any_cast<int>(value)); },
             []() { CFG_setStateFormat(CFG_DEFAULT_STATEFORMAT);}},
-            new MenuItem{ListItemType::Generic, "Use extracted file name", "Use the extracted file name instead of the archive name.\nOnly applies to cores that do not handle archives natively", {false, true}, on_off, 
+            new MenuItem{ListItemType::Generic, TR("settings.use_extracted_name"), TR("settings.use_extracted_name.desc"), {false, true}, on_off, 
             []() -> std::any{ return CFG_getUseExtractedFileName(); },
             [](const std::any &value){ CFG_setUseExtractedFileName(std::any_cast<bool>(value)); },
             []() { CFG_setUseExtractedFileName(CFG_DEFAULT_EXTRACTEDFILENAME);}},
-            new MenuItem{ListItemType::Generic, "Safe poweroff", "Bypasses the stock shutdown procedure to avoid the \"limbo bug\".\nInstructs the PMIC directly to soft disconnect the battery.", {false, true}, on_off, 
+            new MenuItem{ListItemType::Generic, TR("settings.safe_poweroff"), TR("settings.safe_poweroff.desc"), {false, true}, on_off, 
             []() -> std::any { return CFG_getPowerOffProtection(); },
             [](const std::any &value) { CFG_setPowerOffProtection(std::any_cast<bool>(value)); },
             []() { CFG_setPowerOffProtection(CFG_DEFAULT_POWEROFFPROTECTION); }},
-            new MenuItem{ListItemType::Button, "Reset to defaults", "Resets all options in this menu to their default values.", ResetCurrentMenu},
+            new MenuItem{ListItemType::Button, tr_settings_reset_defaults.c_str(), tr_settings_reset_defaults_desc.c_str(), ResetCurrentMenu},
         });
 
         std::vector<AbstractMenuItem*> muteItems = 
         {
-            new MenuItem{ListItemType::Generic, "Volume when toggled", "Speaker volume (0-20)", 
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.volume_when_toggled"), TR("settings.fn_switch.volume_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}, 
-            {"Unchanged", "Muted", "5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"}, 
+            {TR("common.unchanged"), TR("settings.muted"), "5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"}, 
             []() -> std::any { return GetMutedVolume(); },
             [](const std::any &value) { SetMutedVolume(std::any_cast<int>(value)); },
             []() { SetMutedVolume(0); }},
-            new MenuItem{ListItemType::Generic, "FN switch disables LED", "Switch will also disable LEDs", {false, true}, on_off, 
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.disables_led"), TR("settings.fn_switch.disables_led.desc"), {false, true}, on_off, 
             []() -> std::any { return CFG_getMuteLEDs(); },
             [](const std::any &value) { CFG_setMuteLEDs(std::any_cast<bool>(value)); },
             []() { CFG_setMuteLEDs(CFG_DEFAULT_MUTELEDS); }},
-            new MenuItem{ListItemType::Generic, "Brightness when toggled", "Display brightness (0 to 10)", 
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.brightness_when_toggled"), TR("settings.fn_switch.brightness_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10}, 
-            {"Unchanged","0","1","2","3","4","5","6","7","8","9","10"},
+            {TR("common.unchanged"),"0","1","2","3","4","5","6","7","8","9","10"},
             []() -> std::any { return GetMutedBrightness(); }, [](const std::any &value)
             { SetMutedBrightness(std::any_cast<int>(value)); },
             []() { SetMutedBrightness(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
-            new MenuItem{ListItemType::Generic, "Color temperature when toggled", "Color temperature (0 to 40)", 
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.color_temperature_when_toggled"), TR("settings.fn_switch.color_temperature_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40}, 
-            {"Unchanged","0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40"},
+            {TR("common.unchanged"),"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40"},
             []() -> std::any{ return GetMutedColortemp(); }, [](const std::any &value)
             { SetMutedColortemp(std::any_cast<int>(value)); },
             []() { SetMutedColortemp(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
-            new MenuItem{ListItemType::Generic, "Contrast when toggled", "Contrast enhancement (-4 to 5)", 
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.contrast_when_toggled"), TR("settings.fn_switch.contrast_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, -4,-3,-2,-1,0,1,2,3,4,5}, 
-            {"Unchanged","-4","-3","-2","-1","0","1","2","3","4","5"}, 
+            {TR("common.unchanged"),"-4","-3","-2","-1","0","1","2","3","4","5"}, 
             []() -> std::any  { return GetMutedContrast(); }, [](const std::any &value)
             { SetMutedContrast(std::any_cast<int>(value)); },
             []() { SetMutedContrast(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
-            new MenuItem{ListItemType::Generic, "Saturation when toggled", "Saturation enhancement (-5 to 5)", 
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.saturation_when_toggled"), TR("settings.fn_switch.saturation_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, -5,-4,-3,-2,-1,0,1,2,3,4,5}, 
-            {"Unchanged","-5","-4","-3","-2","-1","0","1","2","3","4","5"}, 
+            {TR("common.unchanged"),"-5","-4","-3","-2","-1","0","1","2","3","4","5"}, 
             []() -> std::any{ return GetMutedSaturation(); }, [](const std::any &value)
             { SetMutedSaturation(std::any_cast<int>(value)); },
             []() { SetMutedSaturation(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
-            new MenuItem{ListItemType::Generic, "Exposure when toggled", "Exposure enhancement (-4 to 5)", 
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.exposure_when_toggled"), TR("settings.fn_switch.exposure_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, -4,-3,-2,-1,0,1,2,3,4,5}, 
-            {"Unchanged","-4","-3","-2","-1","0","1","2","3","4","5"}, 
+            {TR("common.unchanged"),"-4","-3","-2","-1","0","1","2","3","4","5"}, 
             []() -> std::any  { return GetMutedExposure(); }, [](const std::any &value)
             { SetMutedExposure(std::any_cast<int>(value)); },
             []() { SetMutedExposure(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
-            new MenuItem{ListItemType::Generic, "Turbo fire A", "Enable turbo fire A", {0, 1}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_a"), TR("settings.fn_switch.turbo_a.desc"), {0, 1}, on_off, []() -> std::any
             { return GetMuteTurboA(); },
             [](const std::any &value) { SetMuteTurboA(std::any_cast<int>(value));},
             []() { SetMuteTurboA(0);}},
-            new MenuItem{ListItemType::Generic, "Turbo fire B", "Enable turbo fire B", {0, 1}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_b"), TR("settings.fn_switch.turbo_b.desc"), {0, 1}, on_off, []() -> std::any
             { return GetMuteTurboB(); },
             [](const std::any &value) { SetMuteTurboB(std::any_cast<int>(value));},
             []() { SetMuteTurboB(0);}},
-            new MenuItem{ListItemType::Generic, "Turbo fire X", "Enable turbo fire X", {0, 1}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_x"), TR("settings.fn_switch.turbo_x.desc"), {0, 1}, on_off, []() -> std::any
             { return GetMuteTurboX(); },
             [](const std::any &value) { SetMuteTurboX(std::any_cast<int>(value));},
             []() { SetMuteTurboX(0);}},
-            new MenuItem{ListItemType::Generic, "Turbo fire Y", "Enable turbo fire Y", {0, 1}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_y"), TR("settings.fn_switch.turbo_y.desc"), {0, 1}, on_off, []() -> std::any
             { return GetMuteTurboY(); },
             [](const std::any &value) { SetMuteTurboY(std::any_cast<int>(value));},
             []() { SetMuteTurboY(0);}},
-            new MenuItem{ListItemType::Generic, "Turbo fire L1", "Enable turbo fire L1", {0, 1}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_l1"), TR("settings.fn_switch.turbo_l1.desc"), {0, 1}, on_off, []() -> std::any
             { return GetMuteTurboL1(); },
             [](const std::any &value) { SetMuteTurboL1(std::any_cast<int>(value));},
             []() { SetMuteTurboL1(0);}},
-            new MenuItem{ListItemType::Generic, "Turbo fire L2", "Enable turbo fire L2", {0, 1}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_l2"), TR("settings.fn_switch.turbo_l2.desc"), {0, 1}, on_off, []() -> std::any
             { return GetMuteTurboL2(); },
             [](const std::any &value) { SetMuteTurboL2(std::any_cast<int>(value));},
             []() { SetMuteTurboL2(0);}},
-            new MenuItem{ListItemType::Generic, "Turbo fire R1", "Enable turbo fire R1", {0, 1}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_r1"), TR("settings.fn_switch.turbo_r1.desc"), {0, 1}, on_off, []() -> std::any
             { return GetMuteTurboR1(); },
             [](const std::any &value) { SetMuteTurboR1(std::any_cast<int>(value));},
             []() { SetMuteTurboR1(0);}},
-            new MenuItem{ListItemType::Generic, "Turbo fire R2", "Enable turbo fire R2", {0, 1}, on_off, []() -> std::any
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_r2"), TR("settings.fn_switch.turbo_r2.desc"), {0, 1}, on_off, []() -> std::any
             { return GetMuteTurboR2(); },
             [](const std::any &value) { SetMuteTurboR2(std::any_cast<int>(value));},
             []() { SetMuteTurboR2(0);}},
         };
         if(is_brick) {
             muteItems.push_back(
-                new MenuItem{ListItemType::Generic, "Dpad mode when toggled", "Dpad: default. Joystick: Dpad exclusively acts as analog stick.\nBoth: Dpad and Joystick inputs at the same time.", {0, 1, 2}, {"Dpad", "Joystick", "Both"}, []() -> std::any
+                new MenuItem{ListItemType::Generic, TR("settings.fn_switch.dpad_mode_when_toggled"), TR("settings.fn_switch.dpad_mode_when_toggled.desc"), {0, 1, 2}, {TR("settings.fn_switch.dpad_mode.dpad"), TR("settings.fn_switch.dpad_mode.joystick"), TR("settings.fn_switch.dpad_mode.both")}, []() -> std::any
                 {
                     if(!GetMuteDisablesDpad() && !GetMuteEmulatesJoystick()) return 0;
                     if(GetMuteDisablesDpad() && GetMuteEmulatesJoystick()) return 1;
@@ -460,9 +460,9 @@ int main(int argc, char *argv[])
                     SetMuteEmulatesJoystick(0);
                 }});
         }
-        muteItems.push_back(new MenuItem{ListItemType::Button, "Reset to defaults", "Resets all options in this menu to their default values.", ResetCurrentMenu});
+            muteItems.push_back(new MenuItem{ListItemType::Button, tr_settings_reset_defaults.c_str(), tr_settings_reset_defaults_desc.c_str(), ResetCurrentMenu});
 
-        auto muteMenu = new MenuList(MenuItemType::Fixed, "FN Switch", muteItems);
+            auto muteMenu = new MenuList(MenuItemType::Fixed, TR("settings.fn_switch"), muteItems);
 
         // TODO: check WIFI_supported(), hide menu otherwise
         auto networkMenu = new Wifi::Menu(appQuit, ctx.dirty);
@@ -470,45 +470,45 @@ int main(int argc, char *argv[])
         // TODO: check BT_supported(), hide menu otherwise
         auto btMenu = new Bluetooth::Menu(appQuit, ctx.dirty);
 
-        auto aboutMenu = new MenuList(MenuItemType::Fixed, "About",
+        auto aboutMenu = new MenuList(MenuItemType::Fixed, TR("settings.about"),
         {
-            new StaticMenuItem{ListItemType::Generic, "NextUI version", "", 
+            new StaticMenuItem{ListItemType::Generic, TR("settings.about.nextui_version"), "", 
             []() -> std::any { 
                 std::ifstream t(ROOT_SYSTEM_PATH "/version.txt");
                 std::stringstream buffer;
                 buffer << t.rdbuf();
                 return buffer.str();
             }},
-            new StaticMenuItem{ListItemType::Generic, "Platform", "", 
+            new StaticMenuItem{ListItemType::Generic, TR("settings.about.platform"), "", 
             []() -> std::any { 
                 return std::string(PLAT_getModel()); }
             },
-            new StaticMenuItem{ListItemType::Generic, "Stock OS version", "", 
+            new StaticMenuItem{ListItemType::Generic, TR("settings.about.stock_os_version"), "", 
             []() -> std::any { 
                 char osver[128];
                 PLAT_getOsVersionInfo(osver, 128);
                 return std::string(osver); }
             },
-            new StaticMenuItem{ListItemType::Generic, "Busybox version", "", 
+            new StaticMenuItem{ListItemType::Generic, TR("settings.about.busybox_version"), "", 
             []() -> std::any { 
                 std::string output = execCommand("cat --help");
                 std::string version = extractBusyBoxVersion(output);
 
                 if (!version.empty())
                     return version;
-                return std::string("BusyBox version not found."); }
+                return std::string(TR("settings.about.busybox_not_found")); }
             },
         });
 
-        ctx.menu = new MenuList(MenuItemType::List, "Main",
+        ctx.menu = new MenuList(MenuItemType::List, TR("settings.main"),
         {
-            new MenuItem{ListItemType::Generic, "Appearance", "UI customization", {}, {}, nullptr, nullptr, DeferToSubmenu, appearanceMenu},
-            new MenuItem{ListItemType::Generic, "Display", "", {}, {}, nullptr, nullptr, DeferToSubmenu, displayMenu},
-            new MenuItem{ListItemType::Generic, "System", "", {}, {}, nullptr, nullptr, DeferToSubmenu, systemMenu},
-            new MenuItem{ListItemType::Generic, "FN switch", "FN switch settings", {}, {}, nullptr, nullptr, DeferToSubmenu, muteMenu},
-            new MenuItem{ListItemType::Generic, "Network", "", {}, {}, nullptr, nullptr, DeferToSubmenu, networkMenu},
-            new MenuItem{ListItemType::Generic, "Bluetooth", "", {}, {}, nullptr, nullptr, DeferToSubmenu, btMenu},
-            new MenuItem{ListItemType::Generic, "About", "", {}, {}, nullptr, nullptr, DeferToSubmenu, aboutMenu},
+            new MenuItem{ListItemType::Generic, tr_settings_appearance.c_str(), TR("settings.appearance.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, appearanceMenu},
+            new MenuItem{ListItemType::Generic, TR("settings.display"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, displayMenu},
+            new MenuItem{ListItemType::Generic, TR("settings.system"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, systemMenu},
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch"), TR("settings.fn_switch.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, muteMenu},
+            new MenuItem{ListItemType::Generic, TR("settings.network"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, networkMenu},
+            new MenuItem{ListItemType::Generic, TR("settings.bluetooth"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, btMenu},
+            new MenuItem{ListItemType::Generic, TR("settings.about"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, aboutMenu},
         });
 
         const bool showTitle = false;
@@ -594,10 +594,10 @@ int main(int argc, char *argv[])
                         GFX_blitHardwareHints(ctx.screen, ctx.show_setting);
                     else
                     {
-                        char *hints[] = {(char *)("MENU"), (char *)("SLEEP"), NULL};
+                        char *hints[] = {(char *)TR("common.menu"), (char *)TR("common.sleep"), NULL};
                         GFX_blitButtonGroup(hints, 0, ctx.screen, 0);
                     }
-                    char *hints[] = {(char *)("B"), (char *)("BACK"), (char *)("A"), (char *)("OKAY"), NULL};
+                    char *hints[] = {(char *)("B"), (char *)TR("common.back"), (char *)("A"), (char *)TR("common.ok"), NULL};
                     GFX_blitButtonGroup(hints, 1, ctx.screen, 1);
                 }
 
