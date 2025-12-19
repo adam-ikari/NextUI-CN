@@ -75,7 +75,32 @@ fi
 
 LAUNCH_PATH="$SYSTEM_PATH/$PLATFORM/paks/MinUI.pak/launch.sh"
 if [ -f "$LAUNCH_PATH" ] ; then
-	"$LAUNCH_PATH"
+	LOG_PATH="$SDCARD_PATH/nextui_boot.log"
+	ATTEMPTS=0
+	MAX_ATTEMPTS=3
+
+	echo "-----" >> "$LOG_PATH"
+	echo "$(date) tg5040.sh: starting launch sequence" >> "$LOG_PATH"
+	while true; do
+		ATTEMPTS=$((ATTEMPTS + 1))
+		echo "$(date) tg5040.sh: launch attempt ${ATTEMPTS}/${MAX_ATTEMPTS}" >> "$LOG_PATH"
+
+		"$LAUNCH_PATH" >> "$LOG_PATH" 2>&1
+		RC=$?
+		echo "$(date) tg5040.sh: launch.sh exited rc=$RC" >> "$LOG_PATH"
+
+		# rc==0 is a normal exit (user chose poweroff/reboot/etc); keep existing behavior.
+		if [ "$RC" -eq 0 ]; then
+			break
+		fi
+
+		# If UI crashes instantly, retry a few times and leave logs.
+		if [ "$ATTEMPTS" -ge "$MAX_ATTEMPTS" ]; then
+			echo "$(date) tg5040.sh: giving up after ${MAX_ATTEMPTS} failed launches" >> "$LOG_PATH"
+			break
+		fi
+		sleep 1
+	done
 fi
 killall trimui_inputd
 
