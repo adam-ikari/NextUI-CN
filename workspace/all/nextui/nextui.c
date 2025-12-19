@@ -819,14 +819,27 @@ static Array* getQuickEntries(void) {
 	I18N_init();
 
 	// We assume Menu_init was already called and populated this
-	if (recents && recents->count)
-		Array_push(entries, Entry_newNamed(FAUX_RECENT_PATH, ENTRY_DIR, TR("recents")));
+	if (recents && recents->count) {
+		Entry* e = Entry_new(FAUX_RECENT_PATH, ENTRY_DIR);
+		// Icon assets are keyed by Entry->name (e.g. /res/Recents@2x.png)
+		if (e->name) free(e->name);
+		e->name = strdup("Recents");
+		e->display = strdup(TR("recents"));
+		Array_push(entries, e);
+	}
 
 	if (hasCollections())
 		Array_push(entries, Entry_new(COLLECTIONS_PATH, ENTRY_DIR));
 
 	// Not sure we need this, its just a button press away (B)
-	Array_push(entries, Entry_newNamed(ROMS_PATH, ENTRY_DIR, TR("games")));
+	{
+		Entry* e = Entry_new(ROMS_PATH, ENTRY_DIR);
+		// Icon assets are keyed by Entry->name (e.g. /res/Games@2x.png)
+		if (e->name) free(e->name);
+		e->name = strdup("Games");
+		e->display = strdup(TR("games"));
+		Array_push(entries, e);
+	}
 
 	// Add tools if applicable
     if (hasTools() && !simple_mode) {
