@@ -9,6 +9,7 @@
 #include "defines.h"
 #include "api.h"
 #include "utils.h"
+#include "i18n.h"
 
 static bool quit = false;
 
@@ -88,6 +89,7 @@ void unloadImages()
 int main(int argc, char *argv[])
 {
     InitSettings();
+    I18N_init();
 
     PWR_setCPUSpeed(CPU_SPEED_MENU);
 
@@ -195,7 +197,7 @@ int main(int argc, char *argv[])
     QuitSettings();
     PWR_quit();
     PAD_quit();
-    GFX_quit();
-
+                GFX_blitButtonGroup((char *[]) {"L/R", (char*)TR("common.scroll"), NULL}, 0, screen, 0);
+                GFX_blitButtonGroup((char *[]) {"A", (char*)TR("common.set"), "B", (char*)TR("common.back"), NULL}, 1, screen, 1);
     return EXIT_SUCCESS;
 }

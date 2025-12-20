@@ -8,6 +8,7 @@
 #include "defines.h"
 #include "api.h"
 #include "utils.h"
+#include "i18n.h"
 
 enum {
 	CURSOR_YEAR,
@@ -26,6 +27,7 @@ int main(int argc , char* argv[]) {
 	PAD_init();
 	PWR_init();
 	InitSettings();
+	I18N_init();
 	
 	// TODO: make use of SCALE1()
 	SDL_Surface* digits = SDL_CreateRGBSurface(SDL_SWSURFACE, SCALE2(120,16), FIXED_DEPTH,RGBA_MASK_AUTO);
@@ -255,9 +257,9 @@ int main(int argc , char* argv[]) {
 			GFX_blitHardwareGroup(screen, show_setting);
 			
 			if (show_setting) GFX_blitHardwareHints(screen, show_setting);
-			else GFX_blitButtonGroup((char*[]){ "SELECT",show_24hour?"12 HOUR":"24 HOUR", NULL }, 0, screen, 0);
+			else GFX_blitButtonGroup((char*[]){ "SELECT", (char*)(show_24hour ? TR("clock.12_hour") : TR("clock.24_hour")), NULL }, 0, screen, 0);
 
-			GFX_blitButtonGroup((char*[]){ "B","CANCEL", "A","SET", NULL }, 1, screen, 1);
+			GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.cancel"), "A",(char*)TR("common.set"), NULL }, 1, screen, 1);
 		
 			// 376 or 446 (@2x)
 			// 188 or 223 (@1x)

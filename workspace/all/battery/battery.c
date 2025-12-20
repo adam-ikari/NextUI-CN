@@ -8,6 +8,7 @@
 #include "defines.h"
 #include "api.h"
 #include "utils.h"
+#include "i18n.h"
 
 #include <sqlite3.h>
 #include <batmondb.h>
@@ -636,6 +637,7 @@ void initLayout()
 int main(int argc, char *argv[])
 {
     InitSettings();
+    I18N_init();
 
     PWR_setCPUSpeed(CPU_SPEED_MENU);
     device_model = PLAT_getModel();
@@ -733,16 +735,16 @@ int main(int argc, char *argv[])
                 switch (current_zoom)
                 {
                 case 0:
-                    sprintf(display_name, "Battery usage: Last %s", "16 hours");
+                    sprintf(display_name, TR("battery.title_fmt"), TR("battery.period.2h"));
                     break;
                 case 1:
-                    sprintf(display_name, "Battery usage: Last %s", "8 hours");
+                    sprintf(display_name, TR("battery.title_fmt"), TR("battery.period.4h"));
                     break;
                 case 2:
-                    sprintf(display_name, "Battery usage: Last %s", "4 hours");
+                    sprintf(display_name, TR("battery.title_fmt"), TR("battery.period.4h"));
                     break;
                 default:
-                    sprintf(display_name, "Battery usage: Last %s", "8 hours");
+                    sprintf(display_name, TR("battery.title_fmt"), TR("battery.period.8h"));
                     break;
                 }
 
@@ -763,9 +765,9 @@ int main(int argc, char *argv[])
             if (show_setting)
                 GFX_blitHardwareHints(screen, show_setting);
             else
-                GFX_blitButtonGroup((char *[]){"L/R", "SCROLL", "L1/R1", "ZOOM", NULL}, 0, screen, 0);
+                GFX_blitButtonGroup((char *[]) {"L/R", (char*)TR("common.scroll"), "L1/R1", (char*)TR("common.zoom"), NULL}, 0, screen, 0);
 
-            GFX_blitButtonGroup((char *[]){"B", "BACK", NULL}, 1, screen, 1);
+            GFX_blitButtonGroup((char *[]) {"B", (char*)TR("common.back"), NULL}, 1, screen, 1);
 
             GFX_flip(screen);
             dirty = 0;

@@ -5,6 +5,7 @@
 #include "defines.h"
 #include "api.h"
 #include "utils.h"
+#include "i18n.h"
 
 
 #define NUM_OPTIONS 4
@@ -217,6 +218,7 @@ int main(int argc, char *argv[])
     is_brick = exactMatch("brick", device);
     
 	InitSettings();
+    I18N_init();
     PWR_setCPUSpeed(CPU_SPEED_MENU);
 
     if (is_brick) {
@@ -298,8 +300,8 @@ int main(int argc, char *argv[])
 
             if (show_setting) GFX_blitHardwareHints(screen, show_setting);
 
-            GFX_blitButtonGroup((char*[]){ "B","BACK", NULL }, 1, screen, 1);
-            GFX_blitButtonGroup((char*[]){ "L/R","Select light", NULL }, 0, screen, 0);
+            GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), NULL }, 1, screen, 1);
+            GFX_blitButtonGroup((char*[]){ "L/R",(char*)TR("ledcontrol.select_light"), NULL }, 0, screen, 0);
 
 
             int max_width = screen->w - SCALE1(PADDING * 2) - ow;

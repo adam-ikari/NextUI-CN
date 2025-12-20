@@ -12,12 +12,16 @@ common.sleep=睡眠
 common.power=电源
 common.info=信息
 common.exit=退出
+common.cancel=取消
+common.set=设置
 common.never=从不
 common.unchanged=不改变
 common.options=选项
 common.fullscreen=全屏
 common.fit=适配
 common.fill=填充
+common.scroll=滚动
+common.zoom=缩放
 common.empty_folder=空文件夹
 common.no_preview=无预览
 common.no_recents=无最近记录
@@ -25,6 +29,24 @@ common.no_recents=无最近记录
 keyboard.shift=切换
 keyboard.space=空格
 keyboard.enter=回车
+
+# clock (workspace/all/clock)
+clock.12_hour=12 小时制
+clock.24_hour=24 小时制
+
+# bootlogo (workspace/all/bootlogo)
+
+# battery (workspace/all/battery)
+battery.title_fmt=电池使用：最近 %s
+battery.period.2h=2 小时
+battery.period.4h=4 小时
+battery.period.8h=8 小时
+
+# gametime (workspace/all/gametime)
+gametime.title_fmt=游玩时间：%s
+
+# ledcontrol (workspace/all/ledcontrol)
+ledcontrol.select_light=选择灯光
 
 # minarch (workspace/all/minarch)
 minarch.save=保存
