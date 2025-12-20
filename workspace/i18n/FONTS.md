@@ -22,6 +22,7 @@ We use ChillRound from:
 And map release files into NextUI assets:
 
 - `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
+- `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold.otf` (alias)
 - `ChillRound.ttf` (or `ChillRoundM.ttf` in some releases) → `skeleton/SYSTEM/res/font1.ttf`
 
 Notes:

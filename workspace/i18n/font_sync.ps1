@@ -8,6 +8,7 @@
 
   Mapping (as per your current convention):
     ChillRoundM.otf -> skeleton/SYSTEM/res/BPreplayBold-unhinted.otf
+    ChillRoundM.otf -> skeleton/SYSTEM/res/BPreplayBold.otf
     ChillRound.ttf  -> skeleton/SYSTEM/res/font1.ttf
 
   Optional subset:
@@ -33,6 +34,7 @@ $tmpExtract = Join-Path $OutDir "extract"
 
 $dstRes = Join-Path $repoRoot "skeleton\SYSTEM\res"
 $dstOtf = Join-Path $dstRes "BPreplayBold-unhinted.otf"
+$dstOtfAlias = Join-Path $dstRes "BPreplayBold.otf"
 $dstTtf = Join-Path $dstRes "font1.ttf"
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
@@ -66,6 +68,9 @@ New-Item -ItemType Directory -Force -Path $dstRes | Out-Null
 
 Write-Host "[font_sync] Copy: $($srcOtf.FullName) -> $dstOtf"
 Copy-Item -Force $srcOtf.FullName $dstOtf
+
+Write-Host "[font_sync] Copy: $($srcOtf.FullName) -> $dstOtfAlias"
+Copy-Item -Force $srcOtf.FullName $dstOtfAlias
 
 Write-Host "[font_sync] Copy: $($srcTtf.FullName) -> $dstTtf"
 Copy-Item -Force $srcTtf.FullName $dstTtf
@@ -111,7 +116,7 @@ if ($Subset) {
     throw "python package 'fonttools' not found. Install it then re-run with -Subset." 
   }
 
-  $subsetOut = Join-Path $OutDir "font2.subset.ttf"
+  $subsetOut = Join-Path $OutDir "font1.subset.ttf"
   & python -m fontTools.subset $dstTtf --text-file=$charsetTxt --output-file=$subsetOut --layout-features='*' --name-IDs='*' --name-languages='*' --notdef-outline --recommended-glyphs
   if ($LASTEXITCODE -ne 0) { throw "fontTools.subset failed" }
 

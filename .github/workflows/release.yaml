@@ -166,6 +166,7 @@ jobs:
           fi
           install -d skeleton/SYSTEM/res
           cp -f "$FONT_OTF" skeleton/SYSTEM/res/BPreplayBold-unhinted.otf
+          cp -f "$FONT_OTF" skeleton/SYSTEM/res/BPreplayBold.otf
           cp -f "$FONT_TTF" skeleton/SYSTEM/res/font1.ttf
           echo "Injected into skeleton/SYSTEM/res:";
           ls -la skeleton/SYSTEM/res | sed 's#^#- #' || true
