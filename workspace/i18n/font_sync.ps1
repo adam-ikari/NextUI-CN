@@ -33,7 +33,7 @@ $tmpExtract = Join-Path $OutDir "extract"
 
 $dstRes = Join-Path $repoRoot "skeleton\SYSTEM\res"
 $dstOtf = Join-Path $dstRes "BPreplayBold-unhinted.otf"
-$dstTtf = Join-Path $dstRes "font2.ttf"
+$dstTtf = Join-Path $dstRes "font1.ttf"
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 New-Item -ItemType Directory -Force -Path $tmpExtract | Out-Null
