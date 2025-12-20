@@ -147,8 +147,14 @@ static Entry* Entry_new(const char* path, int type) {
 	self->path = strdup(path);
 	self->name = strdup(display_name);
 	self->display = NULL;
-	// Translate display label for Tools, but keep internal name stable.
-	if (exactMatch(display_name, "Tools")) {
+	// Translate display label for known virtual/special entries,
+	// but keep internal names stable for asset/icon mapping.
+	if (exactMatch(path, FAUX_RECENT_PATH)) {
+		free(self->name);
+		self->name = strdup("Recents");
+		self->display = strdup(TR("recents"));
+	}
+	else if (exactMatch(display_name, "Tools")) {
 		self->display = strdup(TR("tools"));
 	}
 	self->unique = NULL;
@@ -2974,7 +2980,7 @@ int main (int argc, char *argv[]) {
 					targetY = selected_row * PILL_SIZE;
 					for (int i = top->start, j = 0; i < top->end; i++, j++) {
 						Entry* entry = top->entries->items[i];
-						char* entry_name = entry->name;
+						char* entry_name = (char*)Entry_label(entry);
 						char* entry_unique = entry->unique;
 						int available_width = MAX(0,(had_thumb ? ox + SCALE1(BUTTON_MARGIN) : screen->w - SCALE1(BUTTON_MARGIN)) - SCALE1(PADDING * 2));
 						if (i == top->start && !(had_thumb)) available_width -= ow;
@@ -3187,12 +3193,13 @@ int main (int argc, char *argv[]) {
 				if(is_scrolling && pillanimdone && currentAnimQueueSize < 1) {
 					int ow = GFX_blitHardwareGroup(screen, show_setting);
 					Entry* entry = top->entries->items[top->selected];
-					trimSortingMeta(&entry->name);
-					char* entry_text = entry->name;
-					if (entry->unique) {
-						trimSortingMeta(&entry->unique);
-						entry_text = entry->unique;
-					}
+						char* entry_text = (char*)Entry_label(entry);
+						trimSortingMeta(&entry_text);
+						if (entry->unique) {
+							char* unique_text = entry->unique;
+							trimSortingMeta(&unique_text);
+							entry_text = unique_text;
+						}
 
 					int available_width = (had_thumb ? ox + SCALE1(BUTTON_MARGIN) : screen->w - SCALE1(BUTTON_MARGIN)) - SCALE1(PADDING * 2);
 					if (top->selected == top->start && !had_thumb) available_width -= ow;
