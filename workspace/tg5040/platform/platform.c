@@ -2210,6 +2210,18 @@ void PLAT_powerOff(int reboot) {
 	else
 		touch("/tmp/poweroff");
 	sync();
+
+	// When launched via MinUI's launch.sh, the marker files above are handled.
+	// When launched from stock OS, we must power down directly or we will simply
+	// return to stock UI.
+	if (reboot > 0) {
+		system("reboot_next >/dev/null 2>&1 || reboot >/dev/null 2>&1");
+	} else {
+		char cmd[512];
+		snprintf(cmd, sizeof(cmd), "%s/poweroff_next >/dev/null 2>&1 || poweroff >/dev/null 2>&1", BIN_PATH);
+		system(cmd);
+	}
+
 	exit(0);
 }
 
