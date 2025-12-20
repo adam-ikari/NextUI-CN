@@ -14,12 +14,12 @@ task_killer() {
 
 # Attempt graceful shutdown of processes
 kill_all_processes() {
-    echo "Attempting to gracefully shut down processes..."
+    echo "正在尝试优雅关闭进程..."
     task_killer -TERM
     sleep 0.5  # Wait to allow processes to terminate gracefully
 
     # Forcefully kill any remaining processes
-    echo "Forcing termination of remaining processes..."
+    echo "正在强制终止剩余进程..."
     task_killer -KILL
 }
 
@@ -35,5 +35,5 @@ umount -f /etc/profile
 umount -l /mnt/SDCARD
 
 # Shutdown the system
-echo "Rebooting the system..."
+echo "正在重启系统..."
 busybox reboot

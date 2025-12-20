@@ -3697,15 +3697,15 @@ void PWR_powerOff(int reboot)
 		if (HAS_POWER_BUTTON || HAS_POWEROFF_BUTTON)
 		{
 			if (exists(AUTO_RESUME_PATH))
-				msg = (char *)"Quicksave created,\npowering off";
+				msg = (char *)"已创建快速存档，\n正在关机";
 			else if (reboot > 0)
-				msg = (char *)"Rebooting";
+				msg = (char *)"正在重启";
 			else
-				msg = (char *)"Powering off";
+				msg = (char *)"正在关机";
 		}
 		else
 		{
-			msg = exists(AUTO_RESUME_PATH) ? (char *)"Quicksave created,\npower off now" : (char *)"Power off now";
+			msg = exists(AUTO_RESUME_PATH) ? (char *)"已创建快速存档，\n请关机" : (char *)"请关机";
 		}
 
 		// LOG_info("PWR_powerOff %s (%ix%i)\n", gfx.screen, gfx.screen->w, gfx.screen->h);
