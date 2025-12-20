@@ -7,7 +7,7 @@
   copies them into skeleton/SYSTEM/res with the filenames expected by NextUI.
 
   Mapping (as per your current convention):
-    ChillRoundM.otf -> skeleton/SYSTEM/res/BPreplayBold-unhinted_b.otf
+    ChillRoundM.otf -> skeleton/SYSTEM/res/BPreplayBold-unhinted.otf
     ChillRound.ttf  -> skeleton/SYSTEM/res/font2.ttf
 
   Optional subset:
@@ -32,7 +32,7 @@ $zipPath = Join-Path $OutDir "ChillRound.zip"
 $tmpExtract = Join-Path $OutDir "extract"
 
 $dstRes = Join-Path $repoRoot "skeleton\SYSTEM\res"
-$dstOtf = Join-Path $dstRes "BPreplayBold-unhinted_b.otf"
+$dstOtf = Join-Path $dstRes "BPreplayBold-unhinted.otf"
 $dstTtf = Join-Path $dstRes "font2.ttf"
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null

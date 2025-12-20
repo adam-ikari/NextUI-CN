@@ -22,10 +22,11 @@ We use ChillRound from:
 And map release files into NextUI assets:
 
 - `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold-unhinted_b.otf`
+- `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
 - `ChillRound.ttf` (or `ChillRoundM.ttf` in some releases) → `skeleton/SYSTEM/res/font2.ttf`
 
 Notes:
-- `BPreplayBold-unhinted_b.otf` is used by some UI elements as a bold face.
+- `BPreplayBold-unhinted.otf` is used by some UI elements as a bold face.
 - `font2.ttf` is used as the selectable "Next" font in settings (ID depends on upstream config).
 
 ## Re-sync fonts (Windows PowerShell)
