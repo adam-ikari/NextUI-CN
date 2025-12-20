@@ -21,13 +21,12 @@ We use ChillRound from:
 
 And map release files into NextUI assets:
 
-- `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold-unhinted_b.otf`
 - `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
-- `ChillRound.ttf` (or `ChillRoundM.ttf` in some releases) → `skeleton/SYSTEM/res/font2.ttf`
+- `ChillRound.ttf` (or `ChillRoundM.ttf` in some releases) → `skeleton/SYSTEM/res/font1.ttf`
 
 Notes:
 - `BPreplayBold-unhinted.otf` is used by some UI elements as a bold face.
-- `font2.ttf` is used as the selectable "Next" font in settings (ID depends on upstream config).
+- `font1.ttf` is the default UI font (ID depends on upstream config).
 
 ## Re-sync fonts (Windows PowerShell)
 
@@ -45,7 +44,7 @@ pwsh -File workspace/i18n/font_sync.ps1 -Force
 
 ### Optional: subset to reduce size
 
-If you have Python + `fonttools` installed, you can subset `font2.ttf` using the characters found in `workspace/i18n/locales/zh_CN.lang`:
+If you have Python + `fonttools` installed, you can subset `font1.ttf` using the characters found in `workspace/i18n/locales/zh_CN.lang`:
 
 ```powershell
 pwsh -File workspace/i18n/font_sync.ps1 -Subset

@@ -8,7 +8,7 @@
 
   Mapping (as per your current convention):
     ChillRoundM.otf -> skeleton/SYSTEM/res/BPreplayBold-unhinted.otf
-    ChillRound.ttf  -> skeleton/SYSTEM/res/font2.ttf
+    ChillRound.ttf  -> skeleton/SYSTEM/res/font1.ttf
 
   Optional subset:
     If you set -Subset and have python + fonttools available, this script will
@@ -100,7 +100,7 @@ if ($Subset) {
   [IO.File]::WriteAllText($charsetTxt, ($sorted -join ""), [Text.Encoding]::UTF8)
 
   # Subset using fonttools if available.
-  Write-Host "[font_sync] Subsetting font2.ttf (requires python + fonttools/pyftsubset)..."
+  Write-Host "[font_sync] Subsetting font1.ttf (requires python + fonttools/pyftsubset)..."
 
   $py = Get-Command python -ErrorAction SilentlyContinue
   if (-not $py) { throw "python not found in PATH (required for -Subset)" }
