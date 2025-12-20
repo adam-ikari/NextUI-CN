@@ -157,6 +157,39 @@ static Entry* Entry_new(const char* path, int type) {
 	else if (exactMatch(display_name, "Tools")) {
 		self->display = strdup(TR("tools"));
 	}
+	else if (exactMatch(display_name, "Battery")) {
+		self->display = strdup(TR("battery"));
+	}
+	else if (exactMatch(display_name, "Bootlogo")) {
+		self->display = strdup(TR("bootlogo"));
+	}
+	else if (exactMatch(display_name, "Clock")) {
+		self->display = strdup(TR("clock"));
+	}
+	else if (exactMatch(display_name, "Files")) {
+		self->display = strdup(TR("files"));
+	}
+	else if (exactMatch(display_name, "Game Tracker") || exactMatch(display_name, "GameTracker")) {
+		self->display = strdup(TR("game_tracker"));
+	}
+	else if (exactMatch(display_name, "Input")) {
+		self->display = strdup(TR("input"));
+	}
+	else if (exactMatch(display_name, "LedControl") || exactMatch(display_name, "Led Control")) {
+		self->display = strdup(TR("ledcontrol"));
+	}
+	else if (exactMatch(display_name, "Pak Store")) {
+		self->display = strdup(TR("pak_store"));
+	}
+	else if (exactMatch(display_name, "Remove Loading") || exactMatch(display_name, "RemoveLoading")) {
+		self->display = strdup(TR("remove_loading"));
+	}
+	else if (exactMatch(display_name, "Settings")) {
+		self->display = strdup(TR("settings"));
+	}
+	else if (exactMatch(display_name, "Updater")) {
+		self->display = strdup(TR("updater"));
+	}
 	self->unique = NULL;
 	self->type = type;
 	self->alpha = 0;

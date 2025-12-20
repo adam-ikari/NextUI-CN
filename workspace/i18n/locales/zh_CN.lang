@@ -5,6 +5,15 @@
 recents=最近
 games=游戏
 settings=设置
+updater=系统更新
+battery=电量使用详情
+bootlogo=更改启动背景
+clock=时钟
+files=文件
+game_tracker=游戏时长统计
+input=输入检测
+ledcontrol=灯光控制
+remove_loading=移除“加载中“显示
 tools=工具
 
 common.on=开
@@ -293,7 +302,7 @@ settings.bluetooth.connect=连接
 settings.bluetooth.connect.desc=连接此设备。
 settings.bluetooth.disconnect=断开连接
 settings.bluetooth.disconnect.desc=断开此设备连接。
-pak_store=Pak 商店
+pak_store=应用商店
 wifi=WiFi
 bluetooth=蓝牙
 sleep=睡眠
