@@ -25,6 +25,7 @@
 #include "api.h"
 #include "utils.h"
 #include "scaler.h"
+#include "i18n.h"
 #include <dirent.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
@@ -4997,6 +4998,12 @@ static struct {
 };
 
 void Menu_init(void) {
+	menu.items[ITEM_CONT] = (char*)TR("common.resume");
+	menu.items[ITEM_SAVE] = (char*)TR("minarch.save");
+	menu.items[ITEM_LOAD] = (char*)TR("minarch.load");
+	menu.items[ITEM_OPTS] = (char*)TR("common.options");
+	menu.items[ITEM_QUIT] = (char*)TR("common.exit");
+
 	menu.overlay = SDL_CreateRGBSurfaceWithFormat(SDL_SWSURFACE,DEVICE_WIDTH,DEVICE_HEIGHT,32,SDL_PIXELFORMAT_RGBA8888);
 	SDL_SetSurfaceBlendMode(menu.overlay, SDL_BLENDMODE_BLEND);
 	Uint32 color = SDL_MapRGBA(menu.overlay->format, 0, 0, 0, 0);
@@ -5010,7 +5017,7 @@ void Menu_init(void) {
 	// always sanitized/outer name, to keep main UI from having to inspect archives
 	sprintf(menu.slot_path, "%s/%s.txt", menu.minui_dir, game.name);
 	
-	if (simple_mode) menu.items[ITEM_OPTS] = "Reset";
+	if (simple_mode) menu.items[ITEM_OPTS] = (char*)TR("minarch.reset");
 	
 	if (game.m3u_path[0]) {
 		char* tmp;
@@ -5231,7 +5238,7 @@ static int OptionEmulator_optionDetail(MenuList* list, int i) {
 	}
 	else {
 		Option* option = OptionList_getOption(&config.core, item->key);
-		if (option->full) return Menu_messageWithFont(option->full, (char*[]){ "B","BACK", NULL }, font.medium);
+		if (option->full) return Menu_messageWithFont(option->full, (char*[]){ "B",(char*)TR("common.back"), NULL }, font.medium);
 		else return MENU_CALLBACK_NOP;
 	}
 }
@@ -5307,10 +5314,10 @@ static int OptionEmulator_openMenu(MenuList* list, int index) {
 	}
 	else {
 		if (list->category) {
-			Menu_message("This category has no options.", (char*[]){ "B","BACK", NULL });
+			Menu_message((char*)TR("minarch.no_options_category"), (char*[]){ "B",(char*)TR("common.back"), NULL });
 		}
 		else {
-			Menu_message("This core has no options.", (char*[]){ "B","BACK", NULL });
+			Menu_message((char*)TR("minarch.no_options_core"), (char*[]){ "B",(char*)TR("common.back"), NULL });
 		}
 	}
 	
@@ -5374,9 +5381,7 @@ static int OptionControls_optionChanged(MenuList* list, int i) {
 }
 static MenuList OptionControls_menu = {
 	.type = MENU_INPUT,
-	.desc = "Press A to set and X to clear."
-		"\nSupports single button and MENU+button." // TODO: not supported on nano because POWER doubles as MENU
-	,
+	.desc = NULL,
 	.on_confirm = OptionControls_bind,
 	.on_change = OptionControls_unbind,
 	.items = NULL
@@ -5384,6 +5389,7 @@ static MenuList OptionControls_menu = {
 
 static int OptionControls_openMenu(MenuList* list, int i) {
 	LOG_info("OptionControls_openMenu\n");
+	OptionControls_menu.desc = (char*)TR("minarch.bind_help");
 
 	if (OptionControls_menu.items==NULL) {
 		
@@ -5393,8 +5399,8 @@ static int OptionControls_openMenu(MenuList* list, int i) {
 		
 		if (has_custom_controllers) {
 			MenuItem* item = &OptionControls_menu.items[k++];
-			item->name = "Controller";
-			item->desc = "Select the type of controller.";
+			item->name = (char*)TR("minarch.controller");
+			item->desc = (char*)TR("minarch.controller.desc");
 			item->value = gamepad_type;
 			item->values = gamepad_labels;
 			item->on_change = OptionControls_optionChanged;
@@ -5475,22 +5481,21 @@ static int OptionShortcuts_unbind(MenuList* list, int i) {
 }
 static MenuList OptionShortcuts_menu = {
 	.type = MENU_INPUT,
-	.desc = "Press A to set and X to clear." 
-		"\nSupports single button and MENU+button." // TODO: not supported on nano because POWER doubles as MENU
-	,
+	.desc = NULL,
 	.on_confirm = OptionShortcuts_bind,
 	.on_change = OptionShortcuts_unbind,
 	.items = NULL
 };
 static char* getSaveDesc(void) {
 	switch (config.loaded) {
-		case CONFIG_NONE:		return "Using defaults."; break;
-		case CONFIG_CONSOLE:	return "Using console config."; break;
-		case CONFIG_GAME:		return "Using game config."; break;
+		case CONFIG_NONE:		return (char*)TR("minarch.save_desc.defaults"); break;
+		case CONFIG_CONSOLE:	return (char*)TR("minarch.save_desc.console"); break;
+		case CONFIG_GAME:		return (char*)TR("minarch.save_desc.game"); break;
 	}
 	return NULL;
 }
 static int OptionShortcuts_openMenu(MenuList* list, int i) {
+	OptionShortcuts_menu.desc = (char*)TR("minarch.bind_help");
 	if (OptionShortcuts_menu.items==NULL) {
 		// TODO: where do I free this? I guess I don't :sweat_smile:
 		OptionShortcuts_menu.items = calloc(SHORTCUT_COUNT+1, sizeof(MenuItem));
@@ -5524,22 +5529,22 @@ static int OptionSaveChanges_onConfirm(MenuList* list, int i) {
 	switch (i) {
 		case 0: {
 			Config_write(CONFIG_WRITE_ALL);
-			message = "Saved for console.";
+			message = (char*)TR("minarch.saved_console");
 			break;
 		}
 		case 1: {
 			Config_write(CONFIG_WRITE_GAME);
-			message = "Saved for game.";
+			message = (char*)TR("minarch.saved_game");
 			break;
 		}
 		default: {
 			Config_restore();
-			if (config.loaded) message = "Restored console defaults.";
-			else message = "Restored defaults.";
+			if (config.loaded) message = (char*)TR("minarch.restored_console_defaults");
+			else message = (char*)TR("minarch.restored_defaults");
 			break;
 		}
 	}
-	Menu_message(message, (char*[]){ "A","OKAY", NULL });
+	Menu_message(message, (char*[]){ "A",(char*)TR("common.ok"), NULL });
 	OptionSaveChanges_updateDesc();
 	return MENU_CALLBACK_EXIT;
 }
@@ -5554,6 +5559,10 @@ static MenuList OptionSaveChanges_menu = {
 	}
 };
 static int OptionSaveChanges_openMenu(MenuList* list, int i) {
+	OptionSaveChanges_menu.items[0].name = (char*)TR("minarch.save_console");
+	OptionSaveChanges_menu.items[1].name = (char*)TR("minarch.save_game");
+	OptionSaveChanges_menu.items[2].name = (char*)TR("minarch.restore_defaults");
+
 	OptionSaveChanges_updateDesc();
 	OptionSaveChanges_menu.desc = getSaveDesc();
 	Menu_options(&OptionSaveChanges_menu);
@@ -5577,7 +5586,7 @@ static int OptionCheats_optionDetail(MenuList* list, int i) {
 	MenuItem* item = &list->items[i];
 	struct Cheat *cheat = &cheatcodes.cheats[i];
 	if (cheat->info) 
-		return Menu_message((char*)cheat->info, (char*[]){ "B","BACK", NULL });
+		return Menu_message((char*)cheat->info, (char*[]){ "B",(char*)TR("common.back"), NULL });
 	else return MENU_CALLBACK_NOP;
 }
 
@@ -5637,7 +5646,7 @@ static int OptionCheats_openMenu(MenuList* list, int i) {
 		char cheats_path[CHEAT_MAX_LIST_LENGTH] = {0};
 		
 		// prepend title with bounds checking
-		const char* title = "No cheat file loaded.\n\n";
+		const char* title = TR("minarch.no_cheat_file_loaded");
 		size_t title_len = strlen(title);
 		
 		strcpy(cheats_path, title);  // Use strcpy for first string
@@ -5672,7 +5681,7 @@ static int OptionCheats_openMenu(MenuList* list, int i) {
 			}
 		}
 
-		Menu_messageWithFont(cheats_path, (char*[]){ "B","BACK", NULL }, font.small);
+		Menu_messageWithFont(cheats_path, (char*[]){ "B",(char*)TR("common.back"), NULL }, font.small);
 	}
 	
 	return MENU_CALLBACK_NOP;
@@ -5733,7 +5742,7 @@ static int OptionPragmas_openMenu(MenuList* list, int i) {
 	if (PragmasOptions_menu.items[0].name) {
 		Menu_options(&PragmasOptions_menu);
 	} else {
-		Menu_message("No extra settings found", (char*[]){"B", "BACK", NULL});
+		Menu_message((char*)TR("minarch.no_extra_settings"), (char*[]){"B", (char*)TR("common.back"), NULL});
 	}
 
 	return MENU_CALLBACK_NOP;
@@ -5764,7 +5773,7 @@ static int OptionShaders_openMenu(MenuList* list, int i) {
 
 	// Check if folder read failed or no files found
 	if (!filelist || filecount == 0) {
-		Menu_message("No shaders available\n/Shaders folder or shader files not found", (char*[]){"B", "BACK", NULL});
+		Menu_message((char*)TR("minarch.no_shaders"), (char*[]){"B", (char*)TR("common.back"), NULL});
 		return MENU_CALLBACK_NOP;
 	}
 
@@ -5797,7 +5806,7 @@ static int OptionShaders_openMenu(MenuList* list, int i) {
 	if (ShaderOptions_menu.items[0].name) {
 		Menu_options(&ShaderOptions_menu);
 	} else {
-		Menu_message("No shaders available\n/Shaders folder or shader files not found", (char*[]){"B", "BACK", NULL});
+		Menu_message((char*)TR("minarch.no_shaders"), (char*[]){"B", (char*)TR("common.back"), NULL});
 	}
 
 	return MENU_CALLBACK_NOP;
@@ -5819,7 +5828,7 @@ static MenuList options_menu = {
 };
 
 static void OptionSaveChanges_updateDesc(void) {
-	options_menu.items[4].desc = getSaveDesc();
+	options_menu.items[6].desc = getSaveDesc();
 }
 
 #define OPTION_PADDING 8
@@ -6611,7 +6620,7 @@ static void Menu_loop(void) {
 	char disc_name[16];
 	if (menu.total_discs) {
 		rom_disc = menu.disc;
-		sprintf(disc_name, "Disc %i", menu.disc+1);
+			sprintf(disc_name, TR("minarch.disc_fmt"), menu.disc+1);
 	}
 		
 	int selected = 0; // resets every launch
@@ -6648,7 +6657,7 @@ static void Menu_loop(void) {
 				menu.disc -= 1;
 				if (menu.disc<0) menu.disc += menu.total_discs;
 				dirty = 1;
-				sprintf(disc_name, "Disc %i", menu.disc+1);
+				sprintf(disc_name, TR("minarch.disc_fmt"), menu.disc+1);
 			}
 			else if (selected==ITEM_SAVE || selected==ITEM_LOAD) {
 				menu.slot -= 1;
@@ -6661,7 +6670,7 @@ static void Menu_loop(void) {
 				menu.disc += 1;
 				if (menu.disc==menu.total_discs) menu.disc -= menu.total_discs;
 				dirty = 1;
-				sprintf(disc_name, "Disc %i", menu.disc+1);
+				sprintf(disc_name, TR("minarch.disc_fmt"), menu.disc+1);
 			}
 			else if (selected==ITEM_SAVE || selected==ITEM_LOAD) {
 				menu.slot += 1;
@@ -6712,6 +6721,14 @@ static void Menu_loop(void) {
 					}
 					else {
 						int old_scaling = screen_scaling;
+						options_menu.items[0].name = (char*)TR("minarch.options.frontend");
+						options_menu.items[1].name = (char*)TR("minarch.options.emulator");
+						options_menu.items[2].name = (char*)TR("minarch.options.shaders");
+						options_menu.items[3].name = (char*)TR("minarch.options.cheats");
+						options_menu.items[4].name = (char*)TR("minarch.options.controls");
+						options_menu.items[5].name = (char*)TR("minarch.options.shortcuts");
+						options_menu.items[6].name = (char*)TR("minarch.options.save_changes");
+
 						Menu_options(&options_menu);
 						if (screen_scaling!=old_scaling) {
 							selectScaler(renderer.true_w,renderer.true_h,renderer.src_p);
@@ -6771,8 +6788,8 @@ static void Menu_loop(void) {
 			SDL_FreeSurface(text);
 			
 			if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
-			else GFX_blitButtonGroup((char*[]){ BTN_SLEEP==BTN_POWER?"POWER":"MENU","SLEEP", NULL }, 0, screen, 0);
-			GFX_blitButtonGroup((char*[]){ "B","BACK", "A","OKAY", NULL }, 1, screen, 1);
+			else GFX_blitButtonGroup((char*[]){ (char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")), (char*)TR("common.sleep"), NULL }, 0, screen, 0);
+			GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "A",(char*)TR("common.ok"), NULL }, 1, screen, 1);
 			
 			// list
 			oy = (((DEVICE_HEIGHT / FIXED_SCALE) - PADDING * 2) - (MENU_ITEM_COUNT * PILL_SIZE)) / 2;
@@ -6856,8 +6873,8 @@ static void Menu_loop(void) {
 				else {
 					SDL_Rect preview_rect = {ox,oy,hw,hh};
 					SDL_FillRect(screen, &preview_rect, SDL_MapRGBA(screen->format,0,0,0,255));
-					if (menu.save_exists) GFX_blitMessage(font.large, "No Preview", screen, &preview_rect);
-					else GFX_blitMessage(font.large, "Empty Slot", screen, &preview_rect);
+					if (menu.save_exists) GFX_blitMessage(font.large, (char*)TR("common.no_preview"), screen, &preview_rect);
+					else GFX_blitMessage(font.large, (char*)TR("minarch.empty_slot"), screen, &preview_rect);
 				}
 				
 				// pagination
@@ -7038,6 +7055,7 @@ void onAudioSinkChanged(int device, int watch_event)
 
 int main(int argc , char* argv[]) {
 	LOG_info("MinArch\n");
+	I18N_init();
 
 	static char asoundpath[MAX_PATH];
 	sprintf(asoundpath, "%s/.asoundrc", getenv("HOME"));

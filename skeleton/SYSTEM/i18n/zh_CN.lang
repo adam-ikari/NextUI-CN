@@ -4,8 +4,13 @@ common.on=开
 common.off=关
 common.ok=确定
 common.back=返回
+common.open=打开
+common.remove=移除
+common.resume=继续
 common.menu=菜单
 common.sleep=睡眠
+common.power=电源
+common.info=信息
 common.exit=退出
 common.never=从不
 common.unchanged=不改变
@@ -14,10 +19,46 @@ common.fullscreen=全屏
 common.fit=适配
 common.fill=填充
 common.empty_folder=空文件夹
+common.no_preview=无预览
+common.no_recents=无最近记录
 
 keyboard.shift=切换
 keyboard.space=空格
 keyboard.enter=回车
+
+# minarch (workspace/all/minarch)
+minarch.save=保存
+minarch.load=读取
+minarch.reset=重置
+minarch.empty_slot=空槽
+minarch.disc_fmt=光盘 %i
+minarch.bind_help=按 A 设置，按 X 清除。\n支持单键以及 MENU+按键。
+minarch.controller=手柄
+minarch.controller.desc=选择手柄类型。
+minarch.no_options_category=此分类没有选项。
+minarch.no_options_core=此核心没有选项。
+minarch.no_extra_settings=未找到额外设置
+minarch.no_shaders=没有可用的着色器\n未找到 /Shaders 文件夹或着色器文件
+minarch.no_cheat_file_loaded=未加载金手指文件。\n\n
+
+minarch.save_console=保存为主机配置
+minarch.save_game=保存为游戏配置
+minarch.restore_defaults=恢复默认设置
+minarch.saved_console=已保存为主机配置。
+minarch.saved_game=已保存为游戏配置。
+minarch.restored_console_defaults=已恢复主机默认设置。
+minarch.restored_defaults=已恢复默认设置。
+minarch.save_desc.defaults=使用默认设置。
+minarch.save_desc.console=使用主机配置。
+minarch.save_desc.game=使用游戏配置。
+
+minarch.options.frontend=前端
+minarch.options.emulator=模拟器
+minarch.options.shaders=着色器
+minarch.options.cheats=金手指
+minarch.options.controls=控制
+minarch.options.shortcuts=快捷键
+minarch.options.save_changes=保存更改
 # NextUI-CN downstream language file (UTF-8)
 # Format: key=value
 # Use stable keys so upstream text tweaks won't force re-translation.

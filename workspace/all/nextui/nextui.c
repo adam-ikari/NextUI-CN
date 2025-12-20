@@ -2591,9 +2591,9 @@ int main (int argc, char *argv[]) {
 				
 				// buttons (duped and trimmed from below)
 				if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
-				else GFX_blitButtonGroup((char*[]){ BTN_SLEEP==BTN_POWER?"POWER":"MENU","SLEEP",  NULL }, 0, screen, 0);
+				else GFX_blitButtonGroup((char*[]){ (char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")), (char*)TR("common.sleep"),  NULL }, 0, screen, 0);
 				
-				GFX_blitButtonGroup((char*[]){ "B","BACK", "A","OPEN", NULL }, 1, screen, 1);
+				GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "A",(char*)TR("common.open"), NULL }, 1, screen, 1);
 
 				if(CFG_getShowQuickswitcherUI()) {
 					#define MENU_ITEM_SIZE 72 // item size, top line
@@ -2767,10 +2767,10 @@ int main (int argc, char *argv[]) {
 						SDL_FreeSurface(text);
 					}
 
-					if(can_resume) GFX_blitButtonGroup((char*[]){ "B","BACK",  NULL }, 0, screen, 0);
-					else GFX_blitButtonGroup((char*[]){ BTN_SLEEP==BTN_POWER?"POWER":"MENU","SLEEP",  NULL }, 0, screen, 0);
+					if(can_resume) GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"),  NULL }, 0, screen, 0);
+					else GFX_blitButtonGroup((char*[]){ (char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")), (char*)TR("common.sleep"),  NULL }, 0, screen, 0);
 
-					GFX_blitButtonGroup((char*[]){ "Y", "REMOVE", "A","RESUME", NULL }, 1, screen, 1);
+					GFX_blitButtonGroup((char*[]){ "Y", (char*)TR("common.remove"), "A",(char*)TR("common.resume"), NULL }, 1, screen, 1);
 
 					if(has_preview) {
 						// lotta memory churn here
@@ -2849,15 +2849,15 @@ int main (int argc, char *argv[]) {
 								GFX_animateSurface(tmpsur,0-screen->w,0,0,0,screen->w,screen->h,CFG_getMenuTransitions() ? 80:20,0,255,LAYER_ALL);
 						}
 						SDL_FreeSurface(tmpsur);
-						GFX_blitMessage(font.large, "No Preview", screen, &preview_rect);
+						GFX_blitMessage(font.large, (char*)TR("common.no_preview"), screen, &preview_rect);
 					}
 					Entry_free(selectedEntry);
 				}
 				else {
 					SDL_Rect preview_rect = {ox,oy,screen->w,screen->h};
 					SDL_FillRect(screen, &preview_rect, 0);
-					GFX_blitMessage(font.large, "No Recents", screen, &preview_rect);
-					GFX_blitButtonGroup((char*[]){ "B","BACK", NULL }, 1, screen, 1);
+					GFX_blitMessage(font.large, (char*)TR("common.no_recents"), screen, &preview_rect);
+					GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), NULL }, 1, screen, 1);
 				}
 				
 				GFX_flipHidden();
@@ -2947,23 +2947,23 @@ int main (int argc, char *argv[]) {
 
 				// buttons
 				if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
-				else if (can_resume) GFX_blitButtonGroup((char*[]){ "X","RESUME",  NULL }, 0, screen, 0);
+				else if (can_resume) GFX_blitButtonGroup((char*[]){ "X",(char*)TR("common.resume"),  NULL }, 0, screen, 0);
 				else GFX_blitButtonGroup((char*[]){ 
-					BTN_SLEEP==BTN_POWER?"POWER":"MENU",
-					BTN_SLEEP==BTN_POWER||simple_mode?"SLEEP":"INFO",  
+					(char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")),
+					(char*)(BTN_SLEEP==BTN_POWER||simple_mode?TR("common.sleep"):TR("common.info")),  
 					NULL }, 0, screen, 0);
 			
 				if (total==0) {
 					if (stack->count>1) {
-						GFX_blitButtonGroup((char*[]){ "B","BACK",  NULL }, 0, screen, 1);
+						GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"),  NULL }, 0, screen, 1);
 					}
 				}
 				else {
 					if (stack->count>1) {
-						GFX_blitButtonGroup((char*[]){ "B","BACK", "A","OPEN", NULL }, 1, screen, 1);
+						GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "A",(char*)TR("common.open"), NULL }, 1, screen, 1);
 					}
 					else {
-						GFX_blitButtonGroup((char*[]){ "A","OPEN", NULL }, 0, screen, 1);
+						GFX_blitButtonGroup((char*[]){ "A",(char*)TR("common.open"), NULL }, 0, screen, 1);
 					}
 				}
 
@@ -3049,7 +3049,7 @@ int main (int argc, char *argv[]) {
 				}
 				else {
 					// TODO: for some reason screen's dimensions end up being 0x0 in GFX_blitMessage...
-					GFX_blitMessage(font.large, "Empty folder", screen, &(SDL_Rect){0,0,screen->w,screen->h}); //, NULL);
+					GFX_blitMessage(font.large, (char*)TR("common.empty_folder"), screen, &(SDL_Rect){0,0,screen->w,screen->h}); //, NULL);
 				}
 				
 				lastScreen = SCREEN_GAMELIST;
