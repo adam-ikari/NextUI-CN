@@ -78,6 +78,13 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
     settings.onColorSet = ccb;
     bool fontLoaded = false;
 
+    // Font id mapping changed from legacy builds.
+    // Legacy (no fontOrder marker): 0->font2.ttf, 1->font1.ttf
+    // Current:                   0->font1.ttf, 1->font2.ttf
+    // To keep existing installs consistent, we migrate legacy values by inverting them.
+    int fontOrder = 0;      // 0 = legacy/unknown
+    int loadedFontId = -1;  // deferred until we know fontOrder
+
     char settingsPath[MAX_PATH];
     sprintf(settingsPath, "%s/minuisettings.txt", SHARED_USERDATA_PATH);
     FILE *file = fopen(settingsPath, "r");
@@ -92,10 +99,15 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
         {
             int temp_value;
             uint32_t temp_color;
+            if (sscanf(line, "fontOrder=%i", &temp_value) == 1)
+            {
+                fontOrder = temp_value;
+                continue;
+            }
             if (sscanf(line, "font=%i", &temp_value) == 1)
             {
-                CFG_setFontId(temp_value);
-                fontLoaded = true;
+				loadedFontId = temp_value;
+				fontLoaded = true;
                 continue;
             }
             if (sscanf(line, "color1=%x", &temp_color) == 1)
@@ -277,6 +289,14 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
             }
         }
         fclose(file);
+    }
+
+    if (fontLoaded)
+    {
+        int migratedId = clamp(loadedFontId, 0, 1);
+        if (fontOrder < 2)
+            migratedId = 1 - migratedId;
+        CFG_setFontId(migratedId);
     }
 
     // load gfx related stuff until we drop the indirection
@@ -828,7 +848,7 @@ void CFG_get(const char *key, char *value)
     // meta, not a real setting
     else if (strcmp(key, "fontpath") == 0)
     {
-        if (CFG_getFontId() == 1)
+        if (CFG_getFontId() == 0)
             sprintf(value, "\"%s\"", RES_PATH "/font1.ttf");
         else
             sprintf(value, "\"%s\"", RES_PATH "/font2.ttf");
@@ -858,6 +878,7 @@ void CFG_sync(void)
         return;
     }
 
+    fprintf(file, "fontOrder=2\n");
     fprintf(file, "font=%i\n", settings.font);
     fprintf(file, "color1=0x%06X\n", settings.color1_255);
     fprintf(file, "color2=0x%06X\n", settings.color2_255);
@@ -939,7 +960,7 @@ void CFG_print(void)
     printf("\t\"btMaxRate\": %i,\n", settings.bluetoothSamplerateLimit);
 
     // meta, not a real setting
-    if (settings.font == 1)
+    if (settings.font == 0)
         printf("\t\"fontpath\": \"%s\"\n", RES_PATH "/font1.ttf");
     else
         printf("\t\"fontpath\": \"%s\"\n", RES_PATH "/font2.ttf");
