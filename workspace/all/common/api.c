@@ -19,8 +19,6 @@
 #include "utils.h"
 #include "config.h"
 
-#include "i18n.h"
-
 #include <pthread.h>
 
 ///////////////////////////////
@@ -1964,9 +1962,9 @@ void GFX_blitHardwareHints(SDL_Surface *dst, int show_setting)
 {
 
 	if (show_setting == 1)
-		GFX_blitButtonGroup((char *[]){BRIGHTNESS_BUTTON_LABEL, (char *)TR("common.brightness"), NULL}, 0, dst, 0);
+		GFX_blitButtonGroup((char *[]){BRIGHTNESS_BUTTON_LABEL, "BRIGHTNESS", NULL}, 0, dst, 0);
 	else if (show_setting == 3)
-		GFX_blitButtonGroup((char *[]){BRIGHTNESS_BUTTON_LABEL, (char *)TR("common.color_temp"), NULL}, 0, dst, 0);
+		GFX_blitButtonGroup((char *[]){BRIGHTNESS_BUTTON_LABEL, "COLOR TEMP", NULL}, 0, dst, 0);
 	else
 		GFX_blitButtonGroup((char *[]){"MNU", "BRGHT", "SEL", "CLTMP", NULL}, 0, dst, 0);
 }

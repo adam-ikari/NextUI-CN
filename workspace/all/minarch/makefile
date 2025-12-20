@@ -21,8 +21,8 @@ SDL?=SDL
 
 TARGET = minarch
 PRODUCT= build/$(PLATFORM)/$(TARGET).elf
-INCDIR = -I. -I./libretro-common/include/ -I../common/ -I../../$(PLATFORM)/platform/
-SOURCE = $(TARGET).c ../common/scaler.c ../common/utils.c ../common/config.c ../common/api.c ../../$(PLATFORM)/platform/platform.c
+INCDIR = -I. -I./libretro-common/include/ -I../common/ -I../../$(PLATFORM)/platform/ -I../../i18n/
+SOURCE = $(TARGET).c ../common/scaler.c ../common/utils.c ../common/config.c ../common/api.c ../../i18n/i18n.c ../../$(PLATFORM)/platform/platform.c
 
 CC = $(CROSS_COMPILE)gcc
 CFLAGS  += $(OPT) -fomit-frame-pointer
