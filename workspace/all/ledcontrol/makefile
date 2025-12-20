@@ -20,8 +20,8 @@ SDL?=SDL
 ###########################################################
 
 TARGET = ledcontrol
-INCDIR = -I. -I../common/ -I../../$(PLATFORM)/platform/
-SOURCE = $(TARGET).c ../common/utils.c ../common/api.c ../common/config.c ../common/scaler.c ../../$(PLATFORM)/platform/platform.c
+INCDIR = -I. -I../common/ -I../../$(PLATFORM)/platform/ -I../../i18n/
+SOURCE = $(TARGET).c ../common/utils.c ../common/api.c ../common/config.c ../common/scaler.c ../../i18n/i18n.c ../../$(PLATFORM)/platform/platform.c
 
 CC = $(CROSS_COMPILE)gcc
 CFLAGS  += $(OPT) -fomit-frame-pointer
