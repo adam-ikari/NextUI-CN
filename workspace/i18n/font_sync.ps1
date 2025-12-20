@@ -9,7 +9,8 @@
   Mapping (as per your current convention):
     ChillRoundM.otf -> skeleton/SYSTEM/res/BPreplayBold-unhinted.otf
     ChillRoundM.otf -> skeleton/SYSTEM/res/BPreplayBold.otf
-    ChillRound.ttf  -> skeleton/SYSTEM/res/font1.ttf
+    ChillRoundM.ttf -> skeleton/SYSTEM/res/font1.ttf
+    ChillRound.ttf  -> skeleton/SYSTEM/res/font2.ttf
 
   Optional subset:
     If you set -Subset and have python + fonttools available, this script will
@@ -35,7 +36,8 @@ $tmpExtract = Join-Path $OutDir "extract"
 $dstRes = Join-Path $repoRoot "skeleton\SYSTEM\res"
 $dstOtf = Join-Path $dstRes "BPreplayBold-unhinted.otf"
 $dstOtfAlias = Join-Path $dstRes "BPreplayBold.otf"
-$dstTtf = Join-Path $dstRes "font1.ttf"
+$dstTtfBold = Join-Path $dstRes "font1.ttf"
+$dstTtfRegular = Join-Path $dstRes "font2.ttf"
 
 New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
 New-Item -ItemType Directory -Force -Path $tmpExtract | Out-Null
@@ -55,14 +57,16 @@ Expand-Archive -Path $zipPath -DestinationPath $tmpExtract -Force
 # Locate files (zip folder layout might change, so search)
 $srcOtf = Get-ChildItem -Path $tmpExtract -Recurse -File -Filter "ChillRoundM.otf" | Select-Object -First 1
 
-# Releases may contain either ChillRound.ttf or ChillRoundM.ttf; accept both.
-$srcTtf = Get-ChildItem -Path $tmpExtract -Recurse -File -Filter "ChillRound.ttf" | Select-Object -First 1
-if (-not $srcTtf) {
-  $srcTtf = Get-ChildItem -Path $tmpExtract -Recurse -File -Filter "ChillRoundM.ttf" | Select-Object -First 1
-}
+# Prefer distinct weights if both exist.
+$srcTtfBold = Get-ChildItem -Path $tmpExtract -Recurse -File -Filter "ChillRoundM.ttf" | Select-Object -First 1
+$srcTtfRegular = Get-ChildItem -Path $tmpExtract -Recurse -File -Filter "ChillRound.ttf" | Select-Object -First 1
+
+# Fall back so the script still works if only one TTF is present.
+if (-not $srcTtfBold -and $srcTtfRegular) { $srcTtfBold = $srcTtfRegular }
+if (-not $srcTtfRegular -and $srcTtfBold) { $srcTtfRegular = $srcTtfBold }
 
 if (-not $srcOtf) { throw "ChillRoundM.otf not found inside zip" }
-if (-not $srcTtf) { throw "Neither ChillRound.ttf nor ChillRoundM.ttf was found inside zip" }
+if (-not $srcTtfBold -or -not $srcTtfRegular) { throw "ChillRound TTF fonts not found inside zip" }
 
 New-Item -ItemType Directory -Force -Path $dstRes | Out-Null
 
@@ -72,8 +76,11 @@ Copy-Item -Force $srcOtf.FullName $dstOtf
 Write-Host "[font_sync] Copy: $($srcOtf.FullName) -> $dstOtfAlias"
 Copy-Item -Force $srcOtf.FullName $dstOtfAlias
 
-Write-Host "[font_sync] Copy: $($srcTtf.FullName) -> $dstTtf"
-Copy-Item -Force $srcTtf.FullName $dstTtf
+Write-Host "[font_sync] Copy (bold): $($srcTtfBold.FullName) -> $dstTtfBold"
+Copy-Item -Force $srcTtfBold.FullName $dstTtfBold
+
+Write-Host "[font_sync] Copy (regular): $($srcTtfRegular.FullName) -> $dstTtfRegular"
+Copy-Item -Force $srcTtfRegular.FullName $dstTtfRegular
 
 if ($Subset) {
   $langFile = Join-Path $repoRoot "workspace\i18n\locales\zh_CN.lang"
@@ -105,7 +112,7 @@ if ($Subset) {
   [IO.File]::WriteAllText($charsetTxt, ($sorted -join ""), [Text.Encoding]::UTF8)
 
   # Subset using fonttools if available.
-  Write-Host "[font_sync] Subsetting font1.ttf (requires python + fonttools/pyftsubset)..."
+  Write-Host "[font_sync] Subsetting font1.ttf/font2.ttf (requires python + fonttools/pyftsubset)..."
 
   $py = Get-Command python -ErrorAction SilentlyContinue
   if (-not $py) { throw "python not found in PATH (required for -Subset)" }
@@ -116,12 +123,19 @@ if ($Subset) {
     throw "python package 'fonttools' not found. Install it then re-run with -Subset." 
   }
 
-  $subsetOut = Join-Path $OutDir "font1.subset.ttf"
-  & python -m fontTools.subset $dstTtf --text-file=$charsetTxt --output-file=$subsetOut --layout-features='*' --name-IDs='*' --name-languages='*' --notdef-outline --recommended-glyphs
-  if ($LASTEXITCODE -ne 0) { throw "fontTools.subset failed" }
+  $subsetOutBold = Join-Path $OutDir "font1.subset.ttf"
+  & python -m fontTools.subset $dstTtfBold --text-file=$charsetTxt --output-file=$subsetOutBold --layout-features='*' --name-IDs='*' --name-languages='*' --notdef-outline --recommended-glyphs
+  if ($LASTEXITCODE -ne 0) { throw "fontTools.subset failed for font1.ttf" }
 
-  Write-Host "[font_sync] Replace $dstTtf with subset output"
-  Copy-Item -Force $subsetOut $dstTtf
+  $subsetOutRegular = Join-Path $OutDir "font2.subset.ttf"
+  & python -m fontTools.subset $dstTtfRegular --text-file=$charsetTxt --output-file=$subsetOutRegular --layout-features='*' --name-IDs='*' --name-languages='*' --notdef-outline --recommended-glyphs
+  if ($LASTEXITCODE -ne 0) { throw "fontTools.subset failed for font2.ttf" }
+
+  Write-Host "[font_sync] Replace $dstTtfBold with subset output"
+  Copy-Item -Force $subsetOutBold $dstTtfBold
+
+  Write-Host "[font_sync] Replace $dstTtfRegular with subset output"
+  Copy-Item -Force $subsetOutRegular $dstTtfRegular
 }
 
 Write-Host "[font_sync] Done."
