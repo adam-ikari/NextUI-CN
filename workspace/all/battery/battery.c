@@ -466,16 +466,16 @@ void renderPage()
     drawBatteryIcon(0, (SDL_Rect){graph.layout.icon_x, graph.layout.icon4_y});
 
     char text_line[255];
-    sprintf(text_line, "Since Charge: %s", session_duration);
+    snprintf(text_line, sizeof(text_line), TR("battery.since_charge_fmt"), session_duration);
     renderText(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_session_x, graph.layout.label_session_y, graph.layout.label_size_x, graph.layout.label_size_y});
 
-    sprintf(text_line, "Current: %s", current_percentage);
+    snprintf(text_line, sizeof(text_line), TR("battery.current_fmt"), current_percentage);
     renderText(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_current_x, graph.layout.label_current_y, graph.layout.label_size_x, graph.layout.label_size_y});
 
-    sprintf(text_line, "Remaining: %s", session_left);
+    snprintf(text_line, sizeof(text_line), TR("battery.remaining_fmt"), session_left);
     renderTextAlignRight(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_left_x, graph.layout.label_left_y, graph.layout.label_size_x, graph.layout.label_size_y});
 
-    sprintf(text_line, "Longest: %s", session_best);
+    snprintf(text_line, sizeof(text_line), TR("battery.longest_fmt"), session_best);
     renderTextAlignRight(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_best_x, graph.layout.label_best_y, graph.layout.label_size_x, graph.layout.label_size_y});
 
     int half_line_width = (int)(GRAPH_LINE_WIDTH) / 2;

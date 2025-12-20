@@ -42,6 +42,10 @@ clock.24_hour=24 小时制
 
 # battery (workspace/all/battery)
 battery.title_fmt=电池使用：最近 %s
+battery.since_charge_fmt=自上次充电：%s
+battery.current_fmt=当前：%s
+battery.remaining_fmt=剩余：%s
+battery.longest_fmt=最长：%s
 battery.period.2h=2 小时
 battery.period.4h=4 小时
 battery.period.8h=8 小时
