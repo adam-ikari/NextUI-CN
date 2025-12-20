@@ -182,8 +182,8 @@ int main(int argc, char *argv[])
                 SDL_BlitSurface(image, NULL, screen, &image_rect);
             }
 
-            GFX_blitButtonGroup((char *[]){"L/R", "SCROLL", NULL}, 0, screen, 0);
-            GFX_blitButtonGroup((char *[]){"A", "SET", "B", "BACK", NULL}, 1, screen, 1);
+            GFX_blitButtonGroup((char *[]){"L/R", (char *)TR("common.scroll"), NULL}, 0, screen, 0);
+            GFX_blitButtonGroup((char *[]){"A", (char *)TR("common.set"), "B", (char *)TR("common.back"), NULL}, 1, screen, 1);
 
             GFX_flip(screen);
             dirty = 0;
@@ -197,7 +197,5 @@ int main(int argc, char *argv[])
     QuitSettings();
     PWR_quit();
     PAD_quit();
-                GFX_blitButtonGroup((char *[]) {"L/R", (char*)TR("common.scroll"), NULL}, 0, screen, 0);
-                GFX_blitButtonGroup((char *[]) {"A", (char*)TR("common.set"), "B", (char*)TR("common.back"), NULL}, 1, screen, 1);
     return EXIT_SUCCESS;
 }

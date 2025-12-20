@@ -17,18 +17,62 @@ const char *lightnames[4];
 const char *triggernames[] = {
     "B", "A", "Y", "X", "L", "R", "FN1", "FN2", "MENU", "SELECT", "START", "ALL", "LR", "DPAD"};
 
-const char *effect_names[] = {
-    "Linear", "Breathe", "Interval Breathe", "Static",
-    "Blink 1", "Blink 2", "Blink 3", "Rainbow", "Twinkle",
-    "Fire", "Glitter", "NeonGlow", "Firefly", "Aurora", "Reactive"};
-const char *topbar_effect_names[] = {
-    "Linear", "Breathe", "Interval Breathe", "Static",
-    "Blink 1", "Blink 2", "Blink 3", "Rainbow", "Twinkle",
-    "Fire", "Glitter", "NeonGlow", "Firefly", "Aurora", "Reactive", "Topbar Rainbow", "Topbar night"};
-const char *lr_effect_names[] = {
-    "Linear", "Breathe", "Interval Breathe", "Static",
-    "Blink 1", "Blink 2", "Blink 3", "Rainbow", "Twinkle",
-    "Fire", "Glitter", "NeonGlow", "Firefly", "Aurora", "Reactive", "LR Rainbow", "LR Reactive"};
+static const char *ledcontrol_effectNameDefault_tr(int idx)
+{
+    switch (idx)
+    {
+    case 0:
+        return TR("ledcontrol.effect.linear");
+    case 1:
+        return TR("ledcontrol.effect.breathe");
+    case 2:
+        return TR("ledcontrol.effect.interval_breathe");
+    case 3:
+        return TR("ledcontrol.effect.static");
+    case 4:
+        return TR("ledcontrol.effect.blink1");
+    case 5:
+        return TR("ledcontrol.effect.blink2");
+    case 6:
+        return TR("ledcontrol.effect.blink3");
+    case 7:
+        return TR("ledcontrol.effect.rainbow");
+    case 8:
+        return TR("ledcontrol.effect.twinkle");
+    case 9:
+        return TR("ledcontrol.effect.fire");
+    case 10:
+        return TR("ledcontrol.effect.glitter");
+    case 11:
+        return TR("ledcontrol.effect.neonglow");
+    case 12:
+        return TR("ledcontrol.effect.firefly");
+    case 13:
+        return TR("ledcontrol.effect.aurora");
+    case 14:
+        return TR("ledcontrol.effect.reactive");
+    default:
+        return TR("ledcontrol.effect.linear");
+    }
+}
+
+static const char *ledcontrol_effectNameTopbar_tr(int idx)
+{
+    if (idx == 15)
+        return TR("ledcontrol.effect.topbar_rainbow");
+    if (idx == 16)
+        return TR("ledcontrol.effect.topbar_night");
+    return ledcontrol_effectNameDefault_tr(idx);
+}
+
+static const char *ledcontrol_effectNameLR_tr(int idx)
+{
+    if (idx == 15)
+        return TR("ledcontrol.effect.lr_rainbow");
+    if (idx == 16)
+        return TR("ledcontrol.effect.lr_reactive");
+    return ledcontrol_effectNameDefault_tr(idx);
+}
 
 void save_settings() {
     LOG_debug("saving settings plat\n");
@@ -324,10 +368,10 @@ int main(int argc, char *argv[])
             // this stuff is really not multiplatform at all, need to figure out a way so its not so TrimUI specific
             const char *settings_labels[5]; // Define array with correct size
             if (is_brick) {
-                const char *brick_labels[] = {"Effect", "Color", "Speed", "Brightness", "Info brightness"};
+                const char *brick_labels[] = {(char*)TR("ledcontrol.effect"), (char*)TR("ledcontrol.color"), (char*)TR("ledcontrol.speed"), (char*)TR("common.brightness"), (char*)TR("ledcontrol.info_brightness")};
                 memcpy(settings_labels, brick_labels, sizeof(brick_labels)); // Copy values
             } else {
-                const char *non_brick_labels[] = {"Effect", "Color", "Speed", "Brightness (All Leds)", "Info brightness (All Leds)"};
+                const char *non_brick_labels[] = {(char*)TR("ledcontrol.effect"), (char*)TR("ledcontrol.color"), (char*)TR("ledcontrol.speed"), (char*)TR("ledcontrol.brightness_all_leds"), (char*)TR("ledcontrol.info_brightness_all_leds")};
                 memcpy(settings_labels, non_brick_labels, sizeof(non_brick_labels)); // Copy values
             }
             int settings_values[5] = {
@@ -347,7 +391,9 @@ int main(int argc, char *argv[])
                 int y = SCALE1(PADDING + PILL_SIZE * (j + 1));
 
                 if (j == 0) { // Display effect name instead of number
-                    snprintf(setting_text, sizeof(setting_text), "%s: %s", settings_labels[j], selected_light == 3 ? lr_effect_names[settings_values[j] - 1] : selected_light == 2 ? topbar_effect_names[settings_values[j] - 1] : effect_names[settings_values[j] - 1]);
+                    int effect_idx = settings_values[j] - 1;
+                    const char *effect_name = selected_light == 3 ? ledcontrol_effectNameLR_tr(effect_idx) : selected_light == 2 ? ledcontrol_effectNameTopbar_tr(effect_idx) : ledcontrol_effectNameDefault_tr(effect_idx);
+                    snprintf(setting_text, sizeof(setting_text), "%s: %s", settings_labels[j], effect_name);
                     SDL_Surface *text = TTF_RenderUTF8_Blended(font.medium, setting_text, current_color);
                     int text_width = text->w + SCALE1(BUTTON_PADDING * 2);
                     GFX_blitPill(selected ? ASSET_WHITE_PILL : ASSET_BLACK_PILL, screen,

@@ -7,6 +7,7 @@
 #include "defines.h"
 #include "api.h"
 #include "utils.h"
+#include "i18n.h"
 
 static int getButtonWidth(char* label) {
 	SDL_Surface* text;
@@ -48,6 +49,7 @@ int main(int argc , char* argv[]) {
 	PAD_init();
 	PWR_init();
 	InitSettings();
+	I18N_init();
 	
 	// one-time
 	int has_L2 = (BUTTON_L2!=BUTTON_NA || CODE_L2!=CODE_NA || JOY_L2!=JOY_NA || AXIS_L2!=AXIS_NA);
@@ -188,9 +190,9 @@ int main(int argc , char* argv[]) {
 				GFX_blitPillColor(ASSET_WHITE_PILL, screen, &(SDL_Rect){x,y,SCALE1(98)}, THEME_COLOR3, RGB_WHITE);
 				x += SCALE1(BUTTON_MARGIN);
 				y += SCALE1(BUTTON_MARGIN);
-				blitButton("VOL. -", screen, PAD_isPressed(BTN_MINUS), x, y, w);
+				blitButton((char*)TR("common.vol_minus"), screen, PAD_isPressed(BTN_MINUS), x, y, w);
 				x += w + SCALE1(BUTTON_MARGIN);
-				blitButton("VOL. +", screen, PAD_isPressed(BTN_PLUS), x, y, w);
+				blitButton((char*)TR("common.vol_plus"), screen, PAD_isPressed(BTN_PLUS), x, y, w);
 				x += w + SCALE1(BUTTON_MARGIN);
 			}
 			
@@ -207,11 +209,11 @@ int main(int argc , char* argv[]) {
 				x += SCALE1(BUTTON_MARGIN);
 				y += SCALE1(BUTTON_MARGIN);
 				if (has_menu) {
-					blitButton("MENU", screen, PAD_isPressed(BTN_MENU), x, y, w);
+					blitButton((char*)TR("common.menu"), screen, PAD_isPressed(BTN_MENU), x, y, w);
 					x += w + SCALE1(BUTTON_MARGIN);
 				}
 				if (has_power) {
-					blitButton("POWER", screen, PAD_isPressed(BTN_POWER), x, y, w);
+					blitButton((char*)TR("common.power"), screen, PAD_isPressed(BTN_POWER), x, y, w);
 					x += w + SCALE1(BUTTON_MARGIN);
 				}
 			}
@@ -230,7 +232,7 @@ int main(int argc , char* argv[]) {
 				blitButton("START", screen, PAD_isPressed(BTN_START), x, y, w);
 				x += w + SCALE1(BUTTON_MARGIN);
 				
-				SDL_Surface* text = TTF_RenderUTF8_Blended(font.tiny, "QUIT", COLOR_LIGHT_TEXT);
+				SDL_Surface* text = TTF_RenderUTF8_Blended(font.tiny, (char*)TR("common.exit"), COLOR_LIGHT_TEXT);
 				SDL_BlitSurface(text, NULL, screen, &(SDL_Rect){x,y+(SCALE1(BUTTON_SIZE)-text->h)/2});
 				SDL_FreeSurface(text);
 			}

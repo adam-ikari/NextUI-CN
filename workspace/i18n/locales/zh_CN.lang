@@ -29,6 +29,10 @@ common.fit=适配
 common.fill=填充
 common.scroll=滚动
 common.zoom=缩放
+common.vol_minus=音量-
+common.vol_plus=音量+
+common.brightness=亮度
+common.color_temp=色温
 common.empty_folder=空文件夹
 common.no_preview=无预览
 common.no_recents=无最近记录
@@ -54,6 +58,32 @@ gametime.title_fmt=游玩时间：%s
 
 # ledcontrol (workspace/all/ledcontrol)
 ledcontrol.select_light=选择灯光
+ledcontrol.effect=效果
+ledcontrol.color=颜色
+ledcontrol.speed=速度
+ledcontrol.brightness_all_leds=亮度（全部灯）
+ledcontrol.info_brightness=指示灯亮度
+ledcontrol.info_brightness_all_leds=指示灯亮度（全部灯）
+
+ledcontrol.effect.linear=线性
+ledcontrol.effect.breathe=呼吸
+ledcontrol.effect.interval_breathe=间隔呼吸
+ledcontrol.effect.static=常亮
+ledcontrol.effect.blink1=闪烁 1
+ledcontrol.effect.blink2=闪烁 2
+ledcontrol.effect.blink3=闪烁 3
+ledcontrol.effect.rainbow=彩虹
+ledcontrol.effect.twinkle=闪烁
+ledcontrol.effect.fire=火焰
+ledcontrol.effect.glitter=闪光
+ledcontrol.effect.neonglow=霓虹
+ledcontrol.effect.firefly=萤火虫
+ledcontrol.effect.aurora=极光
+ledcontrol.effect.reactive=响应
+ledcontrol.effect.topbar_rainbow=顶灯彩虹
+ledcontrol.effect.topbar_night=顶灯夜间
+ledcontrol.effect.lr_rainbow=左右彩虹
+ledcontrol.effect.lr_reactive=左右响应
 
 # minarch (workspace/all/minarch)
 minarch.save=保存
