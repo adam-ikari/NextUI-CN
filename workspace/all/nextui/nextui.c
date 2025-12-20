@@ -147,6 +147,10 @@ static Entry* Entry_new(const char* path, int type) {
 	self->path = strdup(path);
 	self->name = strdup(display_name);
 	self->display = NULL;
+	// Translate display label for Tools, but keep internal name stable.
+	if (exactMatch(display_name, "Tools")) {
+		self->display = strdup(TR("tools"));
+	}
 	self->unique = NULL;
 	self->type = type;
 	self->alpha = 0;
