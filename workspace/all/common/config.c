@@ -299,10 +299,10 @@ int CFG_getFontId(void)
 
 void CFG_setFontId(int id)
 {
-    settings.font = clamp(id, 0, 2);
+    settings.font = clamp(id, 0, 1);
 
     char *fontPath;
-    if (settings.font == 1)
+    if (settings.font == 0)
         fontPath = RES_PATH "/font1.ttf";
     else
         fontPath = RES_PATH "/font2.ttf";
