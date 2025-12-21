@@ -1577,6 +1577,10 @@ static char** i18n_sync_ref_labels = NULL;
 static char** i18n_overclock_labels = NULL;
 static char** i18n_max_ff_labels = NULL;
 
+static char** i18n_nrofshaders_labels = NULL;
+static char** i18n_shupscale_labels = NULL;
+static char** i18n_shscaletype_labels = NULL;
+
 static char** Minarch_buildI18nLabels(const char** keys, char** fallback_values) {
 	int count = 0;
 	while (fallback_values && fallback_values[count]) count++;
@@ -1585,6 +1589,52 @@ static char** Minarch_buildI18nLabels(const char** keys, char** fallback_values)
 		const char* key = keys ? keys[i] : NULL;
 		if (key && key[0] != '\0') labels[i] = strdup(TR(key));
 		else labels[i] = strdup(fallback_values[i]);
+	}
+	labels[count] = NULL;
+	return labels;
+}
+
+static inline const char* Minarch_trOr(const char* key, const char* fallback) {
+	const char* tr = TR(key);
+	return (tr && strcmp(tr, key) != 0) ? tr : fallback;
+}
+
+static const char* Minarch_translateCategoryLabel(const char* label) {
+	if (!label) return label;
+	if (!strcasecmp(label, "Video")) return TR("minarch.corecat.video");
+	if (!strcasecmp(label, "Audio")) return TR("minarch.corecat.audio");
+	if (!strcasecmp(label, "Input")) return TR("minarch.corecat.input");
+	if (!strcasecmp(label, "Latency")) return TR("minarch.corecat.latency");
+	if (!strcasecmp(label, "System")) return TR("minarch.corecat.system");
+	if (!strcasecmp(label, "Core")) return TR("minarch.corecat.core");
+	if (!strcasecmp(label, "Emulation")) return TR("minarch.corecat.emulation");
+	if (!strcasecmp(label, "CPU")) return TR("minarch.corecat.cpu");
+	if (!strcasecmp(label, "Graphics")) return TR("minarch.corecat.graphics");
+	if (!strcasecmp(label, "Hacks")) return TR("minarch.corecat.hacks");
+	if (!strcasecmp(label, "Misc")) return TR("minarch.corecat.misc");
+	return label;
+}
+
+static const char* Minarch_translateCommonValue(const char* value) {
+	if (!value) return value;
+	if (!strcasecmp(value, "off")) return TR("common.off");
+	if (!strcasecmp(value, "on")) return TR("common.on");
+	if (!strcasecmp(value, "none")) return TR("common.none");
+	if (!strcasecmp(value, "auto")) return TR("common.auto");
+	if (!strcasecmp(value, "enabled")) return TR("common.enabled");
+	if (!strcasecmp(value, "disabled")) return TR("common.disabled");
+	if (!strcasecmp(value, "true")) return TR("common.true");
+	if (!strcasecmp(value, "false")) return TR("common.false");
+	return value;
+}
+
+static char** Minarch_buildCommonValueLabels(char** values) {
+	int count = 0;
+	while (values && values[count]) count++;
+	char** labels = calloc(count + 1, sizeof(char*));
+	for (int i = 0; i < count; i++) {
+		const char* translated = Minarch_translateCommonValue(values[i]);
+		labels[i] = strdup(translated ? translated : values[i]);
 	}
 	labels[count] = NULL;
 	return labels;
@@ -1618,6 +1668,14 @@ static void Minarch_initFrontendI18nOnce(void) {
 	i18n_sync_ref_labels = Minarch_buildI18nLabels(sync_ref_keys, sync_ref_labels);
 	i18n_overclock_labels = Minarch_buildI18nLabels(overclock_keys, overclock_labels);
 	i18n_max_ff_labels = Minarch_buildI18nLabels(max_ff_keys, max_ff_labels);
+
+	static const char* nrofshaders_keys[] = {"common.off", NULL, NULL, NULL, NULL};
+	static const char* shupscale_keys[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "minarch.shaders.upscale.screen", NULL};
+	static const char* shscaletype_keys[] = {"minarch.shaders.scale_from.source", "minarch.shaders.scale_from.relative", NULL};
+
+	i18n_nrofshaders_labels = Minarch_buildI18nLabels(nrofshaders_keys, nrofshaders_labels);
+	i18n_shupscale_labels = Minarch_buildI18nLabels(shupscale_keys, shupscale_labels);
+	i18n_shscaletype_labels = Minarch_buildI18nLabels(shscaletype_keys, shscaletype_labels);
 }
 
 enum {
@@ -2508,6 +2566,59 @@ static void Config_load(void) {
 
 	config.frontend.options[FE_OPT_FF_AUDIO].name = (char*)TR("minarch.frontend.ff_audio");
 	config.frontend.options[FE_OPT_FF_AUDIO].labels = i18n_onoff_labels;
+
+	// Translate shader menu option names/descriptions and display labels (keep option->values stable).
+	config.shaders.options[SH_EXTRASETTINGS].name = (char*)TR("minarch.shaders.optional_settings");
+	config.shaders.options[SH_EXTRASETTINGS].desc = (char*)TR("minarch.shaders.optional_settings.desc");
+
+	config.shaders.options[SH_SHADERS_PRESET].name = (char*)TR("minarch.shaders.preset");
+	config.shaders.options[SH_SHADERS_PRESET].desc = (char*)TR("minarch.shaders.preset.desc");
+
+	config.shaders.options[SH_NROFSHADERS].name = (char*)TR("minarch.shaders.count");
+	config.shaders.options[SH_NROFSHADERS].desc = (char*)TR("minarch.shaders.count.desc");
+	config.shaders.options[SH_NROFSHADERS].labels = i18n_nrofshaders_labels;
+
+	config.shaders.options[SH_SHADER1].name = (char*)TR("minarch.shaders.shader1");
+	config.shaders.options[SH_SHADER1].desc = (char*)TR("minarch.shaders.shader.desc");
+	config.shaders.options[SH_SHADER1_FILTER].name = (char*)TR("minarch.shaders.shader1_filter");
+	config.shaders.options[SH_SHADER1_FILTER].desc = (char*)TR("minarch.shaders.filter.desc");
+	config.shaders.options[SH_SRCTYPE1].name = (char*)TR("minarch.shaders.shader1_source_type");
+	config.shaders.options[SH_SRCTYPE1].desc = (char*)TR("minarch.shaders.source_type.desc");
+	config.shaders.options[SH_SRCTYPE1].labels = i18n_shscaletype_labels;
+	config.shaders.options[SH_SCALETYPE1].name = (char*)TR("minarch.shaders.shader1_texture_type");
+	config.shaders.options[SH_SCALETYPE1].desc = (char*)TR("minarch.shaders.texture_type.desc");
+	config.shaders.options[SH_SCALETYPE1].labels = i18n_shscaletype_labels;
+	config.shaders.options[SH_UPSCALE1].name = (char*)TR("minarch.shaders.shader1_scale");
+	config.shaders.options[SH_UPSCALE1].desc = (char*)TR("minarch.shaders.scale.desc");
+	config.shaders.options[SH_UPSCALE1].labels = i18n_shupscale_labels;
+
+	config.shaders.options[SH_SHADER2].name = (char*)TR("minarch.shaders.shader2");
+	config.shaders.options[SH_SHADER2].desc = (char*)TR("minarch.shaders.shader.desc");
+	config.shaders.options[SH_SHADER2_FILTER].name = (char*)TR("minarch.shaders.shader2_filter");
+	config.shaders.options[SH_SHADER2_FILTER].desc = (char*)TR("minarch.shaders.filter.desc");
+	config.shaders.options[SH_SRCTYPE2].name = (char*)TR("minarch.shaders.shader2_source_type");
+	config.shaders.options[SH_SRCTYPE2].desc = (char*)TR("minarch.shaders.source_type.desc");
+	config.shaders.options[SH_SRCTYPE2].labels = i18n_shscaletype_labels;
+	config.shaders.options[SH_SCALETYPE2].name = (char*)TR("minarch.shaders.shader2_texture_type");
+	config.shaders.options[SH_SCALETYPE2].desc = (char*)TR("minarch.shaders.texture_type.desc");
+	config.shaders.options[SH_SCALETYPE2].labels = i18n_shscaletype_labels;
+	config.shaders.options[SH_UPSCALE2].name = (char*)TR("minarch.shaders.shader2_scale");
+	config.shaders.options[SH_UPSCALE2].desc = (char*)TR("minarch.shaders.scale.desc");
+	config.shaders.options[SH_UPSCALE2].labels = i18n_shupscale_labels;
+
+	config.shaders.options[SH_SHADER3].name = (char*)TR("minarch.shaders.shader3");
+	config.shaders.options[SH_SHADER3].desc = (char*)TR("minarch.shaders.shader.desc");
+	config.shaders.options[SH_SHADER3_FILTER].name = (char*)TR("minarch.shaders.shader3_filter");
+	config.shaders.options[SH_SHADER3_FILTER].desc = (char*)TR("minarch.shaders.filter.desc");
+	config.shaders.options[SH_SRCTYPE3].name = (char*)TR("minarch.shaders.shader3_source_type");
+	config.shaders.options[SH_SRCTYPE3].desc = (char*)TR("minarch.shaders.source_type.desc");
+	config.shaders.options[SH_SRCTYPE3].labels = i18n_shscaletype_labels;
+	config.shaders.options[SH_SCALETYPE3].name = (char*)TR("minarch.shaders.shader3_texture_type");
+	config.shaders.options[SH_SCALETYPE3].desc = (char*)TR("minarch.shaders.texture_type.desc");
+	config.shaders.options[SH_SCALETYPE3].labels = i18n_shscaletype_labels;
+	config.shaders.options[SH_UPSCALE3].name = (char*)TR("minarch.shaders.shader3_scale");
+	config.shaders.options[SH_UPSCALE3].desc = (char*)TR("minarch.shaders.scale.desc");
+	config.shaders.options[SH_UPSCALE3].labels = i18n_shupscale_labels;
 	
 	char* system_path = SYSTEM_PATH "/system.cfg";
 	
@@ -5388,16 +5499,26 @@ static int OptionEmulator_openMenu(MenuList* list, int index) {
 		OptionCategory *cat = &config.core.categories[i];
 		MenuItem *item = &OptionEmulator_menu.items[i];
 		item->key = cat->key;
-		item->name = cat->desc;
+		item->name = (char*)Minarch_translateCategoryLabel(cat->desc);
 		item->desc = cat->info;
 	}
 
 	for (int i=0; i<config.core.enabled_count; i++) {
 		Option *option = config.core.enabled_options[i];
 		MenuItem *item = &OptionEmulator_menu.items[cat_count + i];
+
+		// If a core option uses values as labels, provide a translated label list
+		// while keeping option->values stable for cfg compatibility.
+		if (option->values && (option->labels == NULL || option->labels == option->values)) {
+			option->labels = Minarch_buildCommonValueLabels(option->values);
+		}
+
+		char tr_key[512];
 		item->key = option->key;
-		item->name = option->name;
-		item->desc = option->desc;
+		snprintf(tr_key, sizeof(tr_key), "minarch.coreopt.%s.name", option->key);
+		item->name = (char*)Minarch_trOr(tr_key, option->name);
+		snprintf(tr_key, sizeof(tr_key), "minarch.coreopt.%s.desc", option->key);
+		item->desc = (char*)Minarch_trOr(tr_key, option->desc);
 		item->value = option->value;
 		item->values = option->labels;
 	}
