@@ -250,20 +250,46 @@ jobs:
         env:
           GIT_NEXT_TAG: ${{ needs.prepare.outputs.next-tag }}
 
+      - name: Generate Release Notes (ZH + changelog)
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+
+          CURR_TAG="${{ needs.prepare.outputs.next-tag }}"
+          REPO="${{ github.repository }}"
+
+          # Find previous semver tag, excluding the tag we just created.
+          PREV_TAG="$(git tag --list 'v*.*.*' --sort=-v:refname | grep -v "^${CURR_TAG}$" | head -n 1 || true)"
+          if [[ -n "$PREV_TAG" ]] && git rev-parse "$PREV_TAG" >/dev/null 2>&1; then
+            git log --pretty=format:"- %s by @%an in %h" "$PREV_TAG..HEAD" > changes.txt
+            CHANGELOG_URL="https://github.com/${REPO}/compare/${PREV_TAG}...${CURR_TAG}"
+          else
+            git log --pretty=format:"- %s by @%an in %h" HEAD > changes.txt
+            CHANGELOG_URL=""
+          fi
+
+          {
+            echo "NextUI 的完整功能列表和使用帮助："
+            echo "https://nextui.loveretro.games/docs/"
+            echo
+            echo "## 如何安装/更新"
+            echo "全新安装请参考：https://nextui.loveretro.games/getting-started/installation/"
+            echo "从旧版本升级请参考：https://nextui.loveretro.games/getting-started/updating/"
+            echo
+            echo "## 主要变更 (What's Changed)"
+            cat changes.txt
+            if [[ -n "$CHANGELOG_URL" ]]; then
+              echo
+              echo "**完整变更日志 (Full Changelog)**: ${CHANGELOG_URL}"
+            fi
+          } > notes_zh.txt
+
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
           files: releases/*
-          generate_release_notes: true
-          append_body: true
           tag_name: ${{ needs.prepare.outputs.next-tag }}
           make_latest: "true"
-          body: |
-            
-            For full features list and help on how to use etc of NextUI:
-            https://nextui.loveretro.games/docs/
-
-            ## How to install/update
-            For a fresh installation, follow the instructions here: https://nextui.loveretro.games/getting-started/installation/
-            When updating from a previous release: https://nextui.loveretro.games/getting-started/updating/
+          body_path: notes_zh.txt
 
