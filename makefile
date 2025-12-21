@@ -39,7 +39,7 @@ VENDOR_DEST := ./build/VENDOR/Tools
 
 # Vendored package URLs (override in CI via make vars)
 PAK_STORE_URL ?= https://github.com/UncleJunVIP/nextui-pak-store/releases/latest/download/Pak.Store.pakz
-UPDATER_PAK_URL ?= https://github.com/LanderN/nextui-updater-pak/releases/latest/download/nextui-updater-pak.zip
+UPDATER_PAK_URL ?= https://github.com/PandaQuQ/nextui-updater-pak-CN/releases/latest/download/nextui-updater-pak.zip
 
 PACKAGE_URL_MAPPINGS := \
 	"$(PAK_STORE_URL) nextui.pak_store.pakz" \
