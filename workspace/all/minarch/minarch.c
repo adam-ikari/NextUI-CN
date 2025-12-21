@@ -1564,6 +1564,62 @@ static char* gamepad_values[] = {
 	NULL,
 };
 
+// i18n labels for frontend options (display-only).
+// Keep `*_labels` arrays above as stable config VALUES.
+static char** i18n_onoff_labels = NULL;
+static char** i18n_scaling_labels = NULL;
+static char** i18n_resample_labels = NULL;
+static char** i18n_ambient_labels = NULL;
+static char** i18n_effect_labels = NULL;
+static char** i18n_overlay_labels = NULL;
+static char** i18n_tearing_labels = NULL;
+static char** i18n_sync_ref_labels = NULL;
+static char** i18n_overclock_labels = NULL;
+static char** i18n_max_ff_labels = NULL;
+
+static char** Minarch_buildI18nLabels(const char** keys, char** fallback_values) {
+	int count = 0;
+	while (fallback_values && fallback_values[count]) count++;
+	char** labels = calloc(count + 1, sizeof(char*));
+	for (int i = 0; i < count; i++) {
+		const char* key = keys ? keys[i] : NULL;
+		if (key && key[0] != '\0') labels[i] = strdup(TR(key));
+		else labels[i] = strdup(fallback_values[i]);
+	}
+	labels[count] = NULL;
+	return labels;
+}
+
+static void Minarch_initFrontendI18nOnce(void) {
+	static int initialized = 0;
+	if (initialized) return;
+	initialized = 1;
+
+	// NOTE: ensure I18N_init() already ran before calling this.
+	static const char* onoff_keys[] = {"common.off", "common.on", NULL};
+	static const char* scaling_keys[] = {"minarch.scaling.native", "minarch.scaling.aspect", "minarch.scaling.aspect_screen", "minarch.scaling.fullscreen", "minarch.scaling.cropped", NULL};
+	static const char* resample_keys[] = {"minarch.resample.low", "minarch.resample.medium", "minarch.resample.high", "minarch.resample.max", NULL};
+	static const char* ambient_keys[] = {"minarch.ambient.off", "minarch.ambient.all", "minarch.ambient.top", "minarch.ambient.fn", "minarch.ambient.lr", "minarch.ambient.top_lr", NULL};
+	static const char* effect_keys[] = {"common.none", "minarch.effect.line", "minarch.effect.grid", NULL};
+	static const char* overlay_keys[] = {"common.none", NULL};
+	static const char* tearing_keys[] = {"common.off", "minarch.vsync.lenient", "minarch.vsync.strict", NULL};
+	static const char* sync_ref_keys[] = {"common.auto", "minarch.sync_ref.screen", "minarch.sync_ref.native", NULL};
+	static const char* overclock_keys[] = {"minarch.cpu.powersave", "minarch.cpu.normal", "minarch.cpu.performance", "common.auto", NULL};
+	// For max FF, only translate the first entry (None).
+	static const char* max_ff_keys[] = {"common.none", NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};
+
+	i18n_onoff_labels = Minarch_buildI18nLabels(onoff_keys, onoff_labels);
+	i18n_scaling_labels = Minarch_buildI18nLabels(scaling_keys, scaling_labels);
+	i18n_resample_labels = Minarch_buildI18nLabels(resample_keys, resample_labels);
+	i18n_ambient_labels = Minarch_buildI18nLabels(ambient_keys, ambient_labels);
+	i18n_effect_labels = Minarch_buildI18nLabels(effect_keys, effect_labels);
+	i18n_overlay_labels = Minarch_buildI18nLabels(overlay_keys, overlay_labels);
+	i18n_tearing_labels = Minarch_buildI18nLabels(tearing_keys, tearing_labels);
+	i18n_sync_ref_labels = Minarch_buildI18nLabels(sync_ref_keys, sync_ref_labels);
+	i18n_overclock_labels = Minarch_buildI18nLabels(overclock_keys, overclock_labels);
+	i18n_max_ff_labels = Minarch_buildI18nLabels(max_ff_keys, max_ff_labels);
+}
+
 enum {
 	CONFIG_NONE,
 	CONFIG_CONSOLE,
@@ -2399,6 +2455,8 @@ static void Config_readControlsString(char* cfg) {
 }
 static void Config_load(void) {
 	LOG_info("Config_load\n");
+
+	Minarch_initFrontendI18nOnce();
 	
 	config.device_tag = getenv("DEVICE");
 	LOG_info("config.device_tag %s\n", config.device_tag);
@@ -2410,6 +2468,46 @@ static void Config_load(void) {
 	if (!GFX_supportsOverscan()) {
 		scaling_labels[4] = NULL;
 	}
+
+	// Translate frontend option names and display labels (keep option->values stable).
+	config.frontend.options[FE_OPT_SCALING].name = (char*)TR("minarch.frontend.screen_scaling");
+	config.frontend.options[FE_OPT_SCALING].labels = i18n_scaling_labels;
+
+	config.frontend.options[FE_OPT_RESAMPLING].name = (char*)TR("minarch.frontend.audio_resampling_quality");
+	config.frontend.options[FE_OPT_RESAMPLING].labels = i18n_resample_labels;
+
+	config.frontend.options[FE_OPT_AMBIENT].name = (char*)TR("minarch.frontend.ambient_mode");
+	config.frontend.options[FE_OPT_AMBIENT].labels = i18n_ambient_labels;
+
+	config.frontend.options[FE_OPT_EFFECT].name = (char*)TR("minarch.frontend.screen_effect");
+	config.frontend.options[FE_OPT_EFFECT].labels = i18n_effect_labels;
+
+	config.frontend.options[FE_OPT_OVERLAY].name = (char*)TR("minarch.frontend.overlay");
+	config.frontend.options[FE_OPT_OVERLAY].labels = i18n_overlay_labels;
+
+	config.frontend.options[FE_OPT_SCREENX].name = (char*)TR("minarch.frontend.offset_screen_x");
+	config.frontend.options[FE_OPT_SCREENY].name = (char*)TR("minarch.frontend.offset_screen_y");
+
+	config.frontend.options[FE_OPT_SHARPNESS].name = (char*)TR("minarch.frontend.screen_sharpness");
+	// Keep NEAREST/LINEAR as-is; these are technical.
+
+	config.frontend.options[FE_OPT_TEARING].name = (char*)TR("minarch.frontend.vsync");
+	config.frontend.options[FE_OPT_TEARING].labels = i18n_tearing_labels;
+
+	config.frontend.options[FE_OPT_SYNC_REFERENCE].name = (char*)TR("minarch.frontend.core_sync");
+	config.frontend.options[FE_OPT_SYNC_REFERENCE].labels = i18n_sync_ref_labels;
+
+	config.frontend.options[FE_OPT_OVERCLOCK].name = (char*)TR("minarch.frontend.cpu_speed");
+	config.frontend.options[FE_OPT_OVERCLOCK].labels = i18n_overclock_labels;
+
+	config.frontend.options[FE_OPT_DEBUG].name = (char*)TR("minarch.frontend.debug_hud");
+	config.frontend.options[FE_OPT_DEBUG].labels = i18n_onoff_labels;
+
+	config.frontend.options[FE_OPT_MAXFF].name = (char*)TR("minarch.frontend.max_ff_speed");
+	config.frontend.options[FE_OPT_MAXFF].labels = i18n_max_ff_labels;
+
+	config.frontend.options[FE_OPT_FF_AUDIO].name = (char*)TR("minarch.frontend.ff_audio");
+	config.frontend.options[FE_OPT_FF_AUDIO].labels = i18n_onoff_labels;
 	
 	char* system_path = SYSTEM_PATH "/system.cfg";
 	

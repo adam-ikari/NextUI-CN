@@ -2,6 +2,8 @@ tools=工具
 
 common.on=开
 common.off=关
+common.none=无
+common.auto=自动
 common.ok=确定
 common.back=返回
 common.open=打开
@@ -115,6 +117,53 @@ minarch.options.cheats=金手指
 minarch.options.controls=控制
 minarch.options.shortcuts=快捷键
 minarch.options.save_changes=保存更改
+
+# minarch frontend labels (values are kept English in config; these are UI labels only)
+minarch.frontend.screen_scaling=屏幕缩放
+minarch.frontend.audio_resampling_quality=音频重采样质量
+minarch.frontend.ambient_mode=环境灯模式
+minarch.frontend.screen_effect=屏幕效果
+minarch.frontend.overlay=叠加层
+minarch.frontend.offset_screen_x=屏幕偏移 X
+minarch.frontend.offset_screen_y=屏幕偏移 Y
+minarch.frontend.screen_sharpness=缩放滤镜
+minarch.frontend.vsync=垂直同步
+minarch.frontend.core_sync=核心同步
+minarch.frontend.cpu_speed=CPU 频率
+minarch.frontend.debug_hud=调试 HUD
+minarch.frontend.max_ff_speed=最大快进倍率
+minarch.frontend.ff_audio=快进时播放声音
+
+minarch.scaling.native=原生
+minarch.scaling.aspect=比例
+minarch.scaling.aspect_screen=屏幕比例
+minarch.scaling.fullscreen=全屏
+minarch.scaling.cropped=裁切
+
+minarch.resample.low=低
+minarch.resample.medium=中
+minarch.resample.high=高
+minarch.resample.max=最高
+
+minarch.ambient.off=关
+minarch.ambient.all=全部
+minarch.ambient.top=顶部
+minarch.ambient.fn=FN
+minarch.ambient.lr=左右
+minarch.ambient.top_lr=顶部/左右
+
+minarch.effect.line=线条
+minarch.effect.grid=网格
+
+minarch.vsync.lenient=宽松
+minarch.vsync.strict=严格
+
+minarch.sync_ref.screen=屏幕
+minarch.sync_ref.native=原生
+
+minarch.cpu.powersave=省电
+minarch.cpu.normal=标准
+minarch.cpu.performance=性能
 # NextUI-CN downstream language file (UTF-8)
 # Format: key=value
 # Use stable keys so upstream text tweaks won't force re-translation.
