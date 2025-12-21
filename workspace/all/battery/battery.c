@@ -71,8 +71,7 @@ struct GraphLayout
 };
 
 typedef struct
-    const char *remaining_text = (session_left[0] != '\0') ? session_left : TR("battery.calculating");
-    snprintf(text_line, sizeof(text_line), TR("battery.remaining_fmt"), remaining_text);
+{
     int pixel_height;
     bool is_charging;
     bool is_estimated;
@@ -224,30 +223,30 @@ void switch_zoom_profile(int segment_duration)
     {
     case GRAPH_SEGMENT_LOW:
         // A segment is 120 minutes
-        sprintf(label[0], "%s", "4h");
-        sprintf(label[1], "%s", "8h");
-        sprintf(label[2], "%s", "12h");
-        sprintf(label[3], "%s", "16h");
+        snprintf(label[0], sizeof(label[0]), "%d%s", 4, TR("battery.hours_suffix"));
+        snprintf(label[1], sizeof(label[1]), "%d%s", 8, TR("battery.hours_suffix"));
+        snprintf(label[2], sizeof(label[2]), "%d%s", 12, TR("battery.hours_suffix"));
+        snprintf(label[3], sizeof(label[3]), "%d%s", 16, TR("battery.hours_suffix"));
         break;
     case GRAPH_SEGMENT_MED:
         // A segment is 60 minutes
-        sprintf(label[0], "%s", "2h");
-        sprintf(label[1], "%s", "4h");
-        sprintf(label[2], "%s", "6h");
-        sprintf(label[3], "%s", "8h");
+        snprintf(label[0], sizeof(label[0]), "%d%s", 2, TR("battery.hours_suffix"));
+        snprintf(label[1], sizeof(label[1]), "%d%s", 4, TR("battery.hours_suffix"));
+        snprintf(label[2], sizeof(label[2]), "%d%s", 6, TR("battery.hours_suffix"));
+        snprintf(label[3], sizeof(label[3]), "%d%s", 8, TR("battery.hours_suffix"));
         break;
     case GRAPH_SEGMENT_HIGH:
         // A segment is 30 minutes
-        sprintf(label[0], "%s", "1h");
-        sprintf(label[1], "%s", "2h");
-        sprintf(label[2], "%s", "3h");
-        sprintf(label[3], "%s", "4h");
+        snprintf(label[0], sizeof(label[0]), "%d%s", 1, TR("battery.hours_suffix"));
+        snprintf(label[1], sizeof(label[1]), "%d%s", 2, TR("battery.hours_suffix"));
+        snprintf(label[2], sizeof(label[2]), "%d%s", 3, TR("battery.hours_suffix"));
+        snprintf(label[3], sizeof(label[3]), "%d%s", 4, TR("battery.hours_suffix"));
         break;
     default:
-        sprintf(label[0], "%s", "");
-        sprintf(label[1], "%s", "");
-        sprintf(label[2], "%s", "");
-        sprintf(label[3], "%s", "");
+        snprintf(label[0], sizeof(label[0]), "%s", "");
+        snprintf(label[1], sizeof(label[1]), "%s", "");
+        snprintf(label[2], sizeof(label[2]), "%s", "");
+        snprintf(label[3], sizeof(label[3]), "%s", "");
         break;
     }
 }
@@ -457,28 +456,28 @@ void renderPage()
     // x axis labels
     renderText(label[0], font.small, COLOR_WHITE, &(SDL_Rect){graph.layout.label1_x, graph.layout.label_y, 32, 32});
     renderText(label[1], font.small, COLOR_WHITE, &(SDL_Rect){graph.layout.label2_x, graph.layout.label_y, 32, 32});
-            snprintf(label[0], sizeof(label[0]), "%d%s", 4, TR("battery.hours_suffix"));
-            snprintf(label[1], sizeof(label[1]), "%d%s", 8, TR("battery.hours_suffix"));
-            snprintf(label[2], sizeof(label[2]), "%d%s", 12, TR("battery.hours_suffix"));
-            snprintf(label[3], sizeof(label[3]), "%d%s", 16, TR("battery.hours_suffix"));
-    drawBatteryIcon(100, (SDL_Rect){graph.layout.icon_x, graph.layout.icon1_y});
-    drawBatteryIcon(66, (SDL_Rect){graph.layout.icon_x, graph.layout.icon2_y});
-            snprintf(label[0], sizeof(label[0]), "%d%s", 2, TR("battery.hours_suffix"));
-            snprintf(label[1], sizeof(label[1]), "%d%s", 4, TR("battery.hours_suffix"));
-            snprintf(label[2], sizeof(label[2]), "%d%s", 6, TR("battery.hours_suffix"));
-            snprintf(label[3], sizeof(label[3]), "%d%s", 8, TR("battery.hours_suffix"));
-    snprintf(text_line, sizeof(text_line), TR("battery.since_charge_fmt"), session_duration);
-    renderText(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_session_x, graph.layout.label_session_y, graph.layout.label_size_x, graph.layout.label_size_y});
-            snprintf(label[0], sizeof(label[0]), "%d%s", 1, TR("battery.hours_suffix"));
-            snprintf(label[1], sizeof(label[1]), "%d%s", 2, TR("battery.hours_suffix"));
-            snprintf(label[2], sizeof(label[2]), "%d%s", 3, TR("battery.hours_suffix"));
-            snprintf(label[3], sizeof(label[3]), "%d%s", 4, TR("battery.hours_suffix"));
-    snprintf(text_line, sizeof(text_line), TR("battery.remaining_fmt"), session_left);
-    renderTextAlignRight(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_left_x, graph.layout.label_left_y, graph.layout.label_size_x, graph.layout.label_size_y});
-            snprintf(label[0], sizeof(label[0]), "%s", "");
-            snprintf(label[1], sizeof(label[1]), "%s", "");
-            snprintf(label[2], sizeof(label[2]), "%s", "");
-            snprintf(label[3], sizeof(label[3]), "%s", "");
+        renderText(label[2], font.small, COLOR_WHITE, &(SDL_Rect){graph.layout.label3_x, graph.layout.label_y, 32, 32});
+        renderText(label[3], font.small, COLOR_WHITE, &(SDL_Rect){graph.layout.label4_x, graph.layout.label_y, 32, 32});
+
+        // y axis "labels"
+        drawBatteryIcon(100, (SDL_Rect){graph.layout.icon_x, graph.layout.icon1_y});
+        drawBatteryIcon(66, (SDL_Rect){graph.layout.icon_x, graph.layout.icon2_y});
+        drawBatteryIcon(33, (SDL_Rect){graph.layout.icon_x, graph.layout.icon3_y});
+        drawBatteryIcon(0, (SDL_Rect){graph.layout.icon_x, graph.layout.icon4_y});
+
+        char text_line[255];
+        snprintf(text_line, sizeof(text_line), TR("battery.since_charge_fmt"), session_duration);
+        renderText(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_session_x, graph.layout.label_session_y, graph.layout.label_size_x, graph.layout.label_size_y});
+
+        snprintf(text_line, sizeof(text_line), TR("battery.current_fmt"), current_percentage);
+        renderText(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_current_x, graph.layout.label_current_y, graph.layout.label_size_x, graph.layout.label_size_y});
+
+        const char *remaining_text = (session_left[0] != '\0') ? session_left : TR("battery.calculating");
+        snprintf(text_line, sizeof(text_line), TR("battery.remaining_fmt"), remaining_text);
+        renderTextAlignRight(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_left_x, graph.layout.label_left_y, graph.layout.label_size_x, graph.layout.label_size_y});
+
+        snprintf(text_line, sizeof(text_line), TR("battery.longest_fmt"), session_best);
+        renderTextAlignRight(text_line, font.medium, COLOR_WHITE, &(SDL_Rect){graph.layout.label_best_x, graph.layout.label_best_y, graph.layout.label_size_x, graph.layout.label_size_y});
     int half_line_width = (int)(GRAPH_LINE_WIDTH) / 2;
 
     Uint32 white_pixel_color = RGB_GRAY;
