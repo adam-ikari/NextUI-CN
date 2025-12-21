@@ -126,25 +126,28 @@ jobs:
           LOCAL_TAG=$(curl -s https://api.github.com/repos/${{ github.repository }}/releases/latest | jq -r '.tag_name // empty')
 
           if [ -n "$LOCAL_TAG" ] && [ "$LOCAL_TAG" != "null" ]; then
+            BASE_VERSION=$(echo "$LOCAL_TAG" | sed 's/-CN$//')
             echo "local_tag=$LOCAL_TAG" >> $GITHUB_OUTPUT
-            echo "本地最新release: $LOCAL_TAG"
+            echo "base_version=$BASE_VERSION" >> $GITHUB_OUTPUT
+            echo "本地最新release: $LOCAL_TAG (基础版本: $BASE_VERSION)"
           else
             echo "local_tag=" >> $GITHUB_OUTPUT
+            echo "base_version=" >> $GITHUB_OUTPUT
             echo "本地暂无release"
           fi
 
       - name: Compare versions and determine release type
         id: compare_versions
-        if: steps.upstream_release.outputs.upstream_tag != '' && steps.local_release.outputs.local_tag != ''
+        if: steps.upstream_release.outputs.upstream_tag != '' && steps.local_release.outputs.base_version != ''
         shell: bash
         run: |
           set -euo pipefail
           UPSTREAM_TAG="${{ steps.upstream_release.outputs.upstream_tag }}"
-          LOCAL_TAG="${{ steps.local_release.outputs.local_tag }}"
+          BASE_VERSION="${{ steps.local_release.outputs.base_version }}"
 
-          echo "比较版本: upstream=$UPSTREAM_TAG vs local=$LOCAL_TAG"
+          echo "比较版本: upstream=$UPSTREAM_TAG vs local_base=$BASE_VERSION"
 
-          if [ "$UPSTREAM_TAG" = "$LOCAL_TAG" ]; then
+          if [ "$UPSTREAM_TAG" = "$BASE_VERSION" ]; then
             echo "needs_release=false" >> $GITHUB_OUTPUT
             echo "版本相同，无需发布新release"
             exit 0
@@ -159,7 +162,7 @@ jobs:
             UP_MINOR=${BASH_REMATCH[2]}
             UP_PATCH=${BASH_REMATCH[3]}
 
-            if [[ "$LOCAL_TAG" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
+            if [[ "$BASE_VERSION" =~ ^v([0-9]+)\.([0-9]+)\.([0-9]+)$ ]]; then
               LOCAL_MAJOR=${BASH_REMATCH[1]}
               LOCAL_MINOR=${BASH_REMATCH[2]}
               LOCAL_PATCH=${BASH_REMATCH[3]}

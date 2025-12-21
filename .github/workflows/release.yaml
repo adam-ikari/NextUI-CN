@@ -24,7 +24,7 @@ jobs:
   prepare:
     runs-on: ubuntu-24.04
     outputs:
-      next-tag: ${{ steps.next-tag.outputs.version }}
+      next-tag: ${{ steps.next-tag-cn.outputs.version }}
       release-name: ${{ steps.release-name.outputs.RELEASE_NAME }}
     steps:
       - name: Checkout
@@ -40,7 +40,14 @@ jobs:
       - name: Get Latest Tag
         id: latest-tag
         run: |
-          echo GIT_LATEST_TAG="$(git describe --tags "$(git rev-list --tags --max-count=1)")" >>"$GITHUB_OUTPUT"
+          # NextUI-CN uses vX.Y.Z-CN tags; upstream tags don't include -CN.
+          CN_TAG="$(git tag --list 'v*.*.*-CN' --sort=-v:refname | head -n 1 || true)"
+          if [ -z "$CN_TAG" ]; then
+            # Fallback for first CN release on a repo that only has upstream-style tags.
+            CN_TAG="$(git tag --list 'v*.*.*' --sort=-v:refname | head -n 1 || true)"
+          fi
+          BASE_TAG="$(echo "$CN_TAG" | sed 's/-CN$//')"
+          echo GIT_LATEST_TAG="$BASE_TAG" >>"$GITHUB_OUTPUT"
 
       - name: Compute Next Tag
         id: next-tag
@@ -48,6 +55,11 @@ jobs:
         with:
           bump: ${{ github.event.inputs.release_type }}
           input: ${{ steps.latest-tag.outputs.GIT_LATEST_TAG }}
+
+      - name: Append -CN suffix
+        id: next-tag-cn
+        run: |
+          echo "version=${{ steps.next-tag.outputs.version }}-CN" >> "$GITHUB_OUTPUT"
 
   core-matrix:
     runs-on: ubuntu-24.04-arm
@@ -260,7 +272,7 @@ jobs:
           REPO="${{ github.repository }}"
 
           # Find previous semver tag, excluding the tag we just created.
-          PREV_TAG="$(git tag --list 'v*.*.*' --sort=-v:refname | grep -v "^${CURR_TAG}$" | head -n 1 || true)"
+          PREV_TAG="$(git tag --list 'v*.*.*-CN' --sort=-v:refname | grep -v "^${CURR_TAG}$" | head -n 1 || true)"
           if [[ -n "$PREV_TAG" ]] && git rev-parse "$PREV_TAG" >/dev/null 2>&1; then
             git log --pretty=format:"- %s by @%an in %h" "$PREV_TAG..HEAD" > changes.txt
             CHANGELOG_URL="https://github.com/${REPO}/compare/${PREV_TAG}...${CURR_TAG}"
