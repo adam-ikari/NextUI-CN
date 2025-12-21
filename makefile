@@ -36,9 +36,14 @@ RELEASE_NAME ?= $(RELEASE_BASE)-$(RELEASE_DOT)
 
 # Extra paks to ship
 VENDOR_DEST := ./build/VENDOR/Tools
+
+# Vendored package URLs (override in CI via make vars)
+PAK_STORE_URL ?= https://github.com/UncleJunVIP/nextui-pak-store/releases/latest/download/Pak.Store.pakz
+UPDATER_PAK_URL ?= https://github.com/LanderN/nextui-updater-pak/releases/latest/download/nextui-updater-pak.zip
+
 PACKAGE_URL_MAPPINGS := \
-	"https://github.com/UncleJunVIP/nextui-pak-store/releases/latest/download/Pak.Store.pakz nextui.pak_store.pakz" \
-	"https://github.com/LanderN/nextui-updater-pak/releases/latest/download/nextui-updater-pak.zip nextui.updater.pakz"
+	"$(PAK_STORE_URL) nextui.pak_store.pakz" \
+	"$(UPDATER_PAK_URL) nextui.updater.pakz"
 	# add more URLs as needed
 
 ###########################################################
