@@ -15,6 +15,9 @@ REQUIRES_JSTEST=other/jstest
 REQUIRES_UNZIP60=other/unzip60
 REQUIRES_FILEMGR=other/NextCommander
 
+# External deps (override in CI if needed)
+NEXTCOMMANDER_REPO_URL ?= https://github.com/PandaQuQ/NextCommander-CN.git
+
 all: readmes
 	cd show && make
 
@@ -33,7 +36,7 @@ clean:
 ###########################################################
 
 $(REQUIRES_FILEMGR):
-	git clone --depth 1 https://github.com/LoveRetro/NextCommander.git $(REQUIRES_FILEMGR)
+	git clone --depth 1 $(NEXTCOMMANDER_REPO_URL) $(REQUIRES_FILEMGR)
 	
 $(REQUIRES_EVTEST):
 	git clone --depth 1 https://github.com/freedesktop-unofficial-mirror/evtest.git $(REQUIRES_EVTEST)
