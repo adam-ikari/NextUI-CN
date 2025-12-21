@@ -14,6 +14,10 @@ on:
           - patch
           - minor
           - major
+      tag:
+        description: "Optional manual tag (vX.Y.Z-CN or vX.Y.Z; empty = auto bump)"
+        required: false
+        type: string
 
 permissions:
   attestations: write
@@ -24,7 +28,7 @@ jobs:
   prepare:
     runs-on: ubuntu-24.04
     outputs:
-      next-tag: ${{ steps.next-tag-cn.outputs.version }}
+      next-tag: ${{ steps.resolve-tag.outputs.version }}
       release-name: ${{ steps.release-name.outputs.RELEASE_NAME }}
     steps:
       - name: Checkout
@@ -39,6 +43,7 @@ jobs:
 
       - name: Get Latest Tag
         id: latest-tag
+        if: ${{ github.event.inputs.tag == '' }}
         run: |
           # NextUI-CN uses vX.Y.Z-CN tags; upstream tags don't include -CN.
           CN_TAG="$(git tag --list 'v*.*.*-CN' --sort=-v:refname | head -n 1 || true)"
@@ -52,14 +57,47 @@ jobs:
       - name: Compute Next Tag
         id: next-tag
         uses: docker://ghcr.io/dokku/semver-generator:latest
+        if: ${{ github.event.inputs.tag == '' }}
         with:
           bump: ${{ github.event.inputs.release_type }}
           input: ${{ steps.latest-tag.outputs.GIT_LATEST_TAG }}
 
       - name: Append -CN suffix
         id: next-tag-cn
+        if: ${{ github.event.inputs.tag == '' }}
         run: |
           echo "version=${{ steps.next-tag.outputs.version }}-CN" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve Release Tag
+        id: resolve-tag
+        shell: bash
+        env:
+          MANUAL_TAG: ${{ github.event.inputs.tag }}
+          AUTO_TAG: ${{ steps.next-tag-cn.outputs.version }}
+        run: |
+          set -euo pipefail
+
+          TAG="$MANUAL_TAG"
+          if [[ -z "$TAG" ]]; then
+            TAG="$AUTO_TAG"
+          fi
+
+          # Allow vX.Y.Z as shorthand (auto append -CN)
+          if [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            TAG="${TAG}-CN"
+          fi
+
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-CN$ ]]; then
+            echo "::error::Invalid tag '$TAG'. Use vX.Y.Z-CN (or vX.Y.Z to auto-append -CN)."
+            exit 1
+          fi
+
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "::error::Tag already exists: $TAG"
+            exit 1
+          fi
+
+          echo "version=$TAG" >> "$GITHUB_OUTPUT"
 
   core-matrix:
     runs-on: ubuntu-24.04-arm
