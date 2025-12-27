@@ -5,7 +5,7 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - 13-系统更新软件的退出按钮不显示字
   pull_request: {}
 
 permissions:

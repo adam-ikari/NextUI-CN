@@ -3338,10 +3338,25 @@ static struct VIB_Context
 	int queued_strength;
 	int strength;
 } vib = {0};
+
+static void VIB_cleanup(void *arg)
+{
+	(void)arg;
+	// Ensure we never leave the motor enabled if the thread is cancelled
+	PLAT_setRumble(0);
+}
+
+static void VIB_atexit(void)
+{
+	// Process exit can terminate threads without running their cleanup handlers.
+	// Force rumble off as a last-resort safety.
+	PLAT_setRumble(0);
+}
 static void *VIB_thread(void *arg)
 {
 #define DEFER_FRAMES 3
 	static int defer = 0;
+	pthread_cleanup_push(VIB_cleanup, NULL);
 	while (1)
 	{
 		SDL_Delay(17);
@@ -3358,10 +3373,15 @@ static void *VIB_thread(void *arg)
 			PLAT_setRumble(vib.strength);
 		}
 	}
+	pthread_cleanup_pop(0);
 	return 0;
 }
 void VIB_init(void)
 {
+	if (vib.initialized)
+		return;
+	atexit(VIB_atexit);
+
 	vib.queued_strength = vib.strength = 0;
 	pthread_create(&vib.pt, NULL, &VIB_thread, NULL);
 	vib.initialized = 1;
@@ -3371,9 +3391,15 @@ void VIB_quit(void)
 	if (!vib.initialized)
 		return;
 
-	VIB_setStrength(0);
+	// Force an immediate stop, even if the worker thread would defer the 0 write.
+	vib.queued_strength = 0;
+	vib.strength = 0;
+	PLAT_setRumble(0);
+
 	pthread_cancel(vib.pt);
 	pthread_join(vib.pt, NULL);
+	PLAT_setRumble(0);
+	vib.initialized = 0;
 }
 void VIB_setStrength(int strength)
 {
