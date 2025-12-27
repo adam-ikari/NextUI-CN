@@ -15,7 +15,7 @@ on:
           - minor
           - major
       tag:
-        description: "Optional manual tag (vX.Y.Z-CN or vX.Y.Z; empty = auto bump)"
+        description: "Optional manual tag (vX.Y.Z-CN[-suffix] or vX.Y.Z; empty = auto bump)"
         required: false
         type: string
 
@@ -87,8 +87,9 @@ jobs:
             TAG="${TAG}-CN"
           fi
 
-          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-CN$ ]]; then
-            echo "::error::Invalid tag '$TAG'. Use vX.Y.Z-CN (or vX.Y.Z to auto-append -CN)."
+          # Allow optional suffix after -CN, e.g. v6.6.0-CN-fix1
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-CN([-.][0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+            echo "::error::Invalid tag '$TAG'. Use vX.Y.Z-CN[-suffix] (or vX.Y.Z to auto-append -CN)."
             exit 1
           fi
 
