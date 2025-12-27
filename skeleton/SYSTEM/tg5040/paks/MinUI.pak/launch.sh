@@ -73,6 +73,15 @@ echo 227 > /sys/class/gpio/export
 echo -n out > /sys/class/gpio/gpio227/direction
 echo -n 0 > /sys/class/gpio/gpio227/value
 
+RUMBLE_GPIO_VALUE="/sys/class/gpio/gpio227/value"
+RUMBLE_VOLTAGE_PATH="/sys/class/motor/voltage"
+rumble_off() {
+	# Best-effort safety: apps may exit/crash while rumble is ON.
+	[ -w "$RUMBLE_VOLTAGE_PATH" ] && echo 3300000 > "$RUMBLE_VOLTAGE_PATH" 2>/dev/null
+	[ -w "$RUMBLE_GPIO_VALUE" ] && echo 0 > "$RUMBLE_GPIO_VALUE" 2>/dev/null
+}
+trap 'rumble_off' EXIT INT TERM HUP
+
 if [ "$TRIMUI_MODEL" = "Trimui Smart Pro" ]; then
 	#Left/Right Pad PD14/PD18
 	echo 110 > /sys/class/gpio/export
@@ -155,13 +164,17 @@ EXEC_PATH="/tmp/nextui_exec"
 NEXT_PATH="/tmp/next"
 touch "$EXEC_PATH"  && sync
 while [ -f $EXEC_PATH ]; do
+	rumble_off
 	nextui.elf &> $LOGS_PATH/nextui.txt
+	rumble_off
 	echo $CPU_SPEED_PERF > $CPU_PATH
 	
 	if [ -f $NEXT_PATH ]; then
+		rumble_off
 		CMD=`cat $NEXT_PATH`
 		eval $CMD
 		rm -f $NEXT_PATH
+		rumble_off
 		echo $CPU_SPEED_PERF > $CPU_PATH
 	fi
 
