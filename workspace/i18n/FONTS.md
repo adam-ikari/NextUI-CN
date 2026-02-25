@@ -21,13 +21,13 @@ We use Dream Han Sans CN from:
 
 And map release files into NextUI assets:
 
-- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
-- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold.otf` (alias)
+- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold-unhinted.ttf`
+- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold.ttf` (alias)
 - `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体，粗体字重)
 - `DreamHanSansCN-Regular.ttf` → `skeleton/SYSTEM/res/font2.ttf` (可选字体，常规字重)
 
 Notes:
-- `BPreplayBold-unhinted.otf` is used by some UI elements as a bold face.
+- `BPreplayBold-unhinted.ttf` is used by some UI elements as a bold face.
 - `font1.ttf` is the default UI font (ID depends on upstream config).
 - We use the DreamHanSansCN variant (简体中文版本) for optimal Chinese character support.
 - The CN version is specifically optimized for Simplified Chinese characters.

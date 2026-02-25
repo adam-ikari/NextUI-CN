@@ -147,8 +147,8 @@ jobs:
             exit 1
           fi
           install -d skeleton/SYSTEM/res
-          cp -f "$FONT_TTF_BOLD" skeleton/SYSTEM/res/BPreplayBold-unhinted.otf
-          cp -f "$FONT_TTF_BOLD" skeleton/SYSTEM/res/BPreplayBold.otf
+          cp -f "$FONT_TTF_BOLD" skeleton/SYSTEM/res/BPreplayBold-unhinted.ttf
+          cp -f "$FONT_TTF_BOLD" skeleton/SYSTEM/res/BPreplayBold.ttf
           cp -f "$FONT_TTF_BOLD" skeleton/SYSTEM/res/font1.ttf
           cp -f "$FONT_TTF_REGULAR" skeleton/SYSTEM/res/font2.ttf
           echo "Injected into skeleton/SYSTEM/res:";
