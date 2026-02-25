@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     {
 		I18N_init();
 
-        const std::vector<std::string> font_names = {TR("settings.font_name.hanchan_bold"), TR("settings.font_name.hanchan")};
+        const std::vector<std::string> font_names = {TR("settings.font_name.dream_bold"), TR("settings.font_name.dream")};
 
         const std::vector<std::string> on_off = {TR("common.off"), TR("common.on")};
         const std::vector<std::string> timeout_labels = {TR("common.never"), "5s", "10s", "15s", "30s", "45s", "60s", "90s", "2m", "4m", "6m", "10m"};
