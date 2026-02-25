@@ -58,7 +58,8 @@ jobs:
     env:
       PLATFORM: ${{ matrix.toolchain }}
     strategy:
-      fail-fast: true
+      fail-fast: false
+      max-parallel: 8
       matrix:
         toolchain:
           - tg5040
@@ -67,36 +68,94 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
+      - name: Get toolchain hash
+        id: toolchain-hash
+        run: |
+          if [[ -d "toolchains/${PLATFORM}-toolchain/.git" ]]; then
+            TOOLCHAIN_HASH=$(cd "toolchains/${PLATFORM}-toolchain" && git rev-parse HEAD)
+          else
+            TOOLCHAIN_HASH="missing"
+          fi
+          echo "toolchain-hash=${TOOLCHAIN_HASH}" >> "$GITHUB_OUTPUT"
+          echo "Toolchain hash: ${TOOLCHAIN_HASH}"
+
+      - name: Get core source hash
+        id: core-hash
+        run: |
+          if [[ -d "workspace/${PLATFORM}/cores/src/${{ matrix.core }}" ]]; then
+            CORE_HASH=$(cd "workspace/${PLATFORM}/cores/src/${{ matrix.core }}" && git rev-parse HEAD 2>/dev/null || echo "unknown")
+          else
+            CORE_HASH="unknown"
+          fi
+          echo "core-hash=${CORE_HASH}" >> "$GITHUB_OUTPUT"
+          echo "Core ${{ matrix.core }} hash: ${CORE_HASH}"
+
       - name: Cache toolchains
         uses: actions/cache@v4
         with:
           path: toolchains
-          key: toolchains-${{ runner.os }}-${{ env.PLATFORM }}-modernize
+          key: toolchains-${{ runner.os }}-${{ env.PLATFORM }}-modernize-${{ steps.toolchain-hash.outputs.toolchain-hash }}
+
+      - name: Cache compiled cores
+        uses: actions/cache@v4
+        with:
+          path: workspace/${{ env.PLATFORM }}/cores/output/${{ matrix.core }}_libretro.so
+          key: core-${{ env.PLATFORM }}-${{ matrix.core }}-${{ steps.core-hash.outputs.core-hash }}-${{ steps.toolchain-hash.outputs.toolchain-hash }}
+
+      - name: Restore toolchain from cache
+        run: |
+          if [[ ! -d "toolchains/${PLATFORM}-toolchain/.git" ]]; then
+            echo "Toolchain not in cache, will need to download"
+          else
+            echo "Toolchain restored from cache"
+          fi
 
       - name: Ensure toolchain repo (retry)
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
           if [[ -d "toolchains/${PLATFORM}-toolchain/.git" ]]; then
             echo "Toolchain repo already present (from cache)."
             exit 0
           fi
           mkdir -p toolchains
-          for i in 1 2 3 4 5; do
-            echo "Cloning toolchain (attempt $i)..."
-            if git clone -b modernize --depth 1 "https://github.com/LoveRetro/${PLATFORM}-toolchain/" "toolchains/${PLATFORM}-toolchain"; then
+          git config --global http.postBuffer 524288000
+          git config --global http.lowSpeedLimit 0
+          git config --global http.lowSpeedTime 999999
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            echo "Cloning toolchain (attempt $i of 10)..."
+            if timeout 300 git clone -b modernize --depth 1 "https://github.com/LoveRetro/${PLATFORM}-toolchain/" "toolchains/${PLATFORM}-toolchain" 2>&1; then
+              echo "Toolchain cloned successfully on attempt $i"
               exit 0
+            else
+              CLONE_EXIT=$?
+              echo "::warning::Clone attempt $i failed with exit code $CLONE_EXIT"
+              rm -rf "toolchains/${PLATFORM}-toolchain" || true
+              if [[ $i -lt 10 ]]; then
+                echo "Waiting $((i * 15)) seconds before retry..."
+                sleep $((i * 15))
+              fi
             fi
-            rm -rf "toolchains/${PLATFORM}-toolchain" || true
-            sleep $((i * 10))
           done
-          echo "::error::Failed to clone toolchain repo after retries"
+          echo "::error::Failed to clone toolchain repo after 10 attempts"
           exit 1
 
       - name: Setup
         run: make setup
 
+      - name: Check if core is cached
+        id: core-cached
+        run: |
+          if [[ -f "workspace/${PLATFORM}/cores/output/${{ matrix.core }}_libretro.so" ]]; then
+            echo "core-exists=true" >> "$GITHUB_OUTPUT"
+            echo "Core ${{ matrix.core }} already compiled, skipping build"
+          else
+            echo "core-exists=false" >> "$GITHUB_OUTPUT"
+            echo "Core ${{ matrix.core }} not cached, will build"
+          fi
+
       - name: Build ${{ matrix.core }} core
+        if: steps.core-cached.outputs.core-exists != 'true'
         run: make build-core CORE=${{ matrix.core }}
 
       - name: Upload core
