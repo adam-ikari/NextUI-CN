@@ -48,7 +48,7 @@ NextUI 是一个基于 MinUI 的自定义固件（CFW），通过重建模拟器
 
 字体说明（本中文分支）：
 
-- 项目使用 [ChillRound](https://github.com/Warren2060/ChillRound) 作为中文字体来源。
+- 项目使用 [Dream Han Sans CN](https://github.com/Pal3love/dream-han-cjk) 作为中文字体来源。
 - 为了避免把字体大文件长期放进仓库，本仓库在 CI 中会在构建时注入字体（见工作流），并将默认字体文件替换为中文可用字体。
 
 功能亮点（来自上游 README，并做中文化整理）：
