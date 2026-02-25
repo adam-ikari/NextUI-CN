@@ -194,39 +194,30 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
-      - name: Inject ChillRound fonts (CI-time)
+      - name: Inject Resource Han Rounded fonts (CI-time)
         shell: bash
         env:
-          CHILLROUND_VERSION: v1.800
+          RHR_VERSION: v0.990
         run: |
           set -euo pipefail
-          mkdir -p /tmp/chillround
-          ZIP_OUT=/tmp/chillround/chillround.zip
+          mkdir -p /tmp/resource-han-rounded
+          ZIP_OUT=/tmp/resource-han-rounded/resource-han-rounded.7z
 
-          URL="https://github.com/Warren2060/ChillRound/releases/download/${CHILLROUND_VERSION}/ChillRoundM_v1.800.zip"
+          URL="https://github.com/CyanoHao/Resource-Han-Rounded/releases/download/${RHR_VERSION}/RHR-CN-${RHR_VERSION}.7z"
           echo "Downloading: $URL"
           curl -fL --retry 5 --retry-delay 2 --connect-timeout 20 -o "$ZIP_OUT" "$URL"
-          unzip -q /tmp/chillround/chillround.zip -d /tmp/chillround
-          SRC_DIR="/tmp/chillround"
-          FONT_OTF="$(find "$SRC_DIR" -maxdepth 3 -type f -iname 'ChillRoundM.otf' | head -n 1 || true)"
-          FONT_TTF_BOLD="$(find "$SRC_DIR" -maxdepth 3 -type f -iname 'ChillRoundM.ttf' | head -n 1 || true)"
-          FONT_TTF_REGULAR="$(find "$SRC_DIR" -maxdepth 3 -type f -iname 'ChillRound.ttf' | head -n 1 || true)"
-          if [[ -z "$FONT_OTF" ]]; then
-            echo "Extracted files:"; find "$SRC_DIR" -maxdepth 3 -type f | sed 's#^#- #' || true
-            echo "::error::ChillRound fonts not found in release zip"
-            exit 1
-          fi
-          # Fall back so builds still work even if the zip layout changes.
-          if [[ -z "$FONT_TTF_BOLD" && -n "$FONT_TTF_REGULAR" ]]; then FONT_TTF_BOLD="$FONT_TTF_REGULAR"; fi
-          if [[ -z "$FONT_TTF_REGULAR" && -n "$FONT_TTF_BOLD" ]]; then FONT_TTF_REGULAR="$FONT_TTF_BOLD"; fi
+          7z x "$ZIP_OUT" -o/tmp/resource-han-rounded
+          SRC_DIR="/tmp/resource-han-rounded"
+          FONT_TTF_BOLD="$(find "$SRC_DIR" -maxdepth 3 -type f -iname '*Bold*.ttf' | head -n 1 || true)"
+          FONT_TTF_REGULAR="$(find "$SRC_DIR" -maxdepth 3 -type f -iname 'RHR-CN-Regular*.ttf' -o -iname '*Normal*.ttf' | head -n 1 || true)"
           if [[ -z "$FONT_TTF_BOLD" || -z "$FONT_TTF_REGULAR" ]]; then
             echo "Extracted files:"; find "$SRC_DIR" -maxdepth 3 -type f | sed 's#^#- #' || true
-            echo "::error::ChillRound TTF fonts not found in release zip"
+            echo "::error::Resource Han Rounded CN TTF fonts not found in release archive"
             exit 1
           fi
           install -d skeleton/SYSTEM/res
-          cp -f "$FONT_OTF" skeleton/SYSTEM/res/BPreplayBold-unhinted.otf
-          cp -f "$FONT_OTF" skeleton/SYSTEM/res/BPreplayBold.otf
+          cp -f "$FONT_TTF_BOLD" skeleton/SYSTEM/res/BPreplayBold-unhinted.otf
+          cp -f "$FONT_TTF_BOLD" skeleton/SYSTEM/res/BPreplayBold.otf
           cp -f "$FONT_TTF_BOLD" skeleton/SYSTEM/res/font1.ttf
           cp -f "$FONT_TTF_REGULAR" skeleton/SYSTEM/res/font2.ttf
           echo "Injected into skeleton/SYSTEM/res:";
@@ -235,7 +226,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y zipmerge
+          sudo apt-get install -y zipmerge p7zip-full
 
       - name: Setup
         run: make setup
