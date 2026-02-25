@@ -198,8 +198,8 @@ jobs:
           curl -fL --retry 5 --retry-delay 2 --connect-timeout 20 -o "$ZIP_OUT" "$URL"
           unzip -q "$ZIP_OUT" -d /tmp/dream-han-sans
           SRC_DIR="/tmp/dream-han-sans"
-          FONT_TTF_BOLD="$(find "$SRC_DIR" -maxdepth 3 -type f -name '*Bold*.ttf' | head -n 1 || true)"
-          FONT_TTF_REGULAR="$(find "$SRC_DIR" -maxdepth 3 -type f -name '*Regular*.ttf' | head -n 1 || true)"
+          FONT_TTF_BOLD="$(find "$SRC_DIR" -maxdepth 3 -type f -name 'DreamHanSansCN-W20.ttf' | head -n 1 || true)"
+          FONT_TTF_REGULAR="$(find "$SRC_DIR" -maxdepth 3 -type f -name 'DreamHanSansCN-W10.ttf' | head -n 1 || true)"
           if [[ -z "$FONT_TTF_BOLD" || -z "$FONT_TTF_REGULAR" ]]; then
             echo "Extracted files:"; find "$SRC_DIR" -maxdepth 3 -type f | sed 's#^#- #' || true
             echo "::error::Dream Han Sans CN TTF fonts not found in release archive"
