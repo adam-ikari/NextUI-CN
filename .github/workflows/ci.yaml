@@ -187,7 +187,7 @@ jobs:
       - name: Inject Dream Han Sans CN fonts (CI-time)
         shell: bash
         env:
-          DREAM_VERSION: dream-3.02-sans-2.004-serif-2.003
+          DREAM_VERSION: dream-3.01-sans-2.004-serif-2.002
         run: |
           set -euo pipefail
           mkdir -p /tmp/dream-han-sans
