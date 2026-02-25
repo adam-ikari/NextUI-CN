@@ -125,7 +125,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
-- name: Inject Dream Han Sans CN fonts (CI-time)
+      - name: Inject Dream Han Sans CN fonts (CI-time)
         shell: bash
         env:
           DREAM_VERSION: dream-3.02-sans-2.004-serif-2.003
