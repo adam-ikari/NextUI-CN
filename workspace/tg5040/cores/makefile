@@ -60,6 +60,7 @@ mednafen_vb_REPO = https://github.com/libretro/beetle-vb-libretro
 fake-08_REPO = https://github.com/jtothebell/fake-08
 fake-08_CORE = fake08_libretro.so
 fake-08_BUILD_PATH = fake-08/platform/libretro
+fake-08_HASH = e9fe530dfdb91d80921ac490d0dfa5d184111c69
 
 fceumm_REPO = https://github.com/libretro/libretro-fceumm
 
