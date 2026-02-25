@@ -134,7 +134,7 @@ jobs:
           mkdir -p /tmp/resource-han-rounded
           ZIP_OUT=/tmp/resource-han-rounded/resource-han-rounded.7z
 
-          URL="https://github.com/CyanoHao/Resource-Han-Rounded/releases/download/${RHR_VERSION}/RHR-CN-${RHR_VERSION}.7z"
+          URL="https://github.com/CyanoHao/Resource-Han-Rounded/releases/download/${RHR_VERSION}/RHR-CN-0.990.7z"
           echo "Downloading: $URL"
           curl -fL --retry 5 --retry-delay 2 --connect-timeout 20 -o "$ZIP_OUT" "$URL"
           7z x "$ZIP_OUT" -o/tmp/resource-han-rounded
