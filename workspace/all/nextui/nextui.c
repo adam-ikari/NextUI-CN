@@ -2787,7 +2787,7 @@ int main (int argc, char *argv[]) {
 						SDL_Surface* text;
 						SDL_Color textColor = uintToColour(THEME_COLOR6_255);
 						text = TTF_RenderUTF8_Blended(font.large, display_name, textColor);
-						const int text_offset_y = (SCALE1(PILL_SIZE) - text->h + 1) >> 1;
+						const int text_offset_y = (SCALE1(PILL_SIZE) - text->h + 1) >> 1 + SCALE1(TEXT_Y_OFFSET);
 						GFX_blitPillLight(ASSET_WHITE_PILL, screen, &(SDL_Rect){
 							SCALE1(PADDING),
 							SCALE1(PADDING),
@@ -3035,7 +3035,7 @@ int main (int argc, char *argv[]) {
 						}
 						SDL_Surface* text = TTF_RenderUTF8_Blended(font.large, entry_name, text_color);
 						SDL_Surface* text_unique = TTF_RenderUTF8_Blended(font.large, display_name, COLOR_DARK_TEXT);
-						const int text_offset_y = (SCALE1(PILL_SIZE) - text->h + 1) >> 1;
+						const int text_offset_y = (SCALE1(PILL_SIZE) - text->h + 1) >> 1 + SCALE1(TEXT_Y_OFFSET);
 						if (j == selected_row) {
 							is_scrolling = GFX_resetScrollText(font.large,display_name, max_width - SCALE1(BUTTON_PADDING*2));
 							bool is_scrolling = remember_depth == stack->count;
@@ -3241,7 +3241,7 @@ int main (int argc, char *argv[]) {
 
 					int text_width = GFX_getTextWidth(font.large, entry_text, cached_display_name, available_width, SCALE1(BUTTON_PADDING * 2));
 					int max_width = MIN(available_width, text_width);
-					int text_offset_y = (SCALE1(PILL_SIZE) - TTF_FontHeight(font.large) + 1) >> 1;
+					int text_offset_y = (SCALE1(PILL_SIZE) - TTF_FontHeight(font.large) + 1) >> 1 + SCALE1(TEXT_Y_OFFSET);
 				
 					GFX_clearLayers(LAYER_SCROLLTEXT);
 					if (list_show_entry_names) {
