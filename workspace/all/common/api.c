@@ -198,21 +198,6 @@ static struct SND_Context
 	int frame_filled; // max_buf_w
 
 	int device_id; // SDL device id
-
-	// Audio processing thread fields
-	pthread_t processing_thread;
-	volatile int thread_running;
-	volatile int thread_should_stop;
-
-	// Input queue (SPSC lock-free ring buffer)
-	int16_t *input_queue;
-	size_t input_queue_size;
-	volatile size_t input_queue_write_idx;
-	volatile size_t input_queue_read_idx;
-
-	// Performance statistics
-	volatile unsigned long samples_processed;
-	volatile unsigned long queue_overflows;
 } snd = {0};
 
 ///////////////////////////////
@@ -2173,144 +2158,6 @@ static void SND_audioCallback(void *userdata, uint8_t *stream, int len)
 	if (len > 0)
 		memset(out, 0, len * (sizeof(int16_t) * 2));
 }
-
-static void *SND_processingThread(void *arg)
-{
-	(void)arg; // Unused
-
-	LOG_info("Audio processing thread started\n");
-
-	// Temporary buffer for processing
-	int16_t *temp_buffer = (int16_t *)malloc(BATCH_SIZE * sizeof(int16_t));
-	if (!temp_buffer)
-	{
-		LOG_error("Audio processing thread: Failed to allocate temp buffer\n");
-		return NULL;
-	}
-
-	while (snd.thread_running && !snd.thread_should_stop)
-	{
-		// Calculate available samples in input queue
-		size_t write_idx = snd.input_queue_write_idx;
-		size_t read_idx = snd.input_queue_read_idx;
-
-		size_t available;
-		if (write_idx >= read_idx)
-		{
-			available = write_idx - read_idx;
-		}
-		else
-		{
-			available = snd.input_queue_size - read_idx + write_idx;
-		}
-
-		if (available < 2) // Need at least 2 samples (left + right)
-		{
-			usleep(1000); // 1ms sleep to avoid busy waiting
-			continue;
-		}
-
-		// Read samples from input queue (lock-free)
-		size_t to_read = (available > BATCH_SIZE) ? BATCH_SIZE : available;
-		size_t samples_read = 0;
-
-		for (size_t i = 0; i < to_read; i++)
-		{
-			if (read_idx == write_idx && i > 0)
-				break;
-
-			temp_buffer[samples_read++] = snd.input_queue[read_idx];
-			read_idx = (read_idx + 1) % snd.input_queue_size;
-		}
-
-		snd.input_queue_read_idx = read_idx;
-
-		if (samples_read == 0)
-		{
-			usleep(1000);
-			continue;
-		}
-
-		// Convert samples to frames (left/right pairs)
-		size_t frame_count = samples_read / 2;
-		if (frame_count == 0)
-			continue;
-
-		// Resample if needed
-		ResampledFrames resampled;
-		if (snd.sample_rate_in != snd.sample_rate_out)
-		{
-			SND_Frame *frames = (SND_Frame *)temp_buffer;
-			resampled = resample_audio(frames, frame_count, snd.sample_rate_in, snd.sample_rate_out, 1.0);
-		}
-		else
-		{
-			// No resampling needed, just convert to frames
-			resampled.frames = (SND_Frame *)malloc(frame_count * sizeof(SND_Frame));
-			if (resampled.frames)
-			{
-				resampled.frame_count = frame_count;
-				memcpy(resampled.frames, temp_buffer, frame_count * sizeof(SND_Frame));
-			}
-			else
-			{
-				resampled.frame_count = 0;
-			}
-		}
-
-		// Write to output buffer with single lock (batch write)
-		if (resampled.frame_count > 0)
-		{
-			pthread_mutex_lock(&audio_mutex);
-			for (size_t i = 0; i < resampled.frame_count; i++)
-			{
-				// Check if buffer full (leave one slot free)
-				if ((snd.frame_in + 1) % snd.frame_count == snd.frame_out)
-					break;
-
-				snd.buffer[snd.frame_in] = resampled.frames[i];
-				snd.frame_in = (snd.frame_in + 1) % snd.frame_count;
-			}
-			pthread_mutex_unlock(&audio_mutex);
-
-			snd.samples_processed += resampled.frame_count;
-		}
-
-		if (resampled.frames && (snd.sample_rate_in != snd.sample_rate_out || samples_read != resampled.frame_count))
-		{
-			free(resampled.frames);
-		}
-	}
-
-	free(temp_buffer);
-	LOG_info("Audio processing thread stopped\n");
-	return NULL;
-}
-
-void SND_pushSample(int16_t left, int16_t right)
-{
-	if (!snd.initialized || !snd.thread_running)
-		return;
-
-	// Push left channel to input queue (lock-free)
-	size_t next_idx = (snd.input_queue_write_idx + 1) % snd.input_queue_size;
-	if (next_idx != snd.input_queue_read_idx) {
-		snd.input_queue[snd.input_queue_write_idx] = left;
-		snd.input_queue_write_idx = next_idx;
-	} else {
-		snd.queue_overflows++;
-	}
-
-	// Push right channel to input queue (lock-free)
-	next_idx = (snd.input_queue_write_idx + 1) % snd.input_queue_size;
-	if (next_idx != snd.input_queue_read_idx) {
-		snd.input_queue[snd.input_queue_write_idx] = right;
-		snd.input_queue_write_idx = next_idx;
-	} else {
-		snd.queue_overflows++;
-	}
-}
-
 static void SND_resizeBuffer(void)
 { // plat_sound_resize_buffer
 
@@ -2835,44 +2682,6 @@ void SND_init(double sample_rate, double frame_rate)
 
 	SND_resizeBuffer();
 
-	// Initialize input queue for processing thread
-	snd.input_queue_size = 8192; // Enough for ~250ms at 32768Hz
-	snd.input_queue = (int16_t *)malloc(snd.input_queue_size * sizeof(int16_t));
-	if (!snd.input_queue)
-	{
-		LOG_error("SND_init: Failed to allocate input queue\n");
-		SDL_CloseAudioDevice(snd.device_id);
-		SDL_QuitSubSystem(SDL_INIT_AUDIO);
-		return;
-	}
-	memset(snd.input_queue, 0, snd.input_queue_size * sizeof(int16_t));
-	snd.input_queue_write_idx = 0;
-	snd.input_queue_read_idx = 0;
-
-	// Initialize thread flags
-	snd.thread_running = 0;
-	snd.thread_should_stop = 0;
-	snd.samples_processed = 0;
-	snd.queue_overflows = 0;
-
-	// Start processing thread
-	snd.thread_running = 1;
-	int ret = pthread_create(&snd.processing_thread, NULL, SND_processingThread, NULL);
-	if (ret != 0)
-	{
-		LOG_error("SND_init: Failed to create processing thread: %s\n", strerror(ret));
-		snd.thread_running = 0;
-		free(snd.input_queue);
-		snd.input_queue = NULL;
-		SDL_CloseAudioDevice(snd.device_id);
-		SDL_QuitSubSystem(SDL_INIT_AUDIO);
-		return;
-	}
-
-#ifdef __linux__
-	pthread_setname_np(snd.processing_thread, "audio_proc");
-#endif
-
 	// start with audiodevice paused so buffer can fill a little, snd_batchsamples will unpause it
 	SND_pauseAudio(true);
 	LOG_info("sample rate: %i (req) %i (rec) [samples %i]\n", snd.sample_rate_in, snd.sample_rate_out, SAMPLES);
@@ -2886,23 +2695,6 @@ void SND_quit(void)
 	{
 		LOG_warn("Skipping SND teardown, not initialized.\n");
 		return;
-	}
-
-	// Stop processing thread
-	if (snd.thread_running)
-	{
-		snd.thread_should_stop = 1;
-		pthread_join(snd.processing_thread, NULL);
-		snd.thread_running = 0;
-		LOG_info("SND_quit: Processing thread stopped\n");
-	}
-
-	// Free input queue
-	if (snd.input_queue)
-	{
-		free(snd.input_queue);
-		snd.input_queue = NULL;
-		LOG_info("SND_quit: Input queue freed\n");
 	}
 
 	SND_pauseAudio(true);
