@@ -161,3 +161,4 @@ NextUI 支持各种可选扩展（Paks）。
 ---
 
 ## 更多信息请访问官网：[nextui.loveretro.games](https://nextui.loveretro.games)
+# Build status
