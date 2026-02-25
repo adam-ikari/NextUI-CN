@@ -21,15 +21,16 @@ We use Resource Han Rounded from:
 
 And map release files into NextUI assets:
 
-- `*Bold*.ttf`    → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
-- `*Bold*.ttf`    → `skeleton/SYSTEM/res/BPreplayBold.otf` (alias)
-- `*Bold*.ttf`    → `skeleton/SYSTEM/res/font1.ttf` (默认字体，较粗字重)
-- `*Regular*.ttf` → `skeleton/SYSTEM/res/font2.ttf` (可选字体，常规字重)
+- `RHR-CN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
+- `RHR-CN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold.otf` (alias)
+- `RHR-CN-Bold.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体，粗体字重)
+- `RHR-CN-Regular.ttf` → `skeleton/SYSTEM/res/font2.ttf` (可选字体，常规字重)
 
 Notes:
 - `BPreplayBold-unhinted.otf` is used by some UI elements as a bold face.
 - `font1.ttf` is the default UI font (ID depends on upstream config).
-- `font2.ttf` is also replaced to keep both selectable fonts CJK-capable.
+- We use the RHR-CN variant (简体中文版本) for optimal Chinese character support.
+- The CN version is specifically optimized for Simplified Chinese characters.
 
 ## Re-sync fonts (Windows PowerShell)
 
