@@ -13,18 +13,18 @@ In this repo we supply those files via the skeleton overlay:
 
 Anything under `skeleton/` is intended to be copied into the final SD card layout, so it survives upstream rebases.
 
-## ChillRound mapping (current convention)
+## Resource Han Rounded mapping (current convention)
 
-We use ChillRound from:
+We use Resource Han Rounded from:
 
-`https://github.com/Warren2060/ChillRound/releases`
+`https://github.com/CyanoHao/Resource-Han-Rounded/releases`
 
 And map release files into NextUI assets:
 
-- `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
-- `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold.otf` (alias)
-- `ChillRoundM.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体，较粗字重)
-- `ChillRound.ttf`  → `skeleton/SYSTEM/res/font2.ttf` (可选字体，常规字重)
+- `*Bold*.ttf`    → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
+- `*Bold*.ttf`    → `skeleton/SYSTEM/res/BPreplayBold.otf` (alias)
+- `*Bold*.ttf`    → `skeleton/SYSTEM/res/font1.ttf` (默认字体，较粗字重)
+- `*Regular*.ttf` → `skeleton/SYSTEM/res/font2.ttf` (可选字体，常规字重)
 
 Notes:
 - `BPreplayBold-unhinted.otf` is used by some UI elements as a bold face.
