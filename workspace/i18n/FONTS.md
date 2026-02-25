@@ -13,24 +13,25 @@ In this repo we supply those files via the skeleton overlay:
 
 Anything under `skeleton/` is intended to be copied into the final SD card layout, so it survives upstream rebases.
 
-## Resource Han Rounded mapping (current convention)
+## Dream Han Sans CN mapping (current convention)
 
-We use Resource Han Rounded from:
+We use Dream Han Sans CN from:
 
-`https://github.com/CyanoHao/Resource-Han-Rounded/releases`
+`https://github.com/Pal3love/dream-han-cjk/releases`
 
 And map release files into NextUI assets:
 
-- `RHR-CN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
-- `RHR-CN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold.otf` (alias)
-- `RHR-CN-Bold.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体，粗体字重)
-- `RHR-CN-Regular.ttf` → `skeleton/SYSTEM/res/font2.ttf` (可选字体，常规字重)
+- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
+- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold.otf` (alias)
+- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体，粗体字重)
+- `DreamHanSansCN-Regular.ttf` → `skeleton/SYSTEM/res/font2.ttf` (可选字体，常规字重)
 
 Notes:
 - `BPreplayBold-unhinted.otf` is used by some UI elements as a bold face.
 - `font1.ttf` is the default UI font (ID depends on upstream config).
-- We use the RHR-CN variant (简体中文版本) for optimal Chinese character support.
+- We use the DreamHanSansCN variant (简体中文版本) for optimal Chinese character support.
 - The CN version is specifically optimized for Simplified Chinese characters.
+- Dream Han Sans CN provides 27 weights and is based on Source Han Sans 2.004.
 
 ## Re-sync fonts (Windows PowerShell)
 
