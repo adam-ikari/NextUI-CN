@@ -329,6 +329,8 @@ void CFG_setFontId(int id)
 
     if(settings.onFontChange)
         settings.onFontChange(fontPath);
+
+    CFG_sync();
 }
 
 uint32_t CFG_getColor(int color_id)
