@@ -260,6 +260,9 @@ package: tidy
 	mkdir -p ./build/BASE
 	mv $(VENDOR_DEST)/* ./build/BASE/
 	
+	# Remove Loading app from extras (don't include in package)
+	rm -rf ./build/EXTRAS/Tools/Remove Loading.pak
+	
 	# TODO: can I just add everything in BASE to zip?
 	# cd ./build/BASE && zip -r ../../releases/$(RELEASE_NAME)-base.zip Bios Roms Saves miyoo miyoo354 trimui rg35xx rg35xxplus gkdpixel miyoo355 magicx em_ui.sh MinUI.zip README.txt
 	cd ./build/BASE && zip -r ../../releases/$(RELEASE_NAME)-base.zip Bios Roms Saves Shaders trimui em_ui.sh MinUI.zip *.pakz README.txt
