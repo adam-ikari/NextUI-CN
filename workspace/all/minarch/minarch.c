@@ -1576,6 +1576,7 @@ static char** i18n_tearing_labels = NULL;
 static char** i18n_sync_ref_labels = NULL;
 static char** i18n_overclock_labels = NULL;
 static char** i18n_max_ff_labels = NULL;
+static char** i18n_sharpness_labels = NULL;
 
 static char** i18n_nrofshaders_labels = NULL;
 static char** i18n_shupscale_labels = NULL;
@@ -1668,6 +1669,9 @@ static void Minarch_initFrontendI18nOnce(void) {
 	i18n_sync_ref_labels = Minarch_buildI18nLabels(sync_ref_keys, sync_ref_labels);
 	i18n_overclock_labels = Minarch_buildI18nLabels(overclock_keys, overclock_labels);
 	i18n_max_ff_labels = Minarch_buildI18nLabels(max_ff_keys, max_ff_labels);
+
+	static const char* sharpness_keys[] = {"minarch.sharpness.nearest", "minarch.sharpness.linear", NULL};
+	i18n_sharpness_labels = Minarch_buildI18nLabels(sharpness_keys, sharpness_labels);
 
 	static const char* nrofshaders_keys[] = {"common.off", NULL, NULL, NULL, NULL};
 	static const char* shupscale_keys[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "minarch.shaders.upscale.screen", NULL};
@@ -2547,7 +2551,7 @@ static void Config_load(void) {
 	config.frontend.options[FE_OPT_SCREENY].name = (char*)TR("minarch.frontend.offset_screen_y");
 
 	config.frontend.options[FE_OPT_SHARPNESS].name = (char*)TR("minarch.frontend.screen_sharpness");
-	// Keep NEAREST/LINEAR as-is; these are technical.
+	config.frontend.options[FE_OPT_SHARPNESS].labels = i18n_sharpness_labels;
 
 	config.frontend.options[FE_OPT_TEARING].name = (char*)TR("minarch.frontend.vsync");
 	config.frontend.options[FE_OPT_TEARING].labels = i18n_tearing_labels;

@@ -205,6 +205,9 @@ minarch.scaling.aspect_screen=屏幕比例
 minarch.scaling.fullscreen=全屏
 minarch.scaling.cropped=裁切
 
+minarch.sharpness.nearest=最近邻
+minarch.sharpness.linear=线性
+
 minarch.resample.low=低
 minarch.resample.medium=中
 minarch.resample.high=高
