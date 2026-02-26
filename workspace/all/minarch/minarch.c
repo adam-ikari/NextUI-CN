@@ -1805,6 +1805,22 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "wheel controller")) return TR("minarch.spinner.wheel");
 	if (!strcasecmp(value, "roller controller")) return TR("minarch.spinner.roller");
 	
+	// BlueMSX (MSX/SVI/ColecoVision/SG-1000) specific
+	if (!strcasecmp(value, "msx")) return TR("minarch.system.msx");
+	if (!strcasecmp(value, "msxturbor")) return TR("minarch.system.msx_turbo_r");
+	if (!strcasecmp(value, "msx2")) return TR("minarch.system.msx2");
+	if (!strcasecmp(value, "msx2+")) return TR("minarch.system.msx2_plus");
+	if (!strcasecmp(value, "sega - sg-1000")) return TR("minarch.system.sega_sg1000");
+	if (!strcasecmp(value, "sega - sc-3000")) return TR("minarch.system.sega_sc3000");
+	if (!strcasecmp(value, "sega - sf-7000")) return TR("minarch.system.sega_sf7000");
+	if (!strcasecmp(value, "svi - spectravideo svi-318")) return TR("minarch.system.svi_318");
+	if (!strcasecmp(value, "svi - spectravideo svi-328")) return TR("minarch.system.svi_328");
+	if (!strcasecmp(value, "svi - spectravideo svi-328 mk2")) return TR("minarch.system.svi_328_mk2");
+	if (!strcasecmp(value, "colecovision")) return TR("minarch.system.colecovision");
+	if (!strcasecmp(value, "colecovision (spectravideo svi-603)")) return TR("minarch.system.colecovision_svi603");
+	if (!strcasecmp(value, "50hz")) return TR("minarch.freq.50hz");
+	if (!strcasecmp(value, "60hz")) return TR("minarch.freq.60hz");
+	
 	return value;
 }
 

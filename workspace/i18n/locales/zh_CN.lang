@@ -411,6 +411,22 @@ minarch.spinner.super_action=超级动作手柄
 minarch.spinner.wheel=方向盘
 minarch.spinner.roller=滚轮
 
+# BlueMSX (MSX/SVI/ColecoVision/SG-1000) specific
+minarch.system.msx=MSX
+minarch.system.msx_turbo_r=MSX Turbo R
+minarch.system.msx2=MSX2
+minarch.system.msx2_plus=MSX2+
+minarch.system.sega_sg1000=SEGA SG-1000
+minarch.system.sega_sc3000=SEGA SC-3000
+minarch.system.sega_sf7000=SEGA SF-7000
+minarch.system.svi_318=SVI-318
+minarch.system.svi_328=SVI-328
+minarch.system.svi_328_mk2=SVI-328 MK2
+minarch.system.colecovision=ColecoVision
+minarch.system.colecovision_svi603=ColecoVision (SVI-603)
+minarch.freq.50hz=50Hz
+minarch.freq.60hz=60Hz
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动
