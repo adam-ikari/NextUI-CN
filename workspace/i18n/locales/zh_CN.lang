@@ -316,6 +316,23 @@ minarch.filter.rf=射频
 minarch.ratio.4_3=4:3
 minarch.ratio.uncorrected=未校正
 
+# PicoDrive specific options
+minarch.pad.3button=3键手柄
+minarch.pad.6button=6键手柄
+minarch.ratio.par=像素宽高比
+minarch.ratio.crt=CRT
+minarch.filter.lowpass=低通
+minarch.region.japan_ntsc=日本NTSC
+minarch.region.japan_pal=日本PAL
+minarch.region.us=美国
+minarch.region.europe=欧洲
+minarch.overclock.+25=+25%
+minarch.overclock.+50=+50%
+minarch.overclock.+75=+75%
+minarch.overclock.+100=+100%
+minarch.overclock.+200=+200%
+minarch.overclock.+400=+400%
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动

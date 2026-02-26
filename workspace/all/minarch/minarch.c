@@ -1706,6 +1706,25 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "4:3")) return TR("minarch.ratio.4_3");
 	if (!strcasecmp(value, "uncorrected")) return TR("minarch.ratio.uncorrected");
 	
+	// PicoDrive specific
+	if (!strcasecmp(value, "3 button pad")) return TR("minarch.pad.3button");
+	if (!strcasecmp(value, "6 button pad")) return TR("minarch.pad.6button");
+	if (!strcasecmp(value, "par")) return TR("minarch.ratio.par");
+	if (!strcasecmp(value, "crt")) return TR("minarch.ratio.crt");
+	if (!strcasecmp(value, "low-pass")) return TR("minarch.filter.lowpass");
+	if (!strcasecmp(value, "japan ntsc")) return TR("minarch.region.japan_ntsc");
+	if (!strcasecmp(value, "japan pal")) return TR("minarch.region.japan_pal");
+	if (!strcasecmp(value, "us")) return TR("minarch.region.us");
+	if (!strcasecmp(value, "europe")) return TR("minarch.region.europe");
+	
+	// Overclock percentages
+	if (!strcasecmp(value, "+25%")) return TR("minarch.overclock.+25");
+	if (!strcasecmp(value, "+50%")) return TR("minarch.overclock.+50");
+	if (!strcasecmp(value, "+75%")) return TR("minarch.overclock.+75");
+	if (!strcasecmp(value, "+100%")) return TR("minarch.overclock.+100");
+	if (!strcasecmp(value, "+200%")) return TR("minarch.overclock.+200");
+	if (!strcasecmp(value, "+400%")) return TR("minarch.overclock.+400");
+	
 	return value;
 }
 
