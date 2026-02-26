@@ -1696,6 +1696,16 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "mono")) return TR("minarch.audio.mono");
 	if (!strcasecmp(value, "stereo")) return TR("minarch.audio.stereo");
 	
+	// Snes9x specific
+	if (!strcasecmp(value, "merge")) return TR("minarch.blend.merge");
+	if (!strcasecmp(value, "blur")) return TR("minarch.blend.blur");
+	if (!strcasecmp(value, "rf")) return TR("minarch.filter.rf");
+	if (!strcasecmp(value, "auto")) return TR("common.auto");
+	
+	// Common aspect ratios
+	if (!strcasecmp(value, "4:3")) return TR("minarch.ratio.4_3");
+	if (!strcasecmp(value, "uncorrected")) return TR("minarch.ratio.uncorrected");
+	
 	return value;
 }
 

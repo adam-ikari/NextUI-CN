@@ -307,6 +307,14 @@ common.menu_l3=菜单键+L3键
 common.menu_r3=菜单键+R3键
 common.disabled=禁用
 common.enabled=启用
+common.auto=自动
+
+# Snes9x specific options
+minarch.blend.merge=合并
+minarch.blend.blur=模糊
+minarch.filter.rf=射频
+minarch.ratio.4_3=4:3
+minarch.ratio.uncorrected=未校正
 
 # Gamepad types
 minarch.gamepad.standard=标准
