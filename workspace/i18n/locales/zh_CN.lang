@@ -253,6 +253,24 @@ minarch.interpolation.cubic=三次
 minarch.cd.precache=预缓存
 minarch.cpu.interpreter=解释器
 
+# Common core option values for various emulators
+minarch.filter.monochrome=单色
+minarch.filter.composite=复合
+minarch.filter.svideo=S端子
+minarch.filter.rgb=RGB
+minarch.display.sharp=锐利
+minarch.display.smooth=平滑
+minarch.display.grayscale=灰度
+minarch.system.dendy=Dendy
+minarch.color.color=彩色
+minarch.color.internal=内部
+minarch.quality.low=低
+minarch.quality.medium=中
+minarch.quality.high=高
+minarch.quality.max=最高
+minarch.audio.mono=单声道
+minarch.audio.stereo=立体声
+
 # Button labels for controls and shortcuts
 common.none=无
 common.up=上
@@ -287,6 +305,8 @@ common.menu_l2=菜单键+L2键
 common.menu_r2=菜单键+R2键
 common.menu_l3=菜单键+L3键
 common.menu_r3=菜单键+R3键
+common.disabled=禁用
+common.enabled=启用
 
 # Gamepad types
 minarch.gamepad.standard=标准

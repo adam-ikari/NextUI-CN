@@ -1665,6 +1665,37 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	// PCSX-ReArmed dynamic recompiler
 	if (!strcasecmp(value, "interpreter")) return TR("minarch.cpu.interpreter");
 	
+	// Common video filters (NES, SNES, etc.)
+	if (!strcasecmp(value, "disabled")) return TR("common.disabled");
+	if (!strcasecmp(value, "enabled")) return TR("common.enabled");
+	if (!strcasecmp(value, "monochrome")) return TR("minarch.filter.monochrome");
+	if (!strcasecmp(value, "composite")) return TR("minarch.filter.composite");
+	if (!strcasecmp(value, "s-video")) return TR("minarch.filter.svideo");
+	if (!strcasecmp(value, "svideo")) return TR("minarch.filter.svideo");
+	if (!strcasecmp(value, "rgb")) return TR("minarch.filter.rgb");
+	
+	// Common display modes
+	if (!strcasecmp(value, "sharp")) return TR("minarch.display.sharp");
+	if (!strcasecmp(value, "smooth")) return TR("minarch.display.smooth");
+	if (!strcasecmp(value, "grayscale")) return TR("minarch.display.grayscale");
+	
+	// System types
+	if (!strcasecmp(value, "dendy")) return TR("minarch.system.dendy");
+	
+	// Color modes
+	if (!strcasecmp(value, "color")) return TR("minarch.color.color");
+	if (!strcasecmp(value, "internal")) return TR("minarch.color.internal");
+	
+	// Sound quality
+	if (!strcasecmp(value, "low")) return TR("minarch.quality.low");
+	if (!strcasecmp(value, "medium")) return TR("minarch.quality.medium");
+	if (!strcasecmp(value, "high")) return TR("minarch.quality.high");
+	if (!strcasecmp(value, "max")) return TR("minarch.quality.max");
+	
+	// Audio channels
+	if (!strcasecmp(value, "mono")) return TR("minarch.audio.mono");
+	if (!strcasecmp(value, "stereo")) return TR("minarch.audio.stereo");
+	
 	return value;
 }
 
