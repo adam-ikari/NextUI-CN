@@ -199,7 +199,7 @@ jobs:
         env:
           DREAM_VERSION: dream-3.02-sans-2.004-serif-2.003
           FUSION_VERSION: 2026.01.04
-          CHILLROUND_VERSION: 1.805
+          CHILLROUND_VERSION: v1.800
         run: |
           set -euo pipefail
           install -d skeleton/SYSTEM/res
@@ -240,16 +240,20 @@ jobs:
           
           # Download ChillRound (寒蝉半圆体)
           mkdir -p /tmp/chillround-font
-          CHILLROUND_ZIP_OUT="/tmp/chillround-font/ChillRoundM-v${CHILLROUND_VERSION}.zip"
-          CHILLROUND_URL="https://github.com/Warren2060/ChillRound/releases/download/v${CHILLROUND_VERSION}/ChillRoundM-v${CHILLROUND_VERSION}.zip"
+          CHILLROUND_ZIP_OUT="/tmp/chillround-font/ChillRoundM_v1.800.zip"
+          CHILLROUND_URL="https://github.com/Warren2060/ChillRound/releases/download/${CHILLROUND_VERSION}/ChillRoundM_v1.800.zip"
           echo "Downloading ChillRound: $CHILLROUND_URL"
           curl -fL --retry 5 --retry-delay 2 --connect-timeout 20 -o "$CHILLROUND_ZIP_OUT" "$CHILLROUND_URL"
           unzip -q "$CHILLROUND_ZIP_OUT" -d /tmp/chillround-font
           CHILLROUND_SRC_DIR="/tmp/chillround-font"
-          CHILLROUND_FONT="$(find "$CHILLROUND_SRC_DIR" -maxdepth 1 -type f -name 'ChillRoundM.ttf' | head -n 1 || true)"
+          CHILLROUND_FONT="$(find "$CHILLROUND_SRC_DIR" -maxdepth 3 -type f -iname 'ChillRoundM.ttf' | head -n 1 || true)"
           if [[ -z "$CHILLROUND_FONT" ]]; then
-            echo "Extracted ChillRound files:"; find "$CHILLROUND_SRC_DIR" -maxdepth 1 -type f | sed 's#^#- #' || true
-            echo "::error::ChillRound TTF font not found in release archive"
+            # Try OTF as fallback
+            CHILLROUND_FONT="$(find "$CHILLROUND_SRC_DIR" -maxdepth 3 -type f -iname 'ChillRoundM.otf' | head -n 1 || true)"
+          fi
+          if [[ -z "$CHILLROUND_FONT" ]]; then
+            echo "Extracted ChillRound files:"; find "$CHILLROUND_SRC_DIR" -maxdepth 3 -type f | sed 's#^#- #' || true
+            echo "::error::ChillRound font not found in release archive"
             exit 1
           fi
           cp -f "$CHILLROUND_FONT" skeleton/SYSTEM/res/font3.ttf
