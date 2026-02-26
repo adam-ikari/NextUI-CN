@@ -1972,6 +1972,19 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "2-point 1st order")) return TR("minarch.interpolation.2point_1st");
 	if (!strcasecmp(value, "4-point 3rd order")) return TR("minarch.interpolation.4point_3rd");
 	
+	// Atari 800/5200 specific
+	if (!strcasecmp(value, "400/800 (os b)")) return TR("minarch.system.400_800_osb");
+	if (!strcasecmp(value, "800xl (64k)")) return TR("minarch.system.800xl_64k");
+	if (!strcasecmp(value, "130xe (128k)")) return TR("minarch.system.130xe_128k");
+	if (!strcasecmp(value, "sio acceleration")) return TR("minarch.sio.acceleration");
+	if (!strcasecmp(value, "boot from cassette")) return TR("minarch.boot.cassette");
+	if (!strcasecmp(value, "hi-res artifacting")) return TR("minarch.hires.artifacting");
+	if (!strcasecmp(value, "autodetect a5200 carttype")) return TR("minarch.autodetect.a5200_cart");
+	if (!strcasecmp(value, "joy hack a5200 for robotron")) return TR("minarch.joyhack.robotron");
+	if (!strcasecmp(value, "retroarch keyboard type")) return TR("minarch.keyboard.type");
+	if (!strcasecmp(value, "poll")) return TR("minarch.keyboard.poll");
+	if (!strcasecmp(value, "callback")) return TR("minarch.keyboard.callback");
+	
 	return value;
 }
 

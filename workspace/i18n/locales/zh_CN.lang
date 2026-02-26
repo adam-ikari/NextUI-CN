@@ -574,6 +574,19 @@ minarch.frameskip.manual=手动
 minarch.interpolation.2point_1st=2点1阶
 minarch.interpolation.4point_3rd=4点3阶
 
+# Atari 800/5200
+minarch.system.400_800_osb=400/800 (OS B)
+minarch.system.800xl_64k=800XL (64K)
+minarch.system.130xe_128k=130XE (128K)
+minarch.sio.acceleration=SIO加速
+minarch.boot.cassette=从磁带启动
+minarch.hires.artifacting=高分辨率伪影
+minarch.autodetect.a5200_cart=自动检测A5200卡带类型
+minarch.joyhack.robotron=Robotron手柄hack
+minarch.keyboard.type=键盘类型
+minarch.keyboard.poll=轮询
+minarch.keyboard.callback=回调
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动
