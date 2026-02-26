@@ -239,11 +239,15 @@ package: tidy
 	cd ./build/SYSTEM && echo "$(RELEASE_NAME)\n$(BUILD_HASH)" > version.txt
 	# ./commits.sh > ./build/SYSTEM/commits.txt
 	cd ./build && find . -type f -name '.DS_Store' -delete
+
+	# Remove Loading app from extras (don't include in package)
+	rm -rf ./build/EXTRAS/Tools/tg5040/Remove Loading.pak
+
 	mkdir -p ./build/PAYLOAD
 	mv ./build/SYSTEM ./build/PAYLOAD/.system
 	cp -R ./build/BOOT/.tmp_update ./build/PAYLOAD/
 	cp -R ./build/EXTRAS/Tools ./build/PAYLOAD/
-	
+
 	cd ./build/PAYLOAD && zip -r MinUI.zip .system .tmp_update Tools
 	mv ./build/PAYLOAD/MinUI.zip ./build/BASE
 
@@ -259,9 +263,6 @@ package: tidy
 	# Move renamed .pakz files into base folder
 	mkdir -p ./build/BASE
 	mv $(VENDOR_DEST)/* ./build/BASE/
-
-	# Remove Loading app from extras (don't include in package)
-	rm -rf ./build/EXTRAS/Tools/tg5040/Remove Loading.pak
 
 	# TODO: can I just add everything in BASE to zip?
 	# cd ./build/BASE && zip -r ../../releases/$(RELEASE_NAME)-base.zip Bios Roms Saves miyoo miyoo354 trimui rg35xx rg35xxplus gkdpixel miyoo355 magicx em_ui.sh MinUI.zip README.txt
