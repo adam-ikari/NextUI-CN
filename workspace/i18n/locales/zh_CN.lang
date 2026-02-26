@@ -360,6 +360,38 @@ minarch.position.central=中央
 minarch.position.above_screen=屏幕上方
 minarch.position.below_screen=屏幕下方
 
+# mGBA specific
+common.autodetect=自动检测
+minarch.system.game_boy=Game Boy
+minarch.system.super_game_boy=Super Game Boy
+minarch.system.game_boy_color=Game Boy Color
+minarch.system.game_boy_advance=Game Boy Advance
+minarch.idle.remove_known=移除已知
+minarch.idle.detect_and_remove=检测并移除
+minarch.idle.dont_remove=不移除
+
+# PCE FAST specific
+minarch.bios.system_card_3=系统卡3
+minarch.bios.games_express=Games Express
+minarch.bios.system_card_1=系统卡1
+minarch.bios.system_card_2=系统卡2
+minarch.speed.fast=快
+minarch.speed.medium=中
+minarch.speed.slow=慢
+
+# Virtual Boy specific
+minarch.anaglyph.red_blue=红蓝
+minarch.anaglyph.red_cyan=红青
+minarch.anaglyph.red_electric_cyan=红电青
+minarch.anaglyph.red_green=红绿
+minarch.anaglyph.green_magenta=绿洋红
+minarch.anaglyph.yellow_blue=黄蓝
+minarch.palette.black_red=黑红
+minarch.palette.black_white=黑白
+minarch.invert.x=反转X
+minarch.invert.y=反转Y
+minarch.invert.both=反转两者
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动

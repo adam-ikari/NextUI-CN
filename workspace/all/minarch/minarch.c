@@ -1754,6 +1754,38 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "gb")) return TR("minarch.system.gb");
 	if (!strcasecmp(value, "gba")) return TR("minarch.system.gba");
 	
+	// mGBA specific
+	if (!strcasecmp(value, "autodetect")) return TR("common.autodetect");
+	if (!strcasecmp(value, "game boy")) return TR("minarch.system.game_boy");
+	if (!strcasecmp(value, "super game boy")) return TR("minarch.system.super_game_boy");
+	if (!strcasecmp(value, "game boy color")) return TR("minarch.system.game_boy_color");
+	if (!strcasecmp(value, "game boy advance")) return TR("minarch.system.game_boy_advance");
+	if (!strcasecmp(value, "remove known")) return TR("minarch.idle.remove_known");
+	if (!strcasecmp(value, "detect and remove")) return TR("minarch.idle.detect_and_remove");
+	if (!strcasecmp(value, "don't remove")) return TR("minarch.idle.dont_remove");
+	
+	// PCE FAST specific
+	if (!strcasecmp(value, "system card 3")) return TR("minarch.bios.system_card_3");
+	if (!strcasecmp(value, "games express")) return TR("minarch.bios.games_express");
+	if (!strcasecmp(value, "system card 1")) return TR("minarch.bios.system_card_1");
+	if (!strcasecmp(value, "system card 2")) return TR("minarch.bios.system_card_2");
+	if (!strcasecmp(value, "fast")) return TR("minarch.speed.fast");
+	if (!strcasecmp(value, "medium")) return TR("minarch.speed.medium");
+	if (!strcasecmp(value, "slow")) return TR("minarch.speed.slow");
+	
+	// Virtual Boy specific
+	if (!strcasecmp(value, "red & blue")) return TR("minarch.anaglyph.red_blue");
+	if (!strcasecmp(value, "red & cyan")) return TR("minarch.anaglyph.red_cyan");
+	if (!strcasecmp(value, "red & electric cyan")) return TR("minarch.anaglyph.red_electric_cyan");
+	if (!strcasecmp(value, "red & green")) return TR("minarch.anaglyph.red_green");
+	if (!strcasecmp(value, "green & magenta")) return TR("minarch.anaglyph.green_magenta");
+	if (!strcasecmp(value, "yellow & blue")) return TR("minarch.anaglyph.yellow_blue");
+	if (!strcasecmp(value, "black & red")) return TR("minarch.palette.black_red");
+	if (!strcasecmp(value, "black & white")) return TR("minarch.palette.black_white");
+	if (!strcasecmp(value, "invert x")) return TR("minarch.invert.x");
+	if (!strcasecmp(value, "invert y")) return TR("minarch.invert.y");
+	if (!strcasecmp(value, "invert both")) return TR("minarch.invert.both");
+	
 	return value;
 }
 
