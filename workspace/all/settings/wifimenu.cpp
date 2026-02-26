@@ -110,6 +110,17 @@ void Menu::updater()
             if(WIFI_connectionInfo(&connection) < 0)
                 continue; // try again in a bit
 
+            // Show scanning indicator before scan
+            {
+                WriteLock w(itemLock);
+                if (items.size() == 2) { // Only toggle and diag items present
+                    MenuItem *scanningItem = new MenuItem{ListItemType::Generic, TR("settings.network.wifi_scanning"), TR("settings.network.wifi_scanning.desc")};
+                    items.push_back(scanningItem);
+                    MenuList::performLayout((SDL_Rect){0, 0, FIXED_WIDTH, FIXED_HEIGHT});
+                    globalDirty = 1;
+                }
+            }
+
             // grab list and compare it to previous result
             // only relayout the menu if changes happended
             std::vector<WIFI_network> scanResults(SCAN_MAX_RESULTS);
