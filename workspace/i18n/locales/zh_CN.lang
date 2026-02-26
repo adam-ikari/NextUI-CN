@@ -13,7 +13,7 @@ files=文件
 game_tracker=游戏时间统计
 input=输入测试
 ledcontrol=LED 控制
-remove_loading=移除加载提示
+# remove_loading=移除加载提示
 tools=工具
 
 common.on=开
@@ -200,7 +200,7 @@ minarch.corecat.hacks=兼容性/Hacks
 minarch.corecat.misc=杂项
 
 minarch.scaling.native=原生
-minarch.scaling.aspect=比例
+minarch.scaling.aspect=原生比例
 minarch.scaling.aspect_screen=屏幕比例
 minarch.scaling.fullscreen=全屏
 minarch.scaling.cropped=裁切
@@ -215,19 +215,19 @@ minarch.resample.max=最高
 
 minarch.ambient.off=关
 minarch.ambient.all=全部
-minarch.ambient.top=顶部
-minarch.ambient.fn=FN
-minarch.ambient.lr=左右
-minarch.ambient.top_lr=顶部/左右
+minarch.ambient.top=仅顶部
+minarch.ambient.fn=仅FN键
+minarch.ambient.lr=仅LR键
+minarch.ambient.top_lr=顶部和LR键
 
-minarch.effect.line=线条
-minarch.effect.grid=网格
+minarch.effect.line=扫描线
+minarch.effect.grid=像素网格
 
 minarch.vsync.lenient=宽松
 minarch.vsync.strict=严格
 
-minarch.sync_ref.screen=屏幕
-minarch.sync_ref.native=原生
+minarch.sync_ref.screen=屏幕刷新率
+minarch.sync_ref.native=原生刷新率
 
 minarch.cpu.powersave=省电
 minarch.cpu.normal=标准
