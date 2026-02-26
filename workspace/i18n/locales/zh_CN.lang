@@ -233,6 +233,22 @@ minarch.cpu.powersave=省电
 minarch.cpu.normal=标准
 minarch.cpu.performance=性能
 
+# PCSX-ReArmed PS1 emulator specific values
+minarch.gpu_plugin.neon=Neon GPU
+minarch.gpu_plugin.unai=UNAI GPU
+minarch.gpu_plugin.peops=P.E.Op.S. GPU
+minarch.gpu_plugin.gl64=OpenGL 64 GPU
+
+minarch.compat.gte_accuracy=GTE 准确性
+minarch.compat.gdh_sync=GDH 同步
+minarch.compat.cd_sync=CD 同步
+minarch.compat.gpu_slow_dither=GPU 慢速抖动
+minarch.compat.gpu_fast_dither=GPU 快速抖动
+
+minarch.speed.fast=快速
+minarch.speed.max=最大
+minarch.speed.cycle_multiplier=周期倍增器
+
 # settings app (workspace/all/settings)
 settings.appearance=外观
 settings.appearance.desc=界面定制

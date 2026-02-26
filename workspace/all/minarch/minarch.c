@@ -1626,6 +1626,27 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "disabled")) return TR("common.disabled");
 	if (!strcasecmp(value, "true")) return TR("common.true");
 	if (!strcasecmp(value, "false")) return TR("common.false");
+	
+	// PCSX-ReArmed GPU plugins
+	if (!strcasecmp(value, "gpu_neon")) return TR("minarch.gpu_plugin.neon");
+	if (!strcasecmp(value, "gpu_unai")) return TR("minarch.gpu_plugin.unai");
+	if (!strcasecmp(value, "gpu_peops")) return TR("minarch.gpu_plugin.peops");
+	if (!strcasecmp(value, "gpu_gl64")) return TR("minarch.gpu_plugin.gl64");
+	if (!strcasecmp(value, "null")) return TR("common.none");
+	
+	// PCSX-ReArmed compatibility fixes
+	if (!strcasecmp(value, "gte_accuracy")) return TR("minarch.compat.gte_accuracy");
+	if (!strcasecmp(value, "gdh_sync")) return TR("minarch.compat.gdh_sync");
+	if (!strcasecmp(value, "cd_sync")) return TR("minarch.compat.cd_sync");
+	if (!strcasecmp(value, "gpu_slow_dither")) return TR("minarch.compat.gpu_slow_dither");
+	if (!strcasecmp(value, "gpu_fast_dither")) return TR("minarch.compat.gpu_fast_dither");
+	
+	// PCSX-ReArmed speed hacks
+	if (!strcasecmp(value, "off")) return TR("common.off");
+	if (!strcasecmp(value, "fast")) return TR("minarch.speed.fast");
+	if (!strcasecmp(value, "max")) return TR("minarch.speed.max");
+	if (!strcasecmp(value, "cycle_multiplier")) return TR("minarch.speed.cycle_multiplier");
+	
 	return value;
 }
 
