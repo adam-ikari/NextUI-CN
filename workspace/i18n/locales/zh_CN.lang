@@ -512,6 +512,39 @@ minarch.vkbd.dark=深色
 minarch.vkbd.light=浅色
 minarch.palette.amber=琥珀色
 
+# PUAE (Amiga)
+minarch.model.a500og=A500OG (原版)
+minarch.model.a500plus=A500+
+minarch.model.a1200og=A1200OG (原版)
+minarch.model.cd32fr=CD32FR (FastRAM)
+minarch.crop.minimum=最小
+minarch.crop.smaller=更小
+minarch.crop.large=大
+minarch.crop.larger=更大
+minarch.resolution.lores=低分辨率
+minarch.resolution.hires=高分辨率
+minarch.resolution.superhires=超高分辨率
+minarch.line.single=单线
+minarch.line.double=双线
+minarch.collision.none=无
+minarch.collision.sprites=精灵
+minarch.collision.playfields=播放区域
+minarch.collision.full=全部
+minarch.vkbd.cd32=CD32
+minarch.interpolation.anti=抗锯齿
+minarch.interpolation.sinc=Sinc
+minarch.interpolation.rh=RH
+minarch.interpolation.crux=Crux
+minarch.filter.emulated=模拟
+minarch.filter.standard=标准
+minarch.filter.enhanced=增强
+minarch.sound.internal=内置
+minarch.whdload.files=文件
+minarch.whdload.hdfs=HDF
+minarch.whdload.native=原生
+minarch.whdload.config=配置
+minarch.whdload.splash=启动画面
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动

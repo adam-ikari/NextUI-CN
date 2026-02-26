@@ -1909,6 +1909,39 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "light")) return TR("minarch.vkbd.light");
 	if (!strcasecmp(value, "amber")) return TR("minarch.palette.amber");
 	
+	// PUAE (Amiga) specific
+	if (!strcasecmp(value, "a500og")) return TR("minarch.model.a500og");
+	if (!strcasecmp(value, "a500plus")) return TR("minarch.model.a500plus");
+	if (!strcasecmp(value, "a1200og")) return TR("minarch.model.a1200og");
+	if (!strcasecmp(value, "cd32fr")) return TR("minarch.model.cd32fr");
+	if (!strcasecmp(value, "minimum")) return TR("minarch.crop.minimum");
+	if (!strcasecmp(value, "smaller")) return TR("minarch.crop.smaller");
+	if (!strcasecmp(value, "large")) return TR("minarch.crop.large");
+	if (!strcasecmp(value, "larger")) return TR("minarch.crop.larger");
+	if (!strcasecmp(value, "lores")) return TR("minarch.resolution.lores");
+	if (!strcasecmp(value, "hires")) return TR("minarch.resolution.hires");
+	if (!strcasecmp(value, "superhires")) return TR("minarch.resolution.superhires");
+	if (!strcasecmp(value, "single")) return TR("minarch.line.single");
+	if (!strcasecmp(value, "double")) return TR("minarch.line.double");
+	if (!strcasecmp(value, "none")) return TR("minarch.collision.none");
+	if (!strcasecmp(value, "sprites")) return TR("minarch.collision.sprites");
+	if (!strcasecmp(value, "playfields")) return TR("minarch.collision.playfields");
+	if (!strcasecmp(value, "full")) return TR("minarch.collision.full");
+	if (!strcasecmp(value, "cd32")) return TR("minarch.vkbd.cd32");
+	if (!strcasecmp(value, "anti")) return TR("minarch.interpolation.anti");
+	if (!strcasecmp(value, "sinc")) return TR("minarch.interpolation.sinc");
+	if (!strcasecmp(value, "emulated")) return TR("minarch.filter.emulated");
+	if (!strcasecmp(value, "standard")) return TR("minarch.filter.standard");
+	if (!strcasecmp(value, "enhanced")) return TR("minarch.filter.enhanced");
+	if (!strcasecmp(value, "internal")) return TR("minarch.sound.internal");
+	if (!strcasecmp(value, "files")) return TR("minarch.whdload.files");
+	if (!strcasecmp(value, "hdfs")) return TR("minarch.whdload.hdfs");
+	if (!strcasecmp(value, "native")) return TR("minarch.whdload.native");
+	if (!strcasecmp(value, "config")) return TR("minarch.whdload.config");
+	if (!strcasecmp(value, "splash")) return TR("minarch.whdload.splash");
+	if (!strcasecmp(value, "rh")) return TR("minarch.interpolation.rh");
+	if (!strcasecmp(value, "crux")) return TR("minarch.interpolation.crux");
+	
 	return value;
 }
 
