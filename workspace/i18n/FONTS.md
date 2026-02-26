@@ -10,28 +10,40 @@ In this repo we supply those files via the skeleton overlay:
 
 - `skeleton/SYSTEM/res/font1.ttf`
 - `skeleton/SYSTEM/res/font2.ttf`
+- `skeleton/SYSTEM/res/font3.ttf`
 
 Anything under `skeleton/` is intended to be copied into the final SD card layout, so it survives upstream rebases.
 
-## Dream Han Sans CN mapping (current convention)
+## Font mapping (current convention)
 
-We use Dream Han Sans CN from:
+We use three fonts from their respective GitHub releases:
 
-`https://github.com/Pal3love/dream-han-cjk/releases`
+### Font 1: Dream Han Sans CN W16 (梦源黑体)
+Source: `https://github.com/Pal3love/dream-han-cjk/releases`
 
-And map release files into NextUI assets:
+Mapping:
+- `DreamHanSansCN-W16.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体)
 
-- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold-unhinted.ttf`
-- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/BPreplayBold.ttf` (alias)
-- `DreamHanSansCN-Bold.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体，粗体字重)
-- `DreamHanSansCN-Regular.ttf` → `skeleton/SYSTEM/res/font2.ttf` (可选字体，常规字重)
+### Font 2: Fusion Pixel (缝合像素)
+Source: `https://github.com/TakWolf/fusion-pixel-font/releases`
+
+Mapping:
+- `fusion-pixel-12px-proportional-zh_hans.ttf` → `skeleton/SYSTEM/res/font2.ttf` (可选字体)
+- `fusion-pixel-12px-proportional-zh_hans.ttf` → `skeleton/SYSTEM/res/BPreplayBold-unhinted.ttf`
+- `fusion-pixel-12px-proportional-zh_hans.ttf` → `skeleton/SYSTEM/res/BPreplayBold.ttf` (alias)
+
+### Font 3: ChillRound (寒蝉半圆体)
+Source: `https://github.com/Warren2060/ChillRound/releases`
+
+Mapping:
+- `ChillRoundM.ttf` → `skeleton/SYSTEM/res/font3.ttf` (可选字体)
 
 Notes:
-- `BPreplayBold-unhinted.ttf` is used by some UI elements as a bold face.
-- `font1.ttf` is the default UI font (ID depends on upstream config).
-- We use the DreamHanSansCN variant (简体中文版本) for optimal Chinese character support.
-- The CN version is specifically optimized for Simplified Chinese characters.
-- Dream Han Sans CN provides 27 weights and is based on Source Han Sans 2.004.
+- `BPreplayBold-unhinted.ttf` and `BPreplayBold.ttf` are used by some UI elements as a bold face.
+- `font1.ttf` is the default UI font (ID 0).
+- `font2.ttf` is the second UI font (ID 1).
+- `font3.ttf` is the third UI font (ID 2).
+- All three fonts support Simplified Chinese characters optimally.
 
 ## Re-sync fonts (Windows PowerShell)
 
