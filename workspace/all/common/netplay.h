@@ -3,12 +3,14 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <pthread.h>
 
 #define NETPLAY_PORT 55435
 #define NETPLAY_BROADCAST_PORT 55436
 #define NETPLAY_MAX_PEERS 4
 #define NETPLAY_DEVICE_NAME_MAX 64
 #define NETPLAY_MAX_INPUT_STATE 32
+#define NETPLAY_PROTOCOL_VERSION 1
 
 // Netplay states
 typedef enum {
@@ -73,6 +75,8 @@ typedef struct {
 
 // Netplay API
 typedef struct {
+    pthread_mutex_t mutex;  // Mutex for thread safety
+    
     netplay_state_t state;
     netplay_role_t role;
     char device_name[NETPLAY_DEVICE_NAME_MAX];
@@ -98,8 +102,10 @@ typedef struct {
     uint32_t frame_count;
     uint32_t last_ping_time;
     uint32_t latency_ms;
+    uint32_t last_ping_sent_time;  // Timestamp when last ping was sent
     
     void (*on_input_received)(netplay_input_t *input);
+    void (*on_state_received)(const void *state_data, int size, uint32_t frame);
     void (*on_device_discovered)(netplay_device_t *device);
     void (*on_connection_state_changed)(netplay_state_t state);
 } netplay_context_t;
