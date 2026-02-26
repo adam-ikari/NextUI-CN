@@ -194,25 +194,25 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4.2.2
 
-      - name: Inject Dream Han Sans CN fonts (CI-time)
+      - name: Inject Fusion Pixel fonts (CI-time)
         shell: bash
         env:
-          DREAM_VERSION: dream-3.02-sans-2.004-serif-2.003
+          FUSION_VERSION: 2026.01.04
         run: |
           set -euo pipefail
-          mkdir -p /tmp/dream-han-sans
-          ZIP_OUT=/tmp/dream-han-sans/DreamHanSansCN.zip
+          mkdir -p /tmp/fusion-pixel-font
+          ZIP_OUT="/tmp/fusion-pixel-font/fusion-pixel-font-12px-proportional-ttf-v${FUSION_VERSION}.zip"
 
-          URL="https://github.com/Pal3love/dream-han-cjk/releases/download/${DREAM_VERSION}/DreamHanSansCN.zip"
+          URL="https://github.com/TakWolf/fusion-pixel-font/releases/download/v${FUSION_VERSION}/fusion-pixel-font-12px-proportional-ttf-v${FUSION_VERSION}.zip"
           echo "Downloading: $URL"
           curl -fL --retry 5 --retry-delay 2 --connect-timeout 20 -o "$ZIP_OUT" "$URL"
-          unzip -q "$ZIP_OUT" -d /tmp/dream-han-sans
-          SRC_DIR="/tmp/dream-han-sans"
-          FONT_TTF_BOLD="$(find "$SRC_DIR" -maxdepth 3 -type f -name '*Bold*.ttf' | head -n 1 || true)"
-          FONT_TTF_REGULAR="$(find "$SRC_DIR" -maxdepth 3 -type f -name '*Regular*.ttf' | head -n 1 || true)"
+          unzip -q "$ZIP_OUT" -d /tmp/fusion-pixel-font
+          SRC_DIR="/tmp/fusion-pixel-font"
+          FONT_TTF_BOLD="$(find "$SRC_DIR" -maxdepth 1 -type f -name 'fusion-pixel-12px-proportional-zh_hans.ttf' | head -n 1 || true)"
+          FONT_TTF_REGULAR="$(find "$SRC_DIR" -maxdepth 1 -type f -name 'fusion-pixel-12px-proportional-zh_hans.ttf' | head -n 1 || true)"
           if [[ -z "$FONT_TTF_BOLD" || -z "$FONT_TTF_REGULAR" ]]; then
-            echo "Extracted files:"; find "$SRC_DIR" -maxdepth 3 -type f | sed 's#^#- #' || true
-            echo "::error::Dream Han Sans CN TTF fonts not found in release archive"
+            echo "Extracted files:"; find "$SRC_DIR" -maxdepth 1 -type f | sed 's#^#- #' || true
+            echo "::error::Fusion Pixel TTF fonts not found in release archive"
             exit 1
           fi
           install -d skeleton/SYSTEM/res
