@@ -187,6 +187,9 @@ setup: name
 	mkdir -p ./releases
 	cp -R ./skeleton ./build
 	
+	# sync translation file from workspace to build (single source of truth)
+	cp ./workspace/i18n/locales/zh_CN.lang ./build/SYSTEM/i18n/zh_CN.lang
+	
 	# remove authoring detritus
 	cd ./build && find . -type f -name '.keep' -delete
 	cd ./build && find . -type f -name '*.meta' -delete
