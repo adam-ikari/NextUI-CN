@@ -26,6 +26,7 @@
 #include "utils.h"
 #include "scaler.h"
 #include "i18n.h"
+#include "netplay.h"
 #include <dirent.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
@@ -40,6 +41,13 @@ static int simple_mode = 0;
 static int was_threaded = 0;
 static int should_run_core = 1; // used by threaded video
 enum retro_pixel_format fmt;
+
+// Netplay
+static netplay_context_t netplay_ctx;
+static int netplay_enabled = 0;
+static int netplay_show_devices = 0;
+static netplay_device_t discovered_devices[16];
+static int discovered_device_count = 0;
 
 static pthread_t		core_pt;
 static pthread_mutex_t	core_mx;
@@ -7701,6 +7709,7 @@ int main(int argc , char* argv[]) {
 	
 	LEDS_initLeds();
 	VIB_init();
+	NET_init(&netplay_ctx, "NextUI Device");
 	PWR_init();
 	if (!HAS_POWER_BUTTON)
 		PWR_disableSleep();
@@ -7843,6 +7852,7 @@ finish:
 	MSG_quit();
 	PWR_quit();
 	VIB_quit();
+	NET_quit(&netplay_ctx);
 	SND_removeDeviceWatcher();
 	// Disabling this is a dumb hack for bluetooth, we should really be using 
 	// bluealsa with --keep-alive=-1 - but SDL wont reconnect the stream on next start.
