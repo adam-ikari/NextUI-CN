@@ -392,6 +392,13 @@ minarch.invert.x=反转X
 minarch.invert.y=反转Y
 minarch.invert.both=反转两者
 
+# Stella2014 (Atari 2600) specific
+minarch.blend.simple=简单
+minarch.ghosting.65=残影 (65%)
+minarch.ghosting.75=残影 (75%)
+minarch.ghosting.85=残影 (85%)
+minarch.ghosting.95=残影 (95%)
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动

@@ -1786,6 +1786,13 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "invert y")) return TR("minarch.invert.y");
 	if (!strcasecmp(value, "invert both")) return TR("minarch.invert.both");
 	
+	// Stella2014 (Atari 2600) specific
+	if (!strcasecmp(value, "simple")) return TR("minarch.blend.simple");
+	if (!strcasecmp(value, "ghosting (65%)")) return TR("minarch.ghosting.65");
+	if (!strcasecmp(value, "ghosting (75%)")) return TR("minarch.ghosting.75");
+	if (!strcasecmp(value, "ghosting (85%)")) return TR("minarch.ghosting.85");
+	if (!strcasecmp(value, "ghosting (95%)")) return TR("minarch.ghosting.95");
+	
 	return value;
 }
 
