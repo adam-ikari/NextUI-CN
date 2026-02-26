@@ -439,6 +439,12 @@ int main(int argc, char *argv[])
             { return GetMuteTurboR2(); },
             [](const std::any &value) { SetMuteTurboR2(std::any_cast<int>(value));},
             []() { SetMuteTurboR2(0);}},
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.vibration_when_toggled"), TR("settings.fn_switch.vibration_when_toggled.desc"),
+            {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20},
+            {TR("common.unchanged"), TR("common.off"),"5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"},
+            []() -> std::any { return GetMutedVibration(); },
+            [](const std::any &value) { SetMutedVibration(std::any_cast<int>(value)); },
+            []() { SetMutedVibration(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
         };
         if(is_brick) {
             muteItems.push_back(
@@ -500,12 +506,27 @@ int main(int argc, char *argv[])
             },
         });
 
+        auto gamepadMenu = new MenuList(MenuItemType::Fixed, TR("settings.gamepad"),
+        {
+            new MenuItem{ListItemType::Generic, TR("settings.gamepad.vibration"), TR("settings.gamepad.vibration.desc"),
+            {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20},
+            {TR("common.off"),"5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"},
+            []() -> std::any { return GetVibration(); },
+            [](const std::any &value) { SetVibration(std::any_cast<int>(value)); },
+            []() { SetVibration(8); }},
+            new MenuItem{ListItemType::Generic, TR("settings.gamepad.swap_dpad_left_stick"), TR("settings.gamepad.swap_dpad_left_stick.desc"), {false, true}, on_off,
+            []() -> std::any { return CFG_getSwapDpadLeftStick(); },
+            [](const std::any &value) { CFG_setSwapDpadLeftStick(std::any_cast<bool>(value)); },
+            []() { CFG_setSwapDpadLeftStick(false); }},
+        });
+
         ctx.menu = new MenuList(MenuItemType::List, TR("settings.main"),
         {
             new MenuItem{ListItemType::Generic, tr_settings_appearance.c_str(), TR("settings.appearance.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, appearanceMenu},
             new MenuItem{ListItemType::Generic, TR("settings.display"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, displayMenu},
             new MenuItem{ListItemType::Generic, TR("settings.system"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, systemMenu},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch"), TR("settings.fn_switch.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, muteMenu},
+            new MenuItem{ListItemType::Generic, TR("settings.gamepad"), TR("settings.gamepad.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, gamepadMenu},
             new MenuItem{ListItemType::Generic, TR("settings.network"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, networkMenu},
             new MenuItem{ListItemType::Generic, TR("settings.bluetooth"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, btMenu},
             new MenuItem{ListItemType::Generic, TR("settings.about"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, aboutMenu},

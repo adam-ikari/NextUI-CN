@@ -56,6 +56,7 @@ void CFG_defaults(NextUISettings *cfg)
         .powerOffProtection = CFG_DEFAULT_POWEROFFPROTECTION,
 
         .haptics = CFG_DEFAULT_HAPTICS,
+        .swapDpadLeftStick = CFG_DEFAULT_SWAPDPADLEFTSTICK,
         .romsUseFolderBackground = CFG_DEFAULT_ROMSUSEFOLDERBACKGROUND,
         .saveFormat = CFG_DEFAULT_SAVEFORMAT,
         .stateFormat = CFG_DEFAULT_STATEFORMAT,
@@ -951,6 +952,7 @@ void CFG_print(void)
     printf("\t\"powerOffProtection\": %i,\n", settings.powerOffProtection);
     printf("\t\"switcherscale\": %i,\n", settings.gameSwitcherScaling);
     printf("\t\"haptics\": %i,\n", settings.haptics);
+    printf("\t\"swapDpadLeftStick\": %i,\n", settings.swapDpadLeftStick);
     printf("\t\"romfolderbg\": %i,\n", settings.romsUseFolderBackground);
     printf("\t\"saveFormat\": %i,\n", settings.saveFormat);
     printf("\t\"stateFormat\": %i,\n", settings.stateFormat);
@@ -974,6 +976,26 @@ void CFG_print(void)
         printf("\t\"fontpath\": \"%s\"\n", RES_PATH "/font3.ttf");
 
     printf("}\n");
+}
+
+bool CFG_getHaptics(void)
+{
+    return settings.haptics;
+}
+
+void CFG_setHaptics(bool enable)
+{
+    settings.haptics = enable;
+}
+
+bool CFG_getSwapDpadLeftStick(void)
+{
+    return settings.swapDpadLeftStick;
+}
+
+void CFG_setSwapDpadLeftStick(bool enable)
+{
+    settings.swapDpadLeftStick = enable;
 }
 
 void CFG_quit(void)
