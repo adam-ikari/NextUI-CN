@@ -234,20 +234,24 @@ minarch.cpu.normal=标准
 minarch.cpu.performance=性能
 
 # PCSX-ReArmed PS1 emulator specific values
-minarch.gpu_plugin.neon=Neon GPU
-minarch.gpu_plugin.unai=UNAI GPU
-minarch.gpu_plugin.peops=P.E.Op.S. GPU
-minarch.gpu_plugin.gl64=OpenGL 64 GPU
-
-minarch.compat.gte_accuracy=GTE 准确性
-minarch.compat.gdh_sync=GDH 同步
-minarch.compat.cd_sync=CD 同步
-minarch.compat.gpu_slow_dither=GPU 慢速抖动
-minarch.compat.gpu_fast_dither=GPU 快速抖动
-
-minarch.speed.fast=快速
-minarch.speed.max=最大
-minarch.speed.cycle_multiplier=周期倍增器
+minarch.region.ntsc=NTSC
+minarch.region.pal=PAL
+minarch.bios.hle=模拟BIOS
+minarch.multitap.port1_only=仅端口1
+minarch.multitap.port2_only=仅端口2
+minarch.multitap.both=双端口
+minarch.negcon.linear=线性
+minarch.negcon.quadratic=二次
+minarch.negcon.cubic=三次
+minarch.analog.circle=圆形
+minarch.analog.square=方形
+minarch.render.sync=同步
+minarch.render.async=异步
+minarch.interpolation.simple=简单
+minarch.interpolation.gaussian=高斯
+minarch.interpolation.cubic=三次
+minarch.cd.precache=预缓存
+minarch.cpu.interpreter=解释器
 
 # settings app (workspace/all/settings)
 settings.appearance=外观

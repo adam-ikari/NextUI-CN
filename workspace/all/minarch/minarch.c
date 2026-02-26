@@ -1627,25 +1627,41 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "true")) return TR("common.true");
 	if (!strcasecmp(value, "false")) return TR("common.false");
 	
-	// PCSX-ReArmed GPU plugins
-	if (!strcasecmp(value, "gpu_neon")) return TR("minarch.gpu_plugin.neon");
-	if (!strcasecmp(value, "gpu_unai")) return TR("minarch.gpu_plugin.unai");
-	if (!strcasecmp(value, "gpu_peops")) return TR("minarch.gpu_plugin.peops");
-	if (!strcasecmp(value, "gpu_gl64")) return TR("minarch.gpu_plugin.gl64");
-	if (!strcasecmp(value, "null")) return TR("common.none");
+	// PCSX-ReArmed region
+	if (!strcasecmp(value, "ntsc")) return TR("minarch.region.ntsc");
+	if (!strcasecmp(value, "pal")) return TR("minarch.region.pal");
 	
-	// PCSX-ReArmed compatibility fixes
-	if (!strcasecmp(value, "gte_accuracy")) return TR("minarch.compat.gte_accuracy");
-	if (!strcasecmp(value, "gdh_sync")) return TR("minarch.compat.gdh_sync");
-	if (!strcasecmp(value, "cd_sync")) return TR("minarch.compat.cd_sync");
-	if (!strcasecmp(value, "gpu_slow_dither")) return TR("minarch.compat.gpu_slow_dither");
-	if (!strcasecmp(value, "gpu_fast_dither")) return TR("minarch.compat.gpu_fast_dither");
+	// PCSX-ReArmed bios
+	if (!strcasecmp(value, "hle")) return TR("minarch.bios.hle");
 	
-	// PCSX-ReArmed speed hacks
-	if (!strcasecmp(value, "off")) return TR("common.off");
-	if (!strcasecmp(value, "fast")) return TR("minarch.speed.fast");
-	if (!strcasecmp(value, "max")) return TR("minarch.speed.max");
-	if (!strcasecmp(value, "cycle_multiplier")) return TR("minarch.speed.cycle_multiplier");
+	// PCSX-ReArmed multitap
+	if (!strcasecmp(value, "port 1 only")) return TR("minarch.multitap.port1_only");
+	if (!strcasecmp(value, "port 2 only")) return TR("minarch.multitap.port2_only");
+	if (!strcasecmp(value, "both")) return TR("minarch.multitap.both");
+	
+	// PCSX-ReArmed negcon response
+	if (!strcasecmp(value, "linear")) return TR("minarch.negcon.linear");
+	if (!strcasecmp(value, "quadratic")) return TR("minarch.negcon.quadratic");
+	if (!strcasecmp(value, "cubic")) return TR("minarch.negcon.cubic");
+	
+	// PCSX-ReArmed analog axis bounds
+	if (!strcasecmp(value, "circle")) return TR("minarch.analog.circle");
+	if (!strcasecmp(value, "square")) return TR("minarch.analog.square");
+	
+	// PCSX-ReArmed threaded rendering
+	if (!strcasecmp(value, "sync")) return TR("minarch.render.sync");
+	if (!strcasecmp(value, "async")) return TR("minarch.render.async");
+	
+	// PCSX-ReArmed spu interpolation
+	if (!strcasecmp(value, "simple")) return TR("minarch.interpolation.simple");
+	if (!strcasecmp(value, "gaussian")) return TR("minarch.interpolation.gaussian");
+	if (!strcasecmp(value, "cubic")) return TR("minarch.interpolation.cubic");
+	
+	// PCSX-ReArmed cd access method
+	if (!strcasecmp(value, "precache")) return TR("minarch.cd.precache");
+	
+	// PCSX-ReArmed dynamic recompiler
+	if (!strcasecmp(value, "interpreter")) return TR("minarch.cpu.interpreter");
 	
 	return value;
 }
