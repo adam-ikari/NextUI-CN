@@ -1848,6 +1848,67 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "spanish")) return TR("minarch.lang.spanish");
 	if (!strcasecmp(value, "joystick_port2")) return TR("minarch.joystick.port2");
 	
+	// VICE (Commodore) specific
+	if (!strcasecmp(value, "c64 pal auto")) return TR("minarch.model.c64_pal_auto");
+	if (!strcasecmp(value, "c64 ntsc auto")) return TR("minarch.model.c64_ntsc_auto");
+	if (!strcasecmp(value, "c64c pal auto")) return TR("minarch.model.c64c_pal_auto");
+	if (!strcasecmp(value, "c64c ntsc auto")) return TR("minarch.model.c64c_ntsc_auto");
+	if (!strcasecmp(value, "c64 pal")) return TR("minarch.model.c64_pal");
+	if (!strcasecmp(value, "c64 ntsc")) return TR("minarch.model.c64_ntsc");
+	if (!strcasecmp(value, "c64c pal")) return TR("minarch.model.c64c_pal");
+	if (!strcasecmp(value, "c64c ntsc")) return TR("minarch.model.c64c_ntsc");
+	if (!strcasecmp(value, "c64sx pal")) return TR("minarch.model.c64sx_pal");
+	if (!strcasecmp(value, "c64sx ntsc")) return TR("minarch.model.c64sx_ntsc");
+	if (!strcasecmp(value, "c128 pal auto")) return TR("minarch.model.c128_pal_auto");
+	if (!strcasecmp(value, "c128 ntsc auto")) return TR("minarch.model.c128_ntsc_auto");
+	if (!strcasecmp(value, "c128 d pal auto")) return TR("minarch.model.c128_d_pal_auto");
+	if (!strcasecmp(value, "c128 d ntsc auto")) return TR("minarch.model.c128_d_ntsc_auto");
+	if (!strcasecmp(value, "c128 dcr pal auto")) return TR("minarch.model.c128_dcr_pal_auto");
+	if (!strcasecmp(value, "c128 dcr ntsc auto")) return TR("minarch.model.c128_dcr_ntsc_auto");
+	if (!strcasecmp(value, "c128 pal")) return TR("minarch.model.c128_pal");
+	if (!strcasecmp(value, "c128 ntsc")) return TR("minarch.model.c128_ntsc");
+	if (!strcasecmp(value, "vic20 pal auto")) return TR("minarch.model.vic20_pal_auto");
+	if (!strcasecmp(value, "vic20 ntsc auto")) return TR("minarch.model.vic20_ntsc_auto");
+	if (!strcasecmp(value, "vic20 pal")) return TR("minarch.model.vic20_pal");
+	if (!strcasecmp(value, "vic20 ntsc")) return TR("minarch.model.vic20_ntsc");
+	if (!strcasecmp(value, "vdc")) return TR("minarch.output.vdc");
+	if (!strcasecmp(value, "vicii")) return TR("minarch.output.vicii");
+	if (!strcasecmp(value, "soft")) return TR("minarch.reset.soft");
+	if (!strcasecmp(value, "hard")) return TR("minarch.reset.hard");
+	if (!strcasecmp(value, "freeze")) return TR("minarch.reset.freeze");
+	if (!strcasecmp(value, "small")) return TR("minarch.crop.small");
+	if (!strcasecmp(value, "medium")) return TR("minarch.crop.medium");
+	if (!strcasecmp(value, "maximum")) return TR("minarch.crop.maximum");
+	if (!strcasecmp(value, "auto_disable")) return TR("minarch.crop.auto_disable");
+	if (!strcasecmp(value, "manual")) return TR("minarch.crop.manual");
+	if (!strcasecmp(value, "both")) return TR("minarch.crop.both");
+	if (!strcasecmp(value, "horizontal")) return TR("minarch.crop.horizontal");
+	if (!strcasecmp(value, "vertical")) return TR("minarch.crop.vertical");
+	if (!strcasecmp(value, "16:9")) return TR("minarch.ratio.16_9");
+	if (!strcasecmp(value, "16:10")) return TR("minarch.ratio.16_10");
+	if (!strcasecmp(value, "5:4")) return TR("minarch.ratio.5_4");
+	if (!strcasecmp(value, "enabled_noblur")) return TR("minarch.filter.enabled_noblur");
+	if (!strcasecmp(value, "enabled_lowblur")) return TR("minarch.filter.enabled_lowblur");
+	if (!strcasecmp(value, "enabled_medblur")) return TR("minarch.filter.enabled_medblur");
+	if (!strcasecmp(value, "resid")) return TR("minarch.sid.resid");
+	if (!strcasecmp(value, "resid-fp")) return TR("minarch.sid.resid_fp");
+	if (!strcasecmp(value, "fastsid")) return TR("minarch.sid.fastsid");
+	if (!strcasecmp(value, "jump")) return TR("minarch.face.jump");
+	if (!strcasecmp(value, "rotate")) return TR("minarch.face.rotate");
+	if (!strcasecmp(value, "rotate_jump")) return TR("minarch.face.rotate_jump");
+	if (!strcasecmp(value, "autostart")) return TR("minarch.reset.autostart");
+	if (!strcasecmp(value, "warp")) return TR("minarch.warp");
+	if (!strcasecmp(value, "mute")) return TR("minarch.mute");
+	if (!strcasecmp(value, "disk")) return TR("minarch.media.disk");
+	if (!strcasecmp(value, "tape")) return TR("minarch.media.tape");
+	if (!strcasecmp(value, "bottom")) return TR("minarch.position.bottom");
+	if (!strcasecmp(value, "top")) return TR("minarch.position.top");
+	if (!strcasecmp(value, "brown")) return TR("minark.vkbd.brown");
+	if (!strcasecmp(value, "beige")) return TR("minarch.vkbd.beige");
+	if (!strcasecmp(value, "dark")) return TR("minarch.vkbd.dark");
+	if (!strcasecmp(value, "light")) return TR("minarch.vkbd.light");
+	if (!strcasecmp(value, "amber")) return TR("minarch.palette.amber");
+	
 	return value;
 }
 
