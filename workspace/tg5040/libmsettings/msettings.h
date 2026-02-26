@@ -21,6 +21,7 @@ int GetContrast(void);
 int GetSaturation(void);
 int GetExposure(void);
 int GetVolume(void);
+int GetVibration(void);
 
 void SetRawBrightness(int value); // 0-255
 void SetRawColortemp(int value); // 0-255
@@ -28,6 +29,7 @@ void SetRawContrast(int value); // 0-100
 void SetRawSaturation(int value); // 0-100
 void SetRawExposure(int value); // 0-100
 void SetRawVolume(int value); // 0-100
+void SetRawVibration(int value); // 0-100
 
 void SetBrightness(int value); // 0-10
 void SetColortemp(int value); // 0-40
@@ -35,6 +37,7 @@ void SetContrast(int value); // -4-5
 void SetSaturation(int value); // -5-5
 void SetExposure(int value); // -4-5
 void SetVolume(int value); // 0-20
+void SetVibration(int value); // 0-20
 
 int GetJack(void);
 void SetJack(int value); // 0-1
@@ -69,6 +72,7 @@ int GetMuteTurboL1(void);
 int GetMuteTurboL2(void);
 int GetMuteTurboR1(void);
 int GetMuteTurboR2(void);
+int GetMutedVibration(void);
 
 void SetMutedBrightness(int);
 void SetMutedColortemp(int);
@@ -86,5 +90,6 @@ void SetMuteTurboL1(int);
 void SetMuteTurboL2(int);
 void SetMuteTurboR1(int);
 void SetMuteTurboR2(int);
+void SetMutedVibration(int);
 
 #endif  // __msettings_h__

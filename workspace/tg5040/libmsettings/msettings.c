@@ -172,10 +172,43 @@ typedef struct SettingsV10 {
 	int audiosink; // was bluetooth true/false before
 } SettingsV10;
 
-// When incrementing SETTINGS_VERSION, update the Settings typedef and add
+typedef struct SettingsV11 {
+	int version; // future proofing
+	int brightness;
+	int colortemperature;
+	int headphones;
+	int speaker;
+	int mute;
+	int contrast;
+	int saturation;
+	int exposure;
+	int toggled_brightness;
+	int toggled_colortemperature;
+	int toggled_contrast;
+	int toggled_saturation;
+	int toggled_exposure;
+	int toggled_volume;
+	int disable_dpad_on_mute;
+	int emulate_joystick_on_mute;
+	int turbo_a;
+	int turbo_b;
+	int turbo_x;
+	int turbo_y;
+	int turbo_l1;
+	int turbo_l2;
+	int turbo_r1;
+	int turbo_r2;
+	int unused[2]; // for future use
+	// NOTE: doesn't really need to be persisted but still needs to be shared
+	int jack;
+	int audiosink; // was bluetooth true/false before
+	int toggled_vibration;
+	int vibration;
+} SettingsV11;
+
 // backwards compatibility to InitSettings!
-#define SETTINGS_VERSION 10
-typedef SettingsV10 Settings;
+#define SETTINGS_VERSION 11
+typedef SettingsV11 Settings;
 static Settings DefaultSettings = {
 	.version = SETTINGS_VERSION,
 	.brightness = SETTINGS_DEFAULT_BRIGHTNESS,
@@ -204,6 +237,8 @@ static Settings DefaultSettings = {
 	.turbo_r2 = 0,
 	.jack = 0,
 	.audiosink = AUDIO_SINK_DEFAULT,
+	.toggled_vibration = SETTINGS_DEFAULT_MUTE_NO_CHANGE,
+	.vibration = 8, // default vibration strength
 };
 static Settings* settings;
 
@@ -514,6 +549,9 @@ int GetVolume(void) { // 0-20
 
 	return settings->speaker;
 }
+int GetVibration(void) {
+	return settings->vibration;
+}
 // monitored and set by thread in keymon
 int GetJack(void) {
 	return settings->jack;
@@ -606,6 +644,10 @@ int GetMuteTurboR2(void)
 {
 	return settings->turbo_r2;
 }
+int GetMutedVibration(void)
+{
+	return settings->toggled_vibration;
+}
 
 ///////// Setters exposed in public API
 
@@ -631,6 +673,16 @@ void SetVolume(int value) { // 0-20
 	SetRawVolume(scaleVolume(value));
 	SaveSettings();
 }
+
+void SetVibration(int value) { // 0-20
+	if (settings->mute && GetMutedVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
+		return SetRawVibration(scaleVolume(GetMutedVibration()));
+	
+	settings->vibration = value;
+	SetRawVibration(scaleVolume(value));
+	SaveSettings();
+}
+
 // monitored and set by thread in keymon
 void SetJack(int value) {
 	printf("SetJack(%i)\n", value); fflush(stdout);
@@ -662,8 +714,10 @@ void SetMute(int value) {
 			SetRawContrast(scaleContrast(GetMutedContrast()));
 		if(GetMutedSaturation() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
 			SetRawSaturation(scaleSaturation(GetMutedSaturation()));
-		if(GetMutedExposure() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
+		if(GetMutedExposure() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
 			SetRawExposure(scaleExposure(GetMutedExposure()));
+		if(GetMutedVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
+			SetRawVibration(scaleVolume(GetMutedVibration()));
 		if(is_brick && GetMuteDisablesDpad())
 			disableDpad(1);
 		if(is_brick && GetMuteEmulatesJoystick())
@@ -692,6 +746,7 @@ void SetMute(int value) {
 		SetContrast(GetContrast());
 		SetSaturation(GetSaturation());
 		SetExposure(GetExposure());
+		SetVibration(GetVibration());
 		if(is_brick) {
 			if(GetMuteDisablesDpad())
 				disableDpad(0);
@@ -768,6 +823,11 @@ void SetMutedExposure(int value)
 void SetMutedVolume(int value)
 {
 	settings->toggled_volume = value;
+	SaveSettings();
+}
+void SetMutedVibration(int value)
+{
+	settings->toggled_vibration = value;
 	SaveSettings();
 }
 
@@ -1218,6 +1278,16 @@ void SetRawVolume(int val) { // in: 0-100
 		// Really, actually, finally turn the speaker off - including the hissing
 		putInt("/sys/class/speaker/mute", val == 0 ? 1 : 0);
 	}
+}
+
+void SetRawVibration(int val) { // 0-100
+	extern void PLAT_setRumble(int strength);
+	
+	// Clamp value to valid range
+	if (val < 0) val = 0;
+	if (val > 100) val = 100;
+	
+	PLAT_setRumble(val);
 }
 
 void SetRawContrast(int val){
