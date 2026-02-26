@@ -214,7 +214,7 @@ jobs:
           # Download Fusion Pixel
           mkdir -p /tmp/fusion-pixel-font
           FUSION_ZIP_OUT="/tmp/fusion-pixel-font/fusion-pixel-font-12px-proportional-ttf-v${FUSION_VERSION}.zip"
-          FUSION_URL="https://github.com/TakWolf/fusion-pixel-font/releases/download/v${FUSION_VERSION}/fusion-pixel-font-12px-proportional-ttf-v${FUSION_VERSION}.zip"
+          FUSION_URL="https://github.com/TakWolf/fusion-pixel-font/releases/download/${FUSION_VERSION}/fusion-pixel-font-12px-proportional-ttf-v${FUSION_VERSION}.zip"
           echo "Downloading Fusion Pixel: $FUSION_URL"
           curl -fL --retry 5 --retry-delay 2 --connect-timeout 20 -o "$FUSION_ZIP_OUT" "$FUSION_URL"
           unzip -q "$FUSION_ZIP_OUT" -d /tmp/fusion-pixel-font
