@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
     {
 		I18N_init();
 
-        const std::vector<std::string> font_names = {TR("settings.font_name.font1"), TR("settings.font_name.font2")};
+        const std::vector<std::string> font_names = {TR("settings.font_name.font1"), TR("settings.font_name.font2"), TR("settings.font_name.font3")};
 
         const std::vector<std::string> on_off = {TR("common.off"), TR("common.on")};
         const std::vector<std::string> timeout_labels = {TR("common.never"), "5s", "10s", "15s", "30s", "45s", "60s", "90s", "2m", "4m", "6m", "10m"};
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
         }
 
         auto appearanceMenu = new MenuList(MenuItemType::Fixed, tr_settings_appearance.c_str(),
-            {new MenuItem{ListItemType::Generic, tr_settings_font.c_str(), tr_settings_font_desc.c_str(), {0, 1}, font_names, 
+            {new MenuItem{ListItemType::Generic, tr_settings_font.c_str(), tr_settings_font_desc.c_str(), {0, 1, 2}, font_names, 
                 []() -> std::any{ return CFG_getFontId(); },
                 [](const std::any &value){ CFG_setFontId(std::any_cast<int>(value)); },
                 []() { CFG_setFontId(CFG_DEFAULT_FONT_ID);}},
