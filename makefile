@@ -241,7 +241,7 @@ package: tidy
 	cd ./build && find . -type f -name '.DS_Store' -delete
 
 	# Remove Loading app from extras (don't include in package)
-	rm -rf ./build/EXTRAS/Tools/tg5040/Remove Loading.pak
+	rm -rf "./build/EXTRAS/Tools/tg5040/Remove Loading.pak"
 
 	mkdir -p ./build/PAYLOAD
 	mv ./build/SYSTEM ./build/PAYLOAD/.system
