@@ -236,7 +236,7 @@ minarch.cpu.performance=性能
 # PCSX-ReArmed PS1 emulator specific values
 minarch.region.ntsc=NTSC
 minarch.region.pal=PAL
-minarch.bios.hle=模拟BIOS
+minarch.bios.hle=内置BIOS
 minarch.multitap.port1_only=仅端口1
 minarch.multitap.port2_only=仅端口2
 minarch.multitap.both=双端口
