@@ -253,6 +253,45 @@ minarch.interpolation.cubic=三次
 minarch.cd.precache=预缓存
 minarch.cpu.interpreter=解释器
 
+# Button labels for controls and shortcuts
+common.none=无
+common.up=上
+common.down=下
+common.left=左
+common.right=右
+common.a=A
+common.b=B
+common.x=X
+common.y=Y
+common.start=开始
+common.select=选择
+common.l1=L1
+common.r1=R1
+common.l2=L2
+common.r2=R2
+common.l3=L3
+common.r3=R3
+common.menu_up=菜单+上
+common.menu_down=菜单+下
+common.menu_left=菜单+左
+common.menu_right=菜单+右
+common.menu_a=菜单+A
+common.menu_b=菜单+B
+common.menu_x=菜单+X
+common.menu_y=菜单+Y
+common.menu_start=菜单+开始
+common.menu_select=菜单+选择
+common.menu_l1=菜单+L1
+common.menu_r1=菜单+R1
+common.menu_l2=菜单+L2
+common.menu_r2=菜单+R2
+common.menu_l3=菜单+L3
+common.menu_r3=菜单+R3
+
+# Gamepad types
+minarch.gamepad.standard=标准
+minarch.gamepad.dualshock=双震动
+
 # settings app (workspace/all/settings)
 settings.appearance=外观
 settings.appearance.desc=界面定制

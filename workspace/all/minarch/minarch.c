@@ -1577,6 +1577,8 @@ static char** i18n_sync_ref_labels = NULL;
 static char** i18n_overclock_labels = NULL;
 static char** i18n_max_ff_labels = NULL;
 static char** i18n_sharpness_labels = NULL;
+static char** i18n_button_labels = NULL;
+static char** i18n_gamepad_labels = NULL;
 
 static char** i18n_nrofshaders_labels = NULL;
 static char** i18n_shupscale_labels = NULL;
@@ -1717,6 +1719,26 @@ static void Minarch_initFrontendI18nOnce(void) {
 	i18n_nrofshaders_labels = Minarch_buildI18nLabels(nrofshaders_keys, nrofshaders_labels);
 	i18n_shupscale_labels = Minarch_buildI18nLabels(shupscale_keys, shupscale_labels);
 	i18n_shscaletype_labels = Minarch_buildI18nLabels(shscaletype_keys, shscaletype_labels);
+
+	// Button labels for controls and shortcuts
+	static const char* button_keys[] = {
+		"common.none",
+		"common.up", "common.down", "common.left", "common.right",
+		"common.a", "common.b", "common.x", "common.y",
+		"common.start", "common.select",
+		"common.l1", "common.r1", "common.l2", "common.r2", "common.l3", "common.r3",
+		"common.menu_up", "common.menu_down", "common.menu_left", "common.menu_right",
+		"common.menu_a", "common.menu_b", "common.menu_x", "common.menu_y",
+		"common.menu_start", "common.menu_select",
+		"common.menu_l1", "common.menu_r1", "common.menu_l2", "common.menu_r2",
+		"common.menu_l3", "common.menu_r3",
+		NULL
+	};
+	i18n_button_labels = Minarch_buildI18nLabels(button_keys, button_labels);
+
+	// Gamepad type labels
+	static const char* gamepad_keys[] = {"minarch.gamepad.standard", "minarch.gamepad.dualshock", NULL};
+	i18n_gamepad_labels = Minarch_buildI18nLabels(gamepad_keys, gamepad_labels);
 }
 
 enum {
@@ -5586,7 +5608,7 @@ static int OptionEmulator_openMenu(MenuList* list, int index) {
 
 int OptionControls_bind(MenuList* list, int i) {
 	MenuItem* item = &list->items[i];
-	if (item->values!=button_labels) {
+	if (item->values!=i18n_button_labels) {
 		// LOG_info("changed gamepad_type\n");
 		return MENU_CALLBACK_NOP;
 	}
@@ -5621,7 +5643,7 @@ int OptionControls_bind(MenuList* list, int i) {
 }
 static int OptionControls_unbind(MenuList* list, int i) {
 	MenuItem* item = &list->items[i];
-	if (item->values!=button_labels) return MENU_CALLBACK_NOP;
+	if (item->values!=i18n_button_labels) return MENU_CALLBACK_NOP;
 	
 	ButtonMapping* button = &config.controls[item->id];
 	button->local = -1;
@@ -5630,7 +5652,7 @@ static int OptionControls_unbind(MenuList* list, int i) {
 }
 static int OptionControls_optionChanged(MenuList* list, int i) {
 	MenuItem* item = &list->items[i];
-	if (item->values!=gamepad_labels) return MENU_CALLBACK_NOP;
+	if (item->values!=i18n_gamepad_labels) return MENU_CALLBACK_NOP;
 
 	if (has_custom_controllers) {
 		gamepad_type = item->value;
@@ -5662,7 +5684,7 @@ static int OptionControls_openMenu(MenuList* list, int i) {
 			item->name = (char*)TR("minarch.controller");
 			item->desc = (char*)TR("minarch.controller.desc");
 			item->value = gamepad_type;
-			item->values = gamepad_labels;
+			item->values = i18n_gamepad_labels;
 			item->on_change = OptionControls_optionChanged;
 		}
 		
@@ -5678,7 +5700,7 @@ static int OptionControls_openMenu(MenuList* list, int i) {
 			item->desc = NULL;
 			item->value = button->local + 1;
 			if (button->mod) item->value += LOCAL_BUTTON_COUNT;
-			item->values = button_labels;
+			item->values = i18n_button_labels;
 		}
 	}
 	else {
@@ -5767,7 +5789,7 @@ static int OptionShortcuts_openMenu(MenuList* list, int i) {
 			item->desc = NULL;
 			item->value = button->local + 1;
 			if (button->mod) item->value += LOCAL_BUTTON_COUNT;
-			item->values = button_labels;
+			item->values = i18n_button_labels;
 		}
 	}
 	else {
@@ -6206,7 +6228,7 @@ static int Menu_options(MenuList* list) {
 		}
 		else {
 			MenuItem* item = &items[selected];
-			if (item->values && item->values!=button_labels) { // not an input binding
+			if (item->values && item->values!=i18n_button_labels) { // not an input binding
 				if (PAD_justRepeated(BTN_LEFT)) {
 					if (item->value>0) item->value -= 1;
 					else {
