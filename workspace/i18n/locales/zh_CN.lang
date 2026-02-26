@@ -427,6 +427,27 @@ minarch.system.colecovision_svi603=ColecoVision (SVI-603)
 minarch.freq.50hz=50Hz
 minarch.freq.60hz=60Hz
 
+# PokeMini (Pokémon Mini) specific
+common.default=默认
+minarch.filter.dotmatrix=点阵
+minarch.filter.scanline=扫描线
+minarch.mode.analog=模拟
+minarch.shades.3=3色阶
+minarch.shades.2=2色阶
+minarch.palette.old=旧式
+minarch.palette.monochrome=单色
+minarch.palette.green=绿色
+minarch.palette.green_vector=绿色反转
+minarch.palette.red=红色
+minarch.palette.red_vector=红色反转
+minarch.palette.blue_lcd=蓝色LCD
+minarch.palette.led_backlight=LED背光
+minarch.palette.girl_power=女孩力量
+minarch.palette.blue=蓝色
+minarch.palette.blue_vector=蓝色反转
+minarch.palette.sepia=怀旧色
+minarch.palette.monochrome_vector=单色反转
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动

@@ -1821,6 +1821,27 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "50hz")) return TR("minarch.freq.50hz");
 	if (!strcasecmp(value, "60hz")) return TR("minarch.freq.60hz");
 	
+	// PokeMini (Pokémon Mini) specific
+	if (!strcasecmp(value, "dotmatrix")) return TR("minarch.filter.dotmatrix");
+	if (!strcasecmp(value, "scanline")) return TR("minarch.filter.scanline");
+	if (!strcasecmp(value, "analog")) return TR("minarch.mode.analog");
+	if (!strcasecmp(value, "3shades")) return TR("minarch.shades.3");
+	if (!strcasecmp(value, "2shades")) return TR("minarch.shades.2");
+	if (!strcasecmp(value, "default")) return TR("common.default");
+	if (!strcasecmp(value, "old")) return TR("minarch.palette.old");
+	if (!strcasecmp(value, "monochrome")) return TR("minarch.palette.monochrome");
+	if (!strcasecmp(value, "green")) return TR("minarch.palette.green");
+	if (!strcasecmp(value, "green vector")) return TR("minarch.palette.green_vector");
+	if (!strcasecmp(value, "red")) return TR("minarch.palette.red");
+	if (!strcasecmp(value, "red vector")) return TR("minarch.palette.red_vector");
+	if (!strcasecmp(value, "blue lcd")) return TR("minarch.palette.blue_lcd");
+	if (!strcasecmp(value, "ledbacklight")) return TR("minarch.palette.led_backlight");
+	if (!strcasecmp(value, "girl power")) return TR("minarch.palette.girl_power");
+	if (!strcasecmp(value, "blue")) return TR("minarch.palette.blue");
+	if (!strcasecmp(value, "blue vector")) return TR("minarch.palette.blue_vector");
+	if (!strcasecmp(value, "sepia")) return TR("minarch.palette.sepia");
+	if (!strcasecmp(value, "monochrome vector")) return TR("minarch.palette.monochrome_vector");
+	
 	return value;
 }
 
