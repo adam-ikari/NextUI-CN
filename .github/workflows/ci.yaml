@@ -202,14 +202,14 @@ jobs:
           curl -fL --retry 5 --retry-delay 2 --connect-timeout 20 -o "$DREAM_ZIP_OUT" "$DREAM_URL"
           unzip -q "$DREAM_ZIP_OUT" -d /tmp/dream-han-sans
           DREAM_SRC_DIR="/tmp/dream-han-sans"
-          DREAM_FONT_W16="$(find "$DREAM_SRC_DIR" -maxdepth 3 -type f -name 'DreamHanSansCN-W16.ttf' | head -n 1 || true)"
+          DREAM_FONT_W16="$(find "$DREAM_SRC_DIR" -maxdepth 3 -type f -name 'DreamHanSansCN-W10.ttf' | head -n 1 || true)"
           if [[ -z "$DREAM_FONT_W16" ]]; then
             echo "Extracted Dream Han Sans files:"; find "$DREAM_SRC_DIR" -maxdepth 3 -type f | sed 's#^#- #' || true
-            echo "::error::Dream Han Sans CN W16 TTF font not found in release archive"
+            echo "::error::Dream Han Sans CN W10 TTF font not found in release archive"
             exit 1
           fi
           cp -f "$DREAM_FONT_W16" skeleton/SYSTEM/res/font1.ttf
-          echo "Injected Dream Han Sans CN W16 as font1.ttf"
+          echo "Injected Dream Han Sans CN W10 as font1.ttf"
           
           # Download Fusion Pixel
           mkdir -p /tmp/fusion-pixel-font

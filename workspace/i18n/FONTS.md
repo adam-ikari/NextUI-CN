@@ -18,11 +18,11 @@ Anything under `skeleton/` is intended to be copied into the final SD card layou
 
 We use three fonts from their respective GitHub releases:
 
-### Font 1: Dream Han Sans CN W16 (梦源黑体)
+### Font 1: Dream Han Sans CN W10 (梦源黑体)
 Source: `https://github.com/Pal3love/dream-han-cjk/releases`
 
 Mapping:
-- `DreamHanSansCN-W16.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体)
+- `DreamHanSansCN-W10.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体)
 
 ### Font 2: Fusion Pixel (缝合像素)
 Source: `https://github.com/TakWolf/fusion-pixel-font/releases`
