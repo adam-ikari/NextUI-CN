@@ -1793,6 +1793,18 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "ghosting (85%)")) return TR("minarch.ghosting.85");
 	if (!strcasecmp(value, "ghosting (95%)")) return TR("minarch.ghosting.95");
 	
+	// Gearcoleco (ColecoVision) specific
+	if (!strcasecmp(value, "1:1 par")) return TR("minarch.ratio.1_1_par");
+	if (!strcasecmp(value, "4:3 dar")) return TR("minarch.ratio.4_3_dar");
+	if (!strcasecmp(value, "16:9 dar")) return TR("minarch.ratio.16_9_dar");
+	if (!strcasecmp(value, "16:10 dar")) return TR("minarch.ratio.16_10_dar");
+	if (!strcasecmp(value, "top+bottom")) return TR("minarch.overscan.top_bottom");
+	if (!strcasecmp(value, "full (284 width)")) return TR("minarch.overscan.full_284");
+	if (!strcasecmp(value, "full (320 width)")) return TR("minarch.overscan.full_320");
+	if (!strcasecmp(value, "super action controller")) return TR("minarch.spinner.super_action");
+	if (!strcasecmp(value, "wheel controller")) return TR("minarch.spinner.wheel");
+	if (!strcasecmp(value, "roller controller")) return TR("minarch.spinner.roller");
+	
 	return value;
 }
 

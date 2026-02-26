@@ -399,6 +399,18 @@ minarch.ghosting.75=残影 (75%)
 minarch.ghosting.85=残影 (85%)
 minarch.ghosting.95=残影 (95%)
 
+# Gearcoleco (ColecoVision) specific
+minarch.ratio.1_1_par=1:1 像素比
+minarch.ratio.4_3_dar=4:3 宽高比
+minarch.ratio.16_9_dar=16:9 宽高比
+minarch.ratio.16_10_dar=16:10 宽高比
+minarch.overscan.top_bottom=顶部+底部
+minarch.overscan.full_284=全屏 (284宽度)
+minarch.overscan.full_320=全屏 (320宽度)
+minarch.spinner.super_action=超级动作手柄
+minarch.spinner.wheel=方向盘
+minarch.spinner.roller=滚轮
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动
