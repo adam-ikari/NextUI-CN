@@ -333,6 +333,33 @@ minarch.overclock.+100=+100%
 minarch.overclock.+200=+200%
 minarch.overclock.+400=+400%
 
+# FCEUMM specific
+minarch.system.famicom=红白机
+minarch.ratio.8_7_par=8:7 像素比
+minarch.overclock.2x_postrender=2倍 后渲染
+minarch.overclock.2x_vblank=2倍 垂直消隐
+minarch.input.lightgun=光枪
+minarch.input.touchscreen=触摸屏
+minarch.turbo.player1=玩家1
+minarch.turbo.player2=玩家2
+
+# Gambatte specific
+common.always=始终
+minarch.system.gb=Game Boy
+minarch.system.gbc=Game Boy Color
+minarch.system.sgb=Super Game Boy
+minarch.system.gba=Game Boy Advance
+minarch.color.custom=自定义
+minarch.palette.gb_dmg=GB - 原版
+minarch.palette.gb_pocket=GB - Pocket
+minarch.palette.gb_light=GB - Light
+minarch.color.gbc_only=仅GBC
+minarch.mode.accurate=精确
+minarch.mode.fast=快速
+minarch.position.central=中央
+minarch.position.above_screen=屏幕上方
+minarch.position.below_screen=屏幕下方
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动

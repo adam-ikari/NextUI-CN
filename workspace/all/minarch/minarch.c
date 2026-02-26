@@ -1725,6 +1725,35 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "+200%")) return TR("minarch.overclock.+200");
 	if (!strcasecmp(value, "+400%")) return TR("minarch.overclock.+400");
 	
+	// FCEUMM specific
+	if (!strcasecmp(value, "famicom")) return TR("minarch.system.famicom");
+	if (!strcasecmp(value, "8:7 par")) return TR("minarch.ratio.8_7_par");
+	if (!strcasecmp(value, "2x-postrender")) return TR("minarch.overclock.2x_postrender");
+	if (!strcasecmp(value, "2x-vblank")) return TR("minarch.overclock.2x_vblank");
+	if (!strcasecmp(value, "lightgun")) return TR("minarch.input.lightgun");
+	if (!strcasecmp(value, "touchscreen")) return TR("minarch.input.touchscreen");
+	if (!strcasecmp(value, "player 1")) return TR("minarch.turbo.player1");
+	if (!strcasecmp(value, "player 2")) return TR("minarch.turbo.player2");
+	
+	// Gambatte specific
+	if (!strcasecmp(value, "auto")) return TR("common.auto");
+	if (!strcasecmp(value, "gbc")) return TR("minarch.system.gbc");
+	if (!strcasecmp(value, "sgb")) return TR("minarch.system.sgb");
+	if (!strcasecmp(value, "internal")) return TR("minarch.color.internal");
+	if (!strcasecmp(value, "custom")) return TR("minarch.color.custom");
+	if (!strcasecmp(value, "gb - dmg")) return TR("minarch.palette.gb_dmg");
+	if (!strcasecmp(value, "gb - pocket")) return TR("minarch.palette.gb_pocket");
+	if (!strcasecmp(value, "gb - light")) return TR("minarch.palette.gb_light");
+	if (!strcasecmp(value, "gbc only")) return TR("minarch.color.gbc_only");
+	if (!strcasecmp(value, "always")) return TR("common.always");
+	if (!strcasecmp(value, "accurate")) return TR("minarch.mode.accurate");
+	if (!strcasecmp(value, "fast")) return TR("minarch.mode.fast");
+	if (!strcasecmp(value, "central")) return TR("minarch.position.central");
+	if (!strcasecmp(value, "above screen")) return TR("minarch.position.above_screen");
+	if (!strcasecmp(value, "below screen")) return TR("minarch.position.below_screen");
+	if (!strcasecmp(value, "gb")) return TR("minarch.system.gb");
+	if (!strcasecmp(value, "gba")) return TR("minarch.system.gba");
+	
 	return value;
 }
 
