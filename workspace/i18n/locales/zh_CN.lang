@@ -545,6 +545,35 @@ minarch.whdload.native=原生
 minarch.whdload.config=配置
 minarch.whdload.splash=启动画面
 
+# FBNeo (Arcade)
+minarch.vertical.alternate=交替
+minarch.crosshair.hide_lightgun=使用光枪时隐藏
+minarch.crosshair.always_hide=始终隐藏
+minarch.crosshair.always_show=始终显示
+minarch.diag.hold_start=按住Start
+minarch.diag.start_ab=Start + A + B
+minarch.diag.hold_start_ab=按住Start + A + B
+minarch.diag.start_lr=Start + L + R
+minarch.diag.hold_start_lr=按住Start + L + R
+minarch.diag.hold_select=按住Select
+minarch.diag.select_ab=Select + A + B
+minarch.diag.hold_select_ab=按住Select + A + B
+minarch.diag.select_lr=Select + L + R
+minarch.diag.hold_select_lr=按住Select + L + R
+minarch.neogeo.use_dipswitch=使用BIOS拨动开关设置
+minarch.neogeo.mvs_eur=MVS 欧洲/亚洲 (英文)
+minarch.neogeo.mvs_usa=MVS 美国 (英文-审查版)
+minarch.neogeo.mvs_jap=MVS 日本 (日文)
+minarch.neogeo.aes_eur=AES 欧洲/亚洲 (英文)
+minarch.neogeo.aes_jap=AES 日本 (日文)
+minarch.neogeo.unibios=UNIBIOS
+minarch.memcard.shared=共享
+minarch.memcard.per_game=每游戏独立
+minarch.frameskip.fixed=固定
+minarch.frameskip.manual=手动
+minarch.interpolation.2point_1st=2点1阶
+minarch.interpolation.4point_3rd=4点3阶
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动

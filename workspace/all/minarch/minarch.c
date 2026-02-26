@@ -1942,6 +1942,36 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "rh")) return TR("minarch.interpolation.rh");
 	if (!strcasecmp(value, "crux")) return TR("minarch.interpolation.crux");
 	
+	// FBNeo (Arcade) specific
+	if (!strcasecmp(value, "alternate")) return TR("minarch.vertical.alternate");
+	if (!strcasecmp(value, "hide with lightgun device")) return TR("minarch.crosshair.hide_lightgun");
+	if (!strcasecmp(value, "always hide")) return TR("minarch.crosshair.always_hide");
+	if (!strcasecmp(value, "always show")) return TR("minarch.crosshair.always_show");
+	if (!strcasecmp(value, "hold start")) return TR("minarch.diag.hold_start");
+	if (!strcasecmp(value, "start + a + b")) return TR("minarch.diag.start_ab");
+	if (!strcasecmp(value, "hold start + a + b")) return TR("minarch.diag.hold_start_ab");
+	if (!strcasecmp(value, "start + l + r")) return TR("minarch.diag.start_lr");
+	if (!strcasecmp(value, "hold start + l + r")) return TR("minarch.diag.hold_start_lr");
+	if (!strcasecmp(value, "hold select")) return TR("minarch.diag.hold_select");
+	if (!strcasecmp(value, "select + a + b")) return TR("minarch.diag.select_ab");
+	if (!strcasecmp(value, "hold select + a + b")) return TR("minarch.diag.hold_select_ab");
+	if (!strcasecmp(value, "select + l + r")) return TR("minarch.diag.select_lr");
+	if (!strcasecmp(value, "hold select + l + r")) return TR("minarch.diag.hold_select_lr");
+	if (!strcasecmp(value, "use bios set in bios dipswitch")) return TR("minarch.neogeo.use_dipswitch");
+	if (!strcasecmp(value, "mvs europe/asia (english)")) return TR("minarch.neogeo.mvs_eur");
+	if (!strcasecmp(value, "mvs usa (english - censored)")) return TR("minarch.neogeo.mvs_usa");
+	if (!strcasecmp(value, "mvs japan (japanese)")) return TR("minarch.neogeo.mvs_jap");
+	if (!strcasecmp(value, "aes europe/asia (english)")) return TR("minarch.neogeo.aes_eur");
+	if (!strcasecmp(value, "aes japan (japanese)")) return TR("minarch.neogeo.aes_jap");
+	if (!strcasecmp(value, "unibios")) return TR("minarch.neogeo.unibios");
+	if (!strcasecmp(value, "shared")) return TR("minarch.memcard.shared");
+	if (!strcasecmp(value, "per-game")) return TR("minarch.memcard.per_game");
+	if (!strcasecmp(value, "fixed")) return TR("minarch.frameskip.fixed");
+	if (!strcasecmp(value, "auto")) return TR("common.auto");
+	if (!strcasecmp(value, "manual")) return TR("minarch.frameskip.manual");
+	if (!strcasecmp(value, "2-point 1st order")) return TR("minarch.interpolation.2point_1st");
+	if (!strcasecmp(value, "4-point 3rd order")) return TR("minarch.interpolation.4point_3rd");
+	
 	return value;
 }
 
