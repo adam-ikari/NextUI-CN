@@ -255,9 +255,9 @@ int GFX_loadSystemFont(const char *fontPath)
 
 	// Many fonts (especially CJK) look overly thick or blurry when SDL_ttf "fake bold"
 	// is forced. Keep bold for the original UI font, but use normal + light hinting for
-	// the injected Next/CJK font (font2.ttf).
+	// the injected Next/CJK fonts (font2.ttf and font3.ttf).
 	int style = TTF_STYLE_BOLD;
-	if (fontPath && strstr(fontPath, "/font2.ttf")) {
+	if (fontPath && (strstr(fontPath, "/font2.ttf") || strstr(fontPath, "/font3.ttf"))) {
 		style = TTF_STYLE_NORMAL;
 	}
 	TTF_SetFontStyle(font.large, style);
