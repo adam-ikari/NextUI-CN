@@ -448,6 +448,12 @@ minarch.palette.blue_vector=蓝色反转
 minarch.palette.sepia=怀旧色
 minarch.palette.monochrome_vector=单色反转
 
+# Caprice32 (Amstrad CPC) specific
+minarch.status.onloading=加载时
+minarch.lang.french=法语
+minarch.lang.spanish=西班牙语
+minarch.joystick.port2=手柄端口2
+
 # Gamepad types
 minarch.gamepad.standard=标准
 minarch.gamepad.dualshock=双震动

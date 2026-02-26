@@ -1842,6 +1842,12 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "sepia")) return TR("minarch.palette.sepia");
 	if (!strcasecmp(value, "monochrome vector")) return TR("minarch.palette.monochrome_vector");
 	
+	// Caprice32 (Amstrad CPC) specific
+	if (!strcasecmp(value, "onloading")) return TR("minarch.status.onloading");
+	if (!strcasecmp(value, "french")) return TR("minarch.lang.french");
+	if (!strcasecmp(value, "spanish")) return TR("minarch.lang.spanish");
+	if (!strcasecmp(value, "joystick_port2")) return TR("minarch.joystick.port2");
+	
 	return value;
 }
 
