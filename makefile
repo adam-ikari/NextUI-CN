@@ -267,8 +267,8 @@ package: tidy
 	# TODO: can I just add everything in BASE to zip?
 	# cd ./build/BASE && zip -r ../../releases/$(RELEASE_NAME)-base.zip Bios Roms Saves miyoo miyoo354 trimui rg35xx rg35xxplus gkdpixel miyoo355 magicx em_ui.sh MinUI.zip README.txt
 	mkdir -p ./releases
-	cd ./build/BASE && zip -r ../../releases/$(RELEASE_NAME)-base.zip Bios Roms Saves Shaders trimui MinUI.zip *.pakz README.txt
-	cd ./build/EXTRAS && zip -r ../../releases/$(RELEASE_NAME)-extras.zip Bios Emus Roms Saves Shaders Tools README.txt
+	cd ./build/BASE && mkdir -p ../../releases/$(dir $(RELEASE_NAME)) && zip -r ../../releases/$(RELEASE_NAME)-base.zip Bios Roms Saves Shaders trimui MinUI.zip *.pakz README.txt
+	cd ./build/EXTRAS && mkdir -p ../../releases/$(dir $(RELEASE_NAME)) && zip -r ../../releases/$(RELEASE_NAME)-extras.zip Bios Emus Roms Saves Shaders Tools README.txt
 	echo "$(RELEASE_VERSION)" > ./build/latest.txt
 
 	# compound zip (brew install libzip needed) 
