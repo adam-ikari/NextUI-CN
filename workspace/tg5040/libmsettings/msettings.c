@@ -1281,13 +1281,40 @@ void SetRawVolume(int val) { // in: 0-100
 }
 
 void SetRawVibration(int val) { // 0-100
-	extern void PLAT_setRumble(int strength);
+	#define MIN_STRENGTH 0x0000
+	#define MAX_STRENGTH 0xFFFF
+	#define NUM_INCREMENTS 20
+	#define MIN_VOLTAGE 500000
+	#define MAX_VOLTAGE 3300000
+	#define RUMBLE_PATH "/sys/class/gpio/gpio227/value"
+	#define RUMBLE_VOLTAGE_PATH "/sys/class/motor/voltage"
 	
 	// Clamp value to valid range
 	if (val < 0) val = 0;
 	if (val > 100) val = 100;
 	
-	PLAT_setRumble(val);
+	// Scale 0-100 to 0-0xFFFF (same as VIB_scaleStrength with NUM_INCREMENTS=20)
+	int strength = MIN_STRENGTH + (int)(val * ((long long)(MAX_STRENGTH - MIN_STRENGTH) / 100));
+	
+	// Calculate voltage
+	int voltage = MAX_VOLTAGE;
+	if (strength > 0 && strength < MAX_STRENGTH) {
+		voltage = MIN_VOLTAGE + (int)(strength * ((long long)(MAX_VOLTAGE - MIN_VOLTAGE) / MAX_STRENGTH));
+	}
+	
+	// Enable/disable rumble
+	FILE *fd = fopen(RUMBLE_PATH, "w");
+	if (fd) {
+		fprintf(fd, "%d", (val > 0) ? 1 : 0);
+		fclose(fd);
+	}
+	
+	// Set vibration voltage
+	fd = fopen(RUMBLE_VOLTAGE_PATH, "w");
+	if (fd) {
+		fprintf(fd, "%d", voltage);
+		fclose(fd);
+	}
 }
 
 void SetRawContrast(int val){
