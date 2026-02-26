@@ -1,3 +1,19 @@
+# NextUI-CN downstream language file (UTF-8)
+# Format: key=value
+# Use stable keys so upstream text tweaks won't force re-translation.
+
+recents=最近
+games=游戏
+settings=设置
+updater=系统更新
+battery=电量使用详情
+bootlogo=更改启动背景
+clock=时钟
+files=文件
+game_tracker=游戏时长统计
+input=输入检测
+ledcontrol=灯光控制
+remove_loading=移除“加载中“显示
 tools=工具
 
 common.on=开
@@ -189,6 +205,9 @@ minarch.scaling.aspect_screen=屏幕比例
 minarch.scaling.fullscreen=全屏
 minarch.scaling.cropped=裁切
 
+minarch.sharpness.nearest=最近邻
+minarch.sharpness.linear=线性
+
 minarch.resample.low=低
 minarch.resample.medium=中
 minarch.resample.high=高
@@ -213,30 +232,373 @@ minarch.sync_ref.native=原生
 minarch.cpu.powersave=省电
 minarch.cpu.normal=标准
 minarch.cpu.performance=性能
-# NextUI-CN downstream language file (UTF-8)
-# Format: key=value
-# Use stable keys so upstream text tweaks won't force re-translation.
 
-recents=最近
-games=游戏
-settings=设置
-updater=系统更新
-battery=电量使用详情
-bootlogo=更改启动背景
-clock=时钟
-files=文件
-game_tracker=游戏时长统计
-input=输入检测
-ledcontrol=灯光控制
-remove_loading=移除“加载中“显示
+# PCSX-ReArmed PS1 emulator specific values
+minarch.region.ntsc=NTSC
+minarch.region.pal=PAL
+minarch.bios.hle=内置BIOS
+minarch.multitap.port1_only=仅端口1
+minarch.multitap.port2_only=仅端口2
+minarch.multitap.both=双端口
+minarch.negcon.linear=线性
+minarch.negcon.quadratic=二次
+minarch.negcon.cubic=三次
+minarch.analog.circle=圆形
+minarch.analog.square=方形
+minarch.render.sync=同步
+minarch.render.async=异步
+minarch.interpolation.simple=简单
+minarch.interpolation.gaussian=高斯
+minarch.interpolation.cubic=三次
+minarch.cd.precache=预缓存
+minarch.cpu.interpreter=解释器
+
+# Common core option values for various emulators
+minarch.filter.monochrome=单色
+minarch.filter.composite=复合
+minarch.filter.svideo=S端子
+minarch.filter.rgb=RGB
+minarch.display.sharp=锐利
+minarch.display.smooth=平滑
+minarch.display.grayscale=灰度
+minarch.system.dendy=Dendy
+minarch.color.color=彩色
+minarch.color.internal=内部
+minarch.quality.low=低
+minarch.quality.medium=中
+minarch.quality.high=高
+minarch.quality.max=最高
+minarch.audio.mono=单声道
+minarch.audio.stereo=立体声
+
+# Button labels for controls and shortcuts
+common.none=无
+common.up=上
+common.down=下
+common.left=左
+common.right=右
+common.a=A键
+common.b=B键
+common.x=X键
+common.y=Y键
+common.start=开始键
+common.select=选择键
+common.l1=L1键
+common.r1=R1键
+common.l2=L2键
+common.r2=R2键
+common.l3=L3键
+common.r3=R3键
+common.menu_up=菜单键+上
+common.menu_down=菜单键+下
+common.menu_left=菜单键+左
+common.menu_right=菜单键+右
+common.menu_a=菜单键+A键
+common.menu_b=菜单键+B键
+common.menu_x=菜单键+X键
+common.menu_y=菜单键+Y键
+common.menu_start=菜单键+开始键
+common.menu_select=菜单键+选择键
+common.menu_l1=菜单键+L1键
+common.menu_r1=菜单键+R1键
+common.menu_l2=菜单键+L2键
+common.menu_r2=菜单键+R2键
+common.menu_l3=菜单键+L3键
+common.menu_r3=菜单键+R3键
+common.disabled=禁用
+common.enabled=启用
+common.auto=自动
+
+# Snes9x specific options
+minarch.blend.merge=合并
+minarch.blend.blur=模糊
+minarch.filter.rf=射频
+minarch.ratio.4_3=4:3
+minarch.ratio.uncorrected=未校正
+
+# PicoDrive specific options
+minarch.pad.3button=3键手柄
+minarch.pad.6button=6键手柄
+minarch.ratio.par=像素宽高比
+minarch.ratio.crt=CRT
+minarch.filter.lowpass=低通
+minarch.region.japan_ntsc=日本NTSC
+minarch.region.japan_pal=日本PAL
+minarch.region.us=美国
+minarch.region.europe=欧洲
+minarch.overclock.+25=+25%
+minarch.overclock.+50=+50%
+minarch.overclock.+75=+75%
+minarch.overclock.+100=+100%
+minarch.overclock.+200=+200%
+minarch.overclock.+400=+400%
+
+# FCEUMM specific
+minarch.system.famicom=红白机
+minarch.ratio.8_7_par=8:7 像素比
+minarch.overclock.2x_postrender=2倍 后渲染
+minarch.overclock.2x_vblank=2倍 垂直消隐
+minarch.input.lightgun=光枪
+minarch.input.touchscreen=触摸屏
+minarch.turbo.player1=玩家1
+minarch.turbo.player2=玩家2
+
+# Gambatte specific
+common.always=始终
+minarch.system.gb=Game Boy
+minarch.system.gbc=Game Boy Color
+minarch.system.sgb=Super Game Boy
+minarch.system.gba=Game Boy Advance
+minarch.color.custom=自定义
+minarch.palette.gb_dmg=GB - 原版
+minarch.palette.gb_pocket=GB - Pocket
+minarch.palette.gb_light=GB - Light
+minarch.color.gbc_only=仅GBC
+minarch.mode.accurate=精确
+minarch.mode.fast=快速
+minarch.position.central=中央
+minarch.position.above_screen=屏幕上方
+minarch.position.below_screen=屏幕下方
+
+# mGBA specific
+common.autodetect=自动检测
+minarch.system.game_boy=Game Boy
+minarch.system.super_game_boy=Super Game Boy
+minarch.system.game_boy_color=Game Boy Color
+minarch.system.game_boy_advance=Game Boy Advance
+minarch.idle.remove_known=移除已知
+minarch.idle.detect_and_remove=检测并移除
+minarch.idle.dont_remove=不移除
+
+# PCE FAST specific
+minarch.bios.system_card_3=系统卡3
+minarch.bios.games_express=Games Express
+minarch.bios.system_card_1=系统卡1
+minarch.bios.system_card_2=系统卡2
+minarch.speed.fast=快
+minarch.speed.medium=中
+minarch.speed.slow=慢
+
+# Virtual Boy specific
+minarch.anaglyph.red_blue=红蓝
+minarch.anaglyph.red_cyan=红青
+minarch.anaglyph.red_electric_cyan=红电青
+minarch.anaglyph.red_green=红绿
+minarch.anaglyph.green_magenta=绿洋红
+minarch.anaglyph.yellow_blue=黄蓝
+minarch.palette.black_red=黑红
+minarch.palette.black_white=黑白
+minarch.invert.x=反转X
+minarch.invert.y=反转Y
+minarch.invert.both=反转两者
+
+# Stella2014 (Atari 2600) specific
+minarch.blend.simple=简单
+minarch.ghosting.65=残影 (65%)
+minarch.ghosting.75=残影 (75%)
+minarch.ghosting.85=残影 (85%)
+minarch.ghosting.95=残影 (95%)
+
+# Gearcoleco (ColecoVision) specific
+minarch.ratio.1_1_par=1:1 像素比
+minarch.ratio.4_3_dar=4:3 宽高比
+minarch.ratio.16_9_dar=16:9 宽高比
+minarch.ratio.16_10_dar=16:10 宽高比
+minarch.overscan.top_bottom=顶部+底部
+minarch.overscan.full_284=全屏 (284宽度)
+minarch.overscan.full_320=全屏 (320宽度)
+minarch.spinner.super_action=超级动作手柄
+minarch.spinner.wheel=方向盘
+minarch.spinner.roller=滚轮
+
+# BlueMSX (MSX/SVI/ColecoVision/SG-1000) specific
+minarch.system.msx=MSX
+minarch.system.msx_turbo_r=MSX Turbo R
+minarch.system.msx2=MSX2
+minarch.system.msx2_plus=MSX2+
+minarch.system.sega_sg1000=SEGA SG-1000
+minarch.system.sega_sc3000=SEGA SC-3000
+minarch.system.sega_sf7000=SEGA SF-7000
+minarch.system.svi_318=SVI-318
+minarch.system.svi_328=SVI-328
+minarch.system.svi_328_mk2=SVI-328 MK2
+minarch.system.colecovision=ColecoVision
+minarch.system.colecovision_svi603=ColecoVision (SVI-603)
+minarch.freq.50hz=50Hz
+minarch.freq.60hz=60Hz
+
+# PokeMini (Pokémon Mini) specific
+common.default=默认
+minarch.filter.dotmatrix=点阵
+minarch.filter.scanline=扫描线
+minarch.mode.analog=模拟
+minarch.shades.3=3色阶
+minarch.shades.2=2色阶
+minarch.palette.old=旧式
+minarch.palette.monochrome=单色
+minarch.palette.green=绿色
+minarch.palette.green_vector=绿色反转
+minarch.palette.red=红色
+minarch.palette.red_vector=红色反转
+minarch.palette.blue_lcd=蓝色LCD
+minarch.palette.led_backlight=LED背光
+minarch.palette.girl_power=女孩力量
+minarch.palette.blue=蓝色
+minarch.palette.blue_vector=蓝色反转
+minarch.palette.sepia=怀旧色
+minarch.palette.monochrome_vector=单色反转
+
+# Caprice32 (Amstrad CPC) specific
+minarch.status.onloading=加载时
+minarch.lang.french=法语
+minarch.lang.spanish=西班牙语
+minarch.joystick.port2=手柄端口2
+
+# VICE (Commodore)
+minarch.model.c64_pal_auto=C64 PAL 自动
+minarch.model.c64_ntsc_auto=C64 NTSC 自动
+minarch.model.c64c_pal_auto=C64C PAL 自动
+minarch.model.c64c_ntsc_auto=C64C NTSC 自动
+minarch.model.c64_pal=C64 PAL
+minarch.model.c64_ntsc=C64 NTSC
+minarch.model.c64c_pal=C64C PAL
+minarch.model.c64c_ntsc=C64C NTSC
+minarch.model.c64sx_pal=C64SX PAL
+minarch.model.c64sx_ntsc=C64SX NTSC
+minarch.model.c128_pal_auto=C128 PAL 自动
+minarch.model.c128_ntsc_auto=C128 NTSC 自动
+minarch.model.c128_d_pal_auto=C128 D PAL 自动
+minarch.model.c128_d_ntsc_auto=C128 D NTSC 自动
+minarch.model.c128_dcr_pal_auto=C128 DCR PAL 自动
+minarch.model.c128_dcr_ntsc_auto=C128 DCR NTSC 自动
+minarch.model.c128_pal=C128 PAL
+minarch.model.c128_ntsc=C128 NTSC
+minarch.model.vic20_pal_auto=VIC20 PAL 自动
+minarch.model.vic20_ntsc_auto=VIC20 NTSC 自动
+minarch.model.vic20_pal=VIC20 PAL
+minarch.model.vic20_ntsc=VIC20 NTSC
+minarch.output.vdc=VDC
+minarch.output.vicii=VIC-II
+minarch.reset.soft=软复位
+minarch.reset.hard=硬复位
+minarch.reset.freeze=冻结
+minarch.crop.small=小
+minarch.crop.medium=中
+minarch.crop.maximum=最大
+minarch.crop.auto_disable=自动禁用
+minarch.crop.manual=手动
+minarch.crop.both=水平+垂直
+minarch.crop.horizontal=水平
+minarch.crop.vertical=垂直
+minarch.filter.enabled_noblur=启用(无模糊)
+minarch.filter.enabled_lowblur=启用(低模糊)
+minarch.filter.enabled_medblur=启用(中模糊)
+minarch.sid.resid=ReSID
+minarch.sid.resid_fp=ReSID-FP
+minarch.sid.fastsid=FastSID
+minarch.face.jump=跳跃
+minarch.face.rotate=旋转
+minarch.face.rotate_jump=旋转跳跃
+minarch.reset.autostart=自动启动
+minarch.warp=加速
+minarch.mute=静音
+minarch.media.disk=磁盘
+minarch.media.tape=磁带
+minarch.position.bottom=底部
+minarch.position.top=顶部
+minarch.vkbd.brown=棕色
+minarch.vkbd.beige=米色
+minarch.vkbd.dark=深色
+minarch.vkbd.light=浅色
+minarch.palette.amber=琥珀色
+
+# PUAE (Amiga)
+minarch.model.a500og=A500OG (原版)
+minarch.model.a500plus=A500+
+minarch.model.a1200og=A1200OG (原版)
+minarch.model.cd32fr=CD32FR (FastRAM)
+minarch.crop.minimum=最小
+minarch.crop.smaller=更小
+minarch.crop.large=大
+minarch.crop.larger=更大
+minarch.resolution.lores=低分辨率
+minarch.resolution.hires=高分辨率
+minarch.resolution.superhires=超高分辨率
+minarch.line.single=单线
+minarch.line.double=双线
+minarch.collision.none=无
+minarch.collision.sprites=精灵
+minarch.collision.playfields=播放区域
+minarch.collision.full=全部
+minarch.vkbd.cd32=CD32
+minarch.interpolation.anti=抗锯齿
+minarch.interpolation.sinc=Sinc
+minarch.interpolation.rh=RH
+minarch.interpolation.crux=Crux
+minarch.filter.emulated=模拟
+minarch.filter.standard=标准
+minarch.filter.enhanced=增强
+minarch.sound.internal=内置
+minarch.whdload.files=文件
+minarch.whdload.hdfs=HDF
+minarch.whdload.native=原生
+minarch.whdload.config=配置
+minarch.whdload.splash=启动画面
+
+# FBNeo (Arcade)
+minarch.vertical.alternate=交替
+minarch.crosshair.hide_lightgun=使用光枪时隐藏
+minarch.crosshair.always_hide=始终隐藏
+minarch.crosshair.always_show=始终显示
+minarch.diag.hold_start=按住Start
+minarch.diag.start_ab=Start + A + B
+minarch.diag.hold_start_ab=按住Start + A + B
+minarch.diag.start_lr=Start + L + R
+minarch.diag.hold_start_lr=按住Start + L + R
+minarch.diag.hold_select=按住Select
+minarch.diag.select_ab=Select + A + B
+minarch.diag.hold_select_ab=按住Select + A + B
+minarch.diag.select_lr=Select + L + R
+minarch.diag.hold_select_lr=按住Select + L + R
+minarch.neogeo.use_dipswitch=使用BIOS拨动开关设置
+minarch.neogeo.mvs_eur=MVS 欧洲/亚洲 (英文)
+minarch.neogeo.mvs_usa=MVS 美国 (英文-审查版)
+minarch.neogeo.mvs_jap=MVS 日本 (日文)
+minarch.neogeo.aes_eur=AES 欧洲/亚洲 (英文)
+minarch.neogeo.aes_jap=AES 日本 (日文)
+minarch.neogeo.unibios=UNIBIOS
+minarch.memcard.shared=共享
+minarch.memcard.per_game=每游戏独立
+minarch.frameskip.fixed=固定
+minarch.frameskip.manual=手动
+minarch.interpolation.2point_1st=2点1阶
+minarch.interpolation.4point_3rd=4点3阶
+
+# Atari 800/5200
+minarch.system.400_800_osb=400/800 (OS B)
+minarch.system.800xl_64k=800XL (64K)
+minarch.system.130xe_128k=130XE (128K)
+minarch.sio.acceleration=SIO加速
+minarch.boot.cassette=从磁带启动
+minarch.hires.artifacting=高分辨率伪影
+minarch.autodetect.a5200_cart=自动检测A5200卡带类型
+minarch.joyhack.robotron=Robotron手柄hack
+minarch.keyboard.type=键盘类型
+minarch.keyboard.poll=轮询
+minarch.keyboard.callback=回调
+
+# Gamepad types
+minarch.gamepad.standard=标准
+minarch.gamepad.dualshock=双震动
 
 # settings app (workspace/all/settings)
 settings.appearance=外观
 settings.appearance.desc=界面定制
 settings.font=字体
 settings.font.desc=用于渲染所有界面文字的字体。
-settings.font_name.dream_bold=梦源黑体（粗）
-settings.font_name.dream=梦源黑体
+settings.font_name.font1=梦源黑体 W16
+settings.font_name.font2=缝合像素
+settings.font_name.font3=寒蝉半圆体
 settings.main_color=主色
 settings.main_color.desc=用于渲染主要界面元素的颜色。
 settings.primary_accent=主强调色
