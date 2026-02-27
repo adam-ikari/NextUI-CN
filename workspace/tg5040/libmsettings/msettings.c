@@ -203,7 +203,7 @@ typedef struct SettingsV11 {
 	int jack;
 	int audiosink; // was bluetooth true/false before
 	int toggled_vibration;
-	int vibration; // 0-100 (percentage), 0 = disabled, 100 = full strength
+	int vibration; // 0-10, where 0 = disabled, 10 = 100%
 } SettingsV11;
 // backwards compatibility to InitSettings!
 #define SETTINGS_VERSION 11
@@ -378,9 +378,9 @@ void InitSettings(void) {
 						settings->jack = old.jack;
 						settings->audiosink = old.audiosink;
 						
-						// Migrate vibration from 0-20 to 0-100 (multiply by 5)
+						// Migrate vibration from 0-20 to 0-10 (divide by 2)
 						settings->toggled_vibration = SETTINGS_DEFAULT_MUTE_NO_CHANGE;
-						settings->vibration = 50; // Default to 50% for new field
+						settings->vibration = 5; // Default to 50% (5 out of 10) for new field
 					}
 					else if(version==9) {
 						printf("Found settings v9.\n");

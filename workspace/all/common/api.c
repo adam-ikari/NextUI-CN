@@ -3414,6 +3414,7 @@ int VIB_getStrength(void)
 
 #define MIN_STRENGTH 0x0000
 #define MAX_STRENGTH 0xFFFF
+#define NUM_INCREMENTS 10
 
 int VIB_scaleStrength(int strength)
 { // scale based on vibration intensity setting (0-10)
@@ -3430,8 +3431,8 @@ int VIB_scaleStrength(int strength)
 		return 0; // vibration disabled
 	
 	// Scale input strength (0-0xFFFF) by the vibration intensity level
-	// Original formula: scale through 0-10 (NUM_INCREMENTS)
-	return MIN_STRENGTH + (int)(strength * ((long long)(MAX_STRENGTH - MIN_STRENGTH) / NUM_INCREMENTS));
+	// Formula: scale 0-0xFFFF by (vibration_intensity / 10)
+	return (strength * vibration_intensity) / NUM_INCREMENTS;
 }
 
 void VIB_singlePulse(int strength, int duration_ms)
