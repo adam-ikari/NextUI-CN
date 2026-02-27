@@ -2455,13 +2455,13 @@ void PLAT_initDefaultLeds() {
 		"f1",
 		4,
 		1000,
-		100,
+		0,
 		0xFFFFFF,
 		0xFFFFFF,
 		0,
 		{},
 		1,
-		100,
+		0,
 		0
 	};
 	lightsDefault[1] = (LightSettings) {
@@ -2469,13 +2469,13 @@ void PLAT_initDefaultLeds() {
 		"f2",
 		4,
 		1000,
-		100,
+		0,
 		0xFFFFFF,
 		0xFFFFFF,
 		0,
 		{},
 		1,
-		100,
+		0,
 		0
 	};
 	lightsDefault[2] = (LightSettings) {
@@ -2483,13 +2483,13 @@ void PLAT_initDefaultLeds() {
 		"m",
 		4,
 		1000,
-		100,
+		0,
 		0xFFFFFF,
 		0xFFFFFF,
 		0,
 		{},
 		1,
-		100,
+		0,
 		0
 	};
 	lightsDefault[3] = (LightSettings) {
@@ -2497,13 +2497,13 @@ void PLAT_initDefaultLeds() {
 		"lr",
 		4,
 		1000,
-		100,
+		0,
 		0xFFFFFF,
 		0xFFFFFF,
 		0,
 		{},
 		1,
-		100,
+		0,
 		0
 	};
 } else {
@@ -2512,13 +2512,13 @@ void PLAT_initDefaultLeds() {
 		"l",
 		4,
 		1000,
-		100,
+		0,
 		0xFFFFFF,
 		0xFFFFFF,
 		0,
 		{},
 		1,
-		100,
+		0,
 		0
 	};
 	lightsDefault[1] = (LightSettings) {
@@ -2526,13 +2526,13 @@ void PLAT_initDefaultLeds() {
 		"r",
 		4,
 		1000,
-		100,
+		0,
 		0xFFFFFF,
 		0xFFFFFF,
 		0,
 		{},
 		1,
-		100,
+		0,
 		0
 	};
 	lightsDefault[2] = (LightSettings) {
@@ -2540,13 +2540,13 @@ void PLAT_initDefaultLeds() {
 		"m",
 		4,
 		1000,
-		100,
+		0,
 		0xFFFFFF,
 		0xFFFFFF,
 		0,
 		{},
 		1,
-		100,
+		0,
 		0
 	};
 }
