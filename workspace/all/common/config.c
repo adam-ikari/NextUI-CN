@@ -978,16 +978,6 @@ void CFG_print(void)
     printf("}\n");
 }
 
-bool CFG_getHaptics(void)
-{
-    return settings.haptics;
-}
-
-void CFG_setHaptics(bool enable)
-{
-    settings.haptics = enable;
-}
-
 bool CFG_getSwapDpadLeftStick(void)
 {
     return settings.swapDpadLeftStick;
