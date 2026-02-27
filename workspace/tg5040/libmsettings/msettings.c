@@ -680,7 +680,10 @@ void SetVibration(int value) { // 0-20
 }
 
 void TestVibration(int value) { // 0-20
-	SetRawVibration(scaleVolume(value));
+	// Test vibration at the set intensity to give user feedback
+	// Convert 0-20 to 0-100 scale for SetRawVibration
+	int scaled = scaleVolume(value);
+	SetRawVibration(scaled);
 }
 
 // monitored and set by thread in keymon
