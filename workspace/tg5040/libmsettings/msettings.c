@@ -674,15 +674,15 @@ void SetVolume(int value) { // 0-20
 	SaveSettings();
 }
 
-void SetVibration(int value) { // 0-20
+void SetVibration(int value) { // 0-100%
 	settings->vibration = value;
 	SaveSettings();
 }
 
-void TestVibration(int value) { // 0-20
+void TestVibration(int value) { // 0-100%
 	// Test vibration at the set intensity to give user feedback
-	// Convert 0-20 to 0-100 scale for SetRawVibration
-	int scaled = scaleVolume(value);
+	// Convert 0-100 to 0-100 scale for SetRawVibration
+	int scaled = value;
 	SetRawVibration(scaled);
 }
 
