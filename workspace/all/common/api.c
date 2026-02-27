@@ -4025,7 +4025,7 @@ void LEDS_applyRules()
 	// some rules rely on pwr.is_charging and pwr.charge being valid
 	if(pwr.initialized == 0)
 		LOG_warn("LEDS_applyRules called before PWR_init\n");
-	// some rules rely in InitSettings() being called (e.g GetMute())
+	// some rules rely in InitSettings() being called (e.g GetFnToggle())
 	if(!InitializedSettings())
 		LOG_warn("LEDS_applyRules called before InitSettings\n");
 

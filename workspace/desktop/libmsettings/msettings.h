@@ -45,6 +45,8 @@ int GetHDMI(void);
 void SetHDMI(int value); // 0-1
 
 int GetMute(void);
+int GetFnToggle(void);
+void SetFnToggle(int value); // 0-1
 
 // custom FnToggle mode persistence layer
 

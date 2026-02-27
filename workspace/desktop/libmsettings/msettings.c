@@ -406,6 +406,8 @@ int GetHDMI(void) { return 0; }
 void SetHDMI(int value) {}
 
 int GetMute(void) { return 0; }
+int GetFnToggle(void) { return 0; }
+void SetFnToggle(int value) {}
 
 // Desktop platform stubs for vibration control (not supported)
 void SetRawVibration(int value) {}
