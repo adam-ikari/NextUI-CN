@@ -214,7 +214,7 @@ static Settings DefaultSettings = {
 	.colortemperature = SETTINGS_DEFAULT_COLORTEMP,
 	.headphones = SETTINGS_DEFAULT_HEADPHONE_VOLUME,
 	.speaker = SETTINGS_DEFAULT_VOLUME,
-	.mute = 0,
+	.fnToggle = 0,
 	.contrast = SETTINGS_DEFAULT_CONTRAST,
 	.saturation = SETTINGS_DEFAULT_SATURATION,
 	.exposure = SETTINGS_DEFAULT_EXPOSURE,
@@ -374,7 +374,7 @@ void InitSettings(void) {
 						settings->brightness = old.brightness;
 						settings->headphones = old.headphones;
 						settings->speaker = old.speaker;
-						settings->mute = old.mute;
+						settings->fnToggle = old.mute;
 						settings->jack = old.jack;
 						settings->audiosink = old.audiosink;
 						
@@ -415,7 +415,7 @@ void InitSettings(void) {
 						settings->brightness = old.brightness;
 						settings->headphones = old.headphones;
 						settings->speaker = old.speaker;
-						settings->mute = old.mute;
+						settings->fnToggle = old.mute;
 						settings->jack = old.jack;
 						settings->audiosink = AUDIO_SINK_DEFAULT;
 						
@@ -445,7 +445,7 @@ void InitSettings(void) {
 						settings->brightness = old.brightness;
 						settings->headphones = old.headphones;
 						settings->speaker = old.speaker;
-						settings->mute = old.mute;
+						settings->fnToggle = old.mute;
 						settings->jack = old.jack;
 					}
 					else if(version==7) {
@@ -469,7 +469,7 @@ void InitSettings(void) {
 						settings->brightness = old.brightness;
 						settings->headphones = old.headphones;
 						settings->speaker = old.speaker;
-						settings->mute = old.mute;
+						settings->fnToggle = old.mute;
 						settings->jack = old.jack;
 					}
 					else if(version==6) {
@@ -486,7 +486,7 @@ void InitSettings(void) {
 						settings->brightness = old.brightness;
 						settings->headphones = old.headphones;
 						settings->speaker = old.speaker;
-						settings->mute = old.mute;
+						settings->fnToggle = old.mute;
 						settings->jack = old.jack;
 					}
 					else if(version==5) {
@@ -499,7 +499,7 @@ void InitSettings(void) {
 						settings->brightness = old.brightness;
 						settings->headphones = old.headphones;
 						settings->speaker = old.speaker;
-						settings->mute = old.mute;
+						settings->fnToggle = old.mute;
 						settings->jack = old.jack;
 					}
 					else if(version==4) {
@@ -513,7 +513,7 @@ void InitSettings(void) {
 						settings->brightness = old.brightness;
 						settings->headphones = old.headphones;
 						settings->speaker = old.speaker;
-						settings->mute = old.mute;
+						settings->fnToggle = old.mute;
 						settings->jack = old.jack;
 					}
 					else if(version==3) {
@@ -524,7 +524,7 @@ void InitSettings(void) {
 						settings->brightness = old.brightness;
 						settings->headphones = old.headphones;
 						settings->speaker = old.speaker;
-						settings->mute = old.mute;
+						settings->fnToggle = old.mute;
 						settings->jack = old.jack;
 					}
 					else {
