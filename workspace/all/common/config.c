@@ -49,7 +49,7 @@ void CFG_defaults(NextUISettings *cfg)
         .defaultView = CFG_DEFAULT_VIEW,
         .showQuickSwitcherUi = CFG_DEFAULT_SHOWQUICKWITCHERUI,
 
-        .muteLeds = CFG_DEFAULT_MUTELEDS,
+        .fnToggleLeds = CFG_DEFAULT_FNTOGGLELEDS,
 
         .screenTimeoutSecs = CFG_DEFAULT_SCREENTIMEOUTSECS,
         .suspendTimeoutSecs = CFG_DEFAULT_SUSPENDTIMEOUTSECS,
@@ -243,7 +243,7 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
                 CFG_setUseExtractedFileName((bool)temp_value);
                 continue;
             }
-            if (sscanf(line, "muteLeds=%i", &temp_value) == 1)
+            if (sscanf(line, "fnToggleLeds=%i", &temp_value) == 1)
             {
                 CFG_setFnToggleLEDs(temp_value);
                 continue;
@@ -610,12 +610,12 @@ void CFG_setUseExtractedFileName(bool use)
 
 bool CFG_getFnToggleLEDs(void)
 {
-    return settings.muteLeds;
+    return settings.fnToggleLeds;
 }
 
 void CFG_setFnToggleLEDs(bool on)
 {
-    settings.muteLeds = on;
+    settings.fnToggleLeds = on;
     CFG_sync();
 }
 
@@ -813,7 +813,7 @@ void CFG_get(const char *key, char *value)
     {
         sprintf(value, "%i", CFG_getUseExtractedFileName());
     }
-    else if (strcmp(key, "muteLeds") == 0)
+    else if (strcmp(key, "fnToggleLeds") == 0)
     {
         sprintf(value, "%i", CFG_getFnToggleLEDs());
     }
@@ -913,7 +913,7 @@ void CFG_sync(void)
     fprintf(file, "saveFormat=%i\n", settings.saveFormat);
     fprintf(file, "stateFormat=%i\n", settings.stateFormat);
     fprintf(file, "useExtractedFileName=%i\n", settings.useExtractedFileName);
-    fprintf(file, "muteLeds=%i\n", settings.muteLeds);
+    fprintf(file, "fnToggleLeds=%i\n", settings.fnToggleLeds);
     fprintf(file, "artWidth=%i\n", (int)(settings.gameArtWidth * 100));
     fprintf(file, "wifi=%i\n", settings.wifi);
     fprintf(file, "defaultView=%i\n", settings.defaultView);
@@ -957,7 +957,7 @@ void CFG_print(void)
     printf("\t\"saveFormat\": %i,\n", settings.saveFormat);
     printf("\t\"stateFormat\": %i,\n", settings.stateFormat);
     printf("\t\"useExtractedFileName\": %i,\n", settings.useExtractedFileName);
-    printf("\t\"muteLeds\": %i,\n", settings.muteLeds);
+    printf("\t\"fnToggleLeds\": %i,\n", settings.fnToggleLeds);
     printf("\t\"artWidth\": %i,\n", (int)(settings.gameArtWidth * 100));
     printf("\t\"wifi\": %i,\n", settings.wifi);
     printf("\t\"defaultView\": %i,\n", settings.defaultView);

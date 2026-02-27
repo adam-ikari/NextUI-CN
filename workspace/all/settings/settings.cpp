@@ -376,7 +376,7 @@ int main(int argc, char *argv[])
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.disables_led"), TR("settings.fn_switch.disables_led.desc"), {false, true}, on_off, 
             []() -> std::any { return CFG_getFnToggleLEDs(); },
             [](const std::any &value) { CFG_setFnToggleLEDs(std::any_cast<bool>(value)); },
-            []() { CFG_setFnToggleLEDs(CFG_DEFAULT_MUTELEDS); }},
+            []() { CFG_setFnToggleLEDs(CFG_DEFAULT_FNTOGGLELEDS); }},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.brightness_when_toggled"), TR("settings.fn_switch.brightness_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10}, 
             {TR("common.unchanged"),"0","1","2","3","4","5","6","7","8","9","10"},
