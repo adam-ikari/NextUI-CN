@@ -729,9 +729,15 @@ void SetVibration(int value) { // 0-10 (0 = off, 10 = 100%)
 }
 
 void TestVibration(int value) {
-	// Scale 0-10 to 0-100 for SetRawVibration
-	int scaled = value * 10; // 0-10 -> 0-100
-	SetRawVibration(scaled);
+	// Test with maximum intensity (10) to show the effect of current setting
+	// The vibration will be scaled by the current intensity setting (value) through SetRawVibration
+	
+	// Use value (0-10) as the intensity to apply
+	// Convert to 0-100 scale for SetRawVibration, which will scale internally
+	int intensity_percentage = value * 10; // 0-10 -> 0-100
+	
+	// Use maximum strength (100) to test the effect
+	SetRawVibration(intensity_percentage);
 }
 
 // monitored and set by thread in keymon

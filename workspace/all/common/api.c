@@ -3403,6 +3403,10 @@ void VIB_quit(void)
 }
 void VIB_setStrength(int strength)
 {
+	// Apply vibration intensity scaling to all rumble requests
+	// This ensures both system haptics and emulator rumble are scaled
+	strength = VIB_scaleStrength(strength);
+	
 	if (vib.queued_strength == strength)
 		return;
 	vib.queued_strength = strength;
@@ -3438,7 +3442,7 @@ int VIB_scaleStrength(int strength)
 void VIB_singlePulse(int strength, int duration_ms)
 {
 	VIB_setStrength(0);
-	VIB_setStrength(VIB_scaleStrength(strength));
+	VIB_setStrength(strength);
 	usleep(duration_ms * 1000);
 	VIB_setStrength(0);
 }
@@ -3446,11 +3450,11 @@ void VIB_singlePulse(int strength, int duration_ms)
 void VIB_doublePulse(int strength, int duration_ms, int gap_ms)
 {
 	VIB_setStrength(0);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 	usleep(gap_ms * 1000);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 }
@@ -3458,15 +3462,15 @@ void VIB_doublePulse(int strength, int duration_ms, int gap_ms)
 void VIB_triplePulse(int strength, int duration_ms, int gap_ms)
 {
 	VIB_setStrength(0);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 	usleep(gap_ms * 1000);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 	usleep(gap_ms * 1000);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 }
@@ -3537,7 +3541,7 @@ void PWR_init(void)
 	pwr.initialized = 1;
 
 	if (CFG_getHaptics())
-		VIB_singlePulse(VIB_scaleStrength(VIB_bootStrength), VIB_bootDuration_ms);
+		VIB_singlePulse(VIB_bootStrength, VIB_bootDuration_ms);
 
 	PWR_initOverlay();
 	PWR_updateBatteryStatus();
@@ -3781,7 +3785,7 @@ static void PWR_enterSleep(void)
 		SetRawVolume(MUTE_VOLUME_RAW);
 		if (CFG_getHaptics())
 		{
-			VIB_singlePulse(VIB_scaleStrength(VIB_sleepStrength), VIB_sleepDuration_ms);
+			VIB_singlePulse(VIB_sleepStrength, VIB_sleepDuration_ms);
 		}
 		PLAT_enableBacklight(0);
 	}
@@ -3815,7 +3819,7 @@ static void PWR_exitSleep(void)
 	{
 		if (CFG_getHaptics())
 		{
-			VIB_singlePulse(VIB_scaleStrength(VIB_sleepStrength), VIB_sleepDuration_ms);
+			VIB_singlePulse(VIB_sleepStrength, VIB_sleepDuration_ms);
 		}
 		PLAT_enableBacklight(1);
 		SetVolume(GetVolume());
