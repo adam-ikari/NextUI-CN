@@ -37,8 +37,8 @@ void SetContrast(int value); // -4-5
 void SetSaturation(int value); // -5-5
 void SetExposure(int value); // -4-5
 void SetVolume(int value); // 0-20
-void SetVibration(int value); // 0-100%
-void TestVibration(int value); // 0-100%, test vibration intensity
+void SetVibration(int value); // 0-20 (displayed as 0-100% in UI)
+void TestVibration(int value); // 0-20 (displayed as 0-100% in UI), test vibration intensity
 
 int GetJack(void);
 void SetJack(int value); // 0-1

@@ -3414,17 +3414,18 @@ int VIB_getStrength(void)
 
 #define MIN_STRENGTH 0x0000
 #define MAX_STRENGTH 0xFFFF
+#define NUM_INCREMENTS 20
 
 int VIB_scaleStrength(int strength)
-{ // scale based on vibration intensity setting (0-100%)
-	int vibration_setting = GetVibration(); // 0-100, where 0 is off and 100 is 100%
+{ // scale based on vibration intensity setting (0-20, displayed as 0-100% in UI)
+	int vibration_setting = GetVibration(); // 0-20, where 0 is off and 20 is 100%
 	
 	if (vibration_setting == 0)
 		return 0; // vibration disabled
 	
 	// Scale input strength (0-0xFFFF) by the vibration setting percentage
-	// vibration_setting 100 = 100%, 50 = 50%, etc.
-	int scaled_strength = MIN_STRENGTH + (int)(strength * ((long long)MAX_STRENGTH * vibration_setting / (100 * MAX_STRENGTH)));
+	// vibration_setting 20 = 100%, 10 = 50%, etc.
+	int scaled_strength = MIN_STRENGTH + (int)(strength * ((long long)MAX_STRENGTH * vibration_setting / (NUM_INCREMENTS * MAX_STRENGTH)));
 	return scaled_strength; // between 0x0000 and 0xFFFF
 }
 
