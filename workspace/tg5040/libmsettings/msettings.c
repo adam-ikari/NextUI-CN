@@ -675,12 +675,12 @@ void SetVolume(int value) { // 0-20
 }
 
 void SetVibration(int value) { // 0-20
-	if (settings->mute && GetMutedVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
-		return SetRawVibration(scaleVolume(GetMutedVibration()));
-	
 	settings->vibration = value;
-	SetRawVibration(scaleVolume(value));
 	SaveSettings();
+}
+
+void TestVibration(int value) { // 0-20
+	SetRawVibration(scaleVolume(value));
 }
 
 // monitored and set by thread in keymon
