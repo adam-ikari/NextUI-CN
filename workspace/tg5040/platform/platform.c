@@ -2192,7 +2192,7 @@ void PLAT_enableBacklight(int enable) {
 
 void PLAT_powerOff(int reboot) {
 	if (CFG_getHaptics()) {
-		VIB_singlePulse(VIB_bootStrength, VIB_bootDuration_ms);
+		VIB_singlePulse(VIB_scaleStrength(VIB_bootStrength), VIB_bootDuration_ms);
 	}
 	system("rm -f /tmp/nextui_exec && sync");
 	sleep(2);

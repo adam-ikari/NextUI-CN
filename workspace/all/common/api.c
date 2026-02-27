@@ -3536,7 +3536,7 @@ void PWR_init(void)
 	pwr.initialized = 1;
 
 	if (CFG_getHaptics())
-		VIB_singlePulse(VIB_bootStrength, VIB_bootDuration_ms);
+		VIB_singlePulse(VIB_scaleStrength(VIB_bootStrength), VIB_bootDuration_ms);
 
 	PWR_initOverlay();
 	PWR_updateBatteryStatus();
@@ -3780,7 +3780,7 @@ static void PWR_enterSleep(void)
 		SetRawVolume(MUTE_VOLUME_RAW);
 		if (CFG_getHaptics())
 		{
-			VIB_singlePulse(VIB_sleepStrength, VIB_sleepDuration_ms);
+			VIB_singlePulse(VIB_scaleStrength(VIB_sleepStrength), VIB_sleepDuration_ms);
 		}
 		PLAT_enableBacklight(0);
 	}
@@ -3814,7 +3814,7 @@ static void PWR_exitSleep(void)
 	{
 		if (CFG_getHaptics())
 		{
-			VIB_singlePulse(VIB_sleepStrength, VIB_sleepDuration_ms);
+			VIB_singlePulse(VIB_scaleStrength(VIB_sleepStrength), VIB_sleepDuration_ms);
 		}
 		PLAT_enableBacklight(1);
 		SetVolume(GetVolume());
