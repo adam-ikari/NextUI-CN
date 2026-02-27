@@ -12,9 +12,7 @@ on:
   pull_request: {}
 
 permissions:
-  attestations: write
   contents: read
-  id-token: write
 
 jobs:
   build-macos:
