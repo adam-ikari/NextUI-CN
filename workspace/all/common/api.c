@@ -4123,10 +4123,11 @@ void LEDS_initLeds()
 		lightsCriticalBattery[i].cycles = -1; // infinite
 
 		// LIGHT_PROFILE_CHARGING
-		lightsCharging[i] = lightsDefault[i];
-		lightsCharging[i].effect = 2; // breathe
-		lightsCharging[i].color1 = 0x00FF00;
-		lightsCharging[i].cycles = -1; // infinite	
+		// Disabled charging indicator
+		// lightsCharging[i] = lightsDefault[i];
+		// lightsCharging[i].effect = 2; // breathe
+		// lightsCharging[i].color1 = 0x00FF00;
+		// lightsCharging[i].cycles = -1; // infinite	
 
 		// LIGHT_PROFILE_SLEEP
 		lightsSleep[i] = lightsDefault[i];
