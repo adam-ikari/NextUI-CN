@@ -3419,7 +3419,7 @@ int VIB_scaleStrength(int strength)
 { // scale based on vibration intensity setting (0-100%)
 	int vibration_percentage;
 	
-	// Check if muted and use muted vibration setting if available
+	// Check if in FN toggle mode and use FN toggle vibration setting if available
 	if (GetMute() && GetMutedVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) {
 		vibration_percentage = GetMutedVibration(); // 0-100, where 0 is off and 100 is 100%
 	} else {

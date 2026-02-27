@@ -728,13 +728,13 @@ settings.fn_switch.dpad_mode_when_toggled.desc=方向键：正常\n摇杆：模�
 settings.fn_switch.dpad_mode.dpad=方向键
 settings.fn_switch.dpad_mode.joystick=摇杆
 settings.fn_switch.dpad_mode.both=同时
-settings.fn_switch.vibration_when_toggled=静音时震动
-settings.fn_switch.vibration_when_toggled.desc=静音模式震动强度（不变 = 使用全局设置）
+settings.fn_switch.vibration_when_toggled=FN切换时震动
+settings.fn_switch.vibration_when_toggled.desc=FN切换模式震动强度（不变 = 使用全局设置）
 
 settings.gamepad=手柄设置
 settings.gamepad.desc=手柄相关设置
-settings.gamepad.vibration=全局震动强度
-settings.gamepad.vibration.desc=正常模式下的全局震动强度（0-100%）
+settings.gamepad.vibration=震动强度
+settings.gamepad.vibration.desc=全局震动强度（0-100%）
 settings.gamepad.swap_dpad_left_stick=方向键和左摇杆切换
 settings.gamepad.swap_dpad_left_stick.desc=启用后，方向键和左摇杆的功能互换
 
