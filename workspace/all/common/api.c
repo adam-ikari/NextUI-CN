@@ -4034,8 +4034,9 @@ void LEDS_applyRules()
 	// e.g.
 	// - if charging and low battery, charging takes priority
 	if (pwr.initialized && pwr.is_charging) {
-		//LOG_info("LEDS_applyRules: charging\n");
-		LEDS_setProfile(LIGHT_PROFILE_CHARGING);
+		// Use default profile (user can configure via LedControl tool)
+		//LOG_info("LEDS_applyRules: charging (use default)\n");
+		LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
 	}
 	// - if critical battery, critical battery takes priority over everything
 	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE && !pwr.is_charging) {
