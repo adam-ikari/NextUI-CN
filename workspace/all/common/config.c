@@ -56,6 +56,7 @@ void CFG_defaults(NextUISettings *cfg)
         .powerOffProtection = CFG_DEFAULT_POWEROFFPROTECTION,
 
         .haptics = CFG_DEFAULT_HAPTICS,
+        .swapDpadLeftStick = CFG_DEFAULT_SWAPDPADLEFTSTICK,
         .romsUseFolderBackground = CFG_DEFAULT_ROMSUSEFOLDERBACKGROUND,
         .saveFormat = CFG_DEFAULT_SAVEFORMAT,
         .stateFormat = CFG_DEFAULT_STATEFORMAT,
@@ -244,7 +245,7 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
             }
             if (sscanf(line, "muteLeds=%i", &temp_value) == 1)
             {
-                CFG_setMuteLEDs(temp_value);
+                CFG_setFnToggleLEDs(temp_value);
                 continue;
             }
             if (sscanf(line, "artWidth=%i", &temp_value) == 1)
@@ -607,12 +608,12 @@ void CFG_setUseExtractedFileName(bool use)
     CFG_sync();
 }
 
-bool CFG_getMuteLEDs(void)
+bool CFG_getFnToggleLEDs(void)
 {
     return settings.muteLeds;
 }
 
-void CFG_setMuteLEDs(bool on)
+void CFG_setFnToggleLEDs(bool on)
 {
     settings.muteLeds = on;
     CFG_sync();
@@ -814,7 +815,7 @@ void CFG_get(const char *key, char *value)
     }
     else if (strcmp(key, "muteLeds") == 0)
     {
-        sprintf(value, "%i", CFG_getMuteLEDs());
+        sprintf(value, "%i", CFG_getFnToggleLEDs());
     }
     else if (strcmp(key, "artWidth") == 0)
     {
@@ -951,6 +952,7 @@ void CFG_print(void)
     printf("\t\"powerOffProtection\": %i,\n", settings.powerOffProtection);
     printf("\t\"switcherscale\": %i,\n", settings.gameSwitcherScaling);
     printf("\t\"haptics\": %i,\n", settings.haptics);
+    printf("\t\"swapDpadLeftStick\": %i,\n", settings.swapDpadLeftStick);
     printf("\t\"romfolderbg\": %i,\n", settings.romsUseFolderBackground);
     printf("\t\"saveFormat\": %i,\n", settings.saveFormat);
     printf("\t\"stateFormat\": %i,\n", settings.stateFormat);
@@ -974,6 +976,16 @@ void CFG_print(void)
         printf("\t\"fontpath\": \"%s\"\n", RES_PATH "/font3.ttf");
 
     printf("}\n");
+}
+
+bool CFG_getSwapDpadLeftStick(void)
+{
+    return settings.swapDpadLeftStick;
+}
+
+void CFG_setSwapDpadLeftStick(bool enable)
+{
+    settings.swapDpadLeftStick = enable;
 }
 
 void CFG_quit(void)

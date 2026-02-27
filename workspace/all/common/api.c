@@ -3403,6 +3403,10 @@ void VIB_quit(void)
 }
 void VIB_setStrength(int strength)
 {
+	// Apply vibration intensity scaling to all rumble requests
+	// This ensures both system haptics and emulator rumble are scaled
+	strength = VIB_scaleStrength(strength);
+	
 	if (vib.queued_strength == strength)
 		return;
 	vib.queued_strength = strength;
@@ -3417,15 +3421,28 @@ int VIB_getStrength(void)
 #define NUM_INCREMENTS 10
 
 int VIB_scaleStrength(int strength)
-{ // scale through 0-10 (NUM_INCREMENTS)
-	int scaled_strength = MIN_STRENGTH + (int)(strength * ((long long)(MAX_STRENGTH - MIN_STRENGTH) / NUM_INCREMENTS));
-	return scaled_strength; // between 0x0000 and 0xFFFF
+{ // scale based on vibration intensity setting (0-10)
+	int vibration_intensity;
+	
+	// Check if in FN toggle mode and use FN toggle vibration setting if available
+	if (GetFnToggle() && GetFnToggleVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) {
+		vibration_intensity = GetFnToggleVibration(); // 0-10, where 0 is off and 10 is 100%
+	} else {
+		vibration_intensity = GetVibration(); // 0-10, where 0 is off and 10 is 100%
+	}
+	
+	if (vibration_intensity == 0)
+		return 0; // vibration disabled
+	
+	// Scale input strength (0-0xFFFF) by the vibration intensity level
+	// Formula: scale 0-0xFFFF by (vibration_intensity / 10)
+	return (strength * vibration_intensity) / NUM_INCREMENTS;
 }
 
 void VIB_singlePulse(int strength, int duration_ms)
 {
 	VIB_setStrength(0);
-	VIB_setStrength(VIB_scaleStrength(strength));
+	VIB_setStrength(strength);
 	usleep(duration_ms * 1000);
 	VIB_setStrength(0);
 }
@@ -3433,11 +3450,11 @@ void VIB_singlePulse(int strength, int duration_ms)
 void VIB_doublePulse(int strength, int duration_ms, int gap_ms)
 {
 	VIB_setStrength(0);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 	usleep(gap_ms * 1000);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 }
@@ -3445,15 +3462,15 @@ void VIB_doublePulse(int strength, int duration_ms, int gap_ms)
 void VIB_triplePulse(int strength, int duration_ms, int gap_ms)
 {
 	VIB_setStrength(0);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 	usleep(gap_ms * 1000);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 	usleep(gap_ms * 1000);
-	VIB_singlePulse(VIB_scaleStrength(strength), duration_ms);
+	VIB_singlePulse(strength, duration_ms);
 	usleep(gap_ms * 1000);
 	VIB_setStrength(0);
 }
@@ -3566,7 +3583,7 @@ void PWR_update(int *_dirty, int *_show_setting, PWR_callback_t before_sleep, PW
 	static uint32_t mod_unpressed_at = 0;  // timestamp of last time settings modifier key was NOT down
 	static uint32_t was_muted = -1;
 	if (was_muted == -1 && InitializedSettings())
-		was_muted = GetMute();
+		was_muted = GetFnToggle();
 
 	static int was_charging = -1;
 	if (was_charging == -1) was_charging = pwr.is_charging;
@@ -3670,7 +3687,7 @@ void PWR_update(int *_dirty, int *_show_setting, PWR_callback_t before_sleep, PW
 
 	if (InitializedSettings())
 	{
-		int muted = GetMute();
+		int muted = GetFnToggle();
 		if (muted != was_muted)
 		{
 			was_muted = muted;
@@ -4008,7 +4025,7 @@ void LEDS_applyRules()
 	// some rules rely on pwr.is_charging and pwr.charge being valid
 	if(pwr.initialized == 0)
 		LOG_warn("LEDS_applyRules called before PWR_init\n");
-	// some rules rely in InitSettings() being called (e.g GetMute())
+	// some rules rely in InitSettings() being called (e.g GetFnToggle())
 	if(!InitializedSettings())
 		LOG_warn("LEDS_applyRules called before InitSettings\n");
 
@@ -4026,7 +4043,7 @@ void LEDS_applyRules()
 		LEDS_setProfile(LIGHT_PROFILE_CRITICAL_BATTERY);
 	}
 	// - if muted, muted takes priority over everything except critical battery
-	else if(InitializedSettings() && CFG_getMuteLEDs() && GetMute()) {
+	else if(InitializedSettings() && CFG_getFnToggleLEDs() && GetFnToggle()) {
 		//LOG_info("LEDS_applyRules: muted\n");
 		LEDS_setProfile(LIGHT_PROFILE_OFF);
 	}

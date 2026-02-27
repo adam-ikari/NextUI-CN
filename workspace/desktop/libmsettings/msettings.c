@@ -352,39 +352,39 @@ int GetSaturation(void) { return 0; }
 int GetExposure(void) { return 0; }
 int GetVolume(void) { return 0; }
 
-int GetMutedBrightness(void) { return 0; }
-int GetMutedColortemp(void) { return 0; }
-int GetMutedContrast(void) { return 0; }
-int GetMutedSaturation(void) { return 0; }
-int GetMutedExposure(void) { return 0; }
-int GetMutedVolume(void) { return 0; }
-int GetMuteDisablesDpad(void) { return 0; }
-int GetMuteEmulatesJoystick(void) { return 0; }
-int GetMuteTurboA(void) { return 0; }
-int GetMuteTurboB(void) { return 0; }
-int GetMuteTurboX(void) { return 0; }
-int GetMuteTurboY(void) { return 0; }
-int GetMuteTurboL1(void) { return 0; }
-int GetMuteTurboL2(void) { return 0; }
-int GetMuteTurboR1(void) { return 0; }
-int GetMuteTurboR2(void) { return 0; }
+int GetFnToggleBrightness(void) { return 0; }
+int GetFnToggleColortemp(void) { return 0; }
+int GetFnToggleContrast(void) { return 0; }
+int GetFnToggleSaturation(void) { return 0; }
+int GetFnToggleExposure(void) { return 0; }
+int GetFnToggleVolume(void) { return 0; }
+int GetFnToggleDisablesDpad(void) { return 0; }
+int GetFnToggleEmulatesJoystick(void) { return 0; }
+int GetFnToggleTurboA(void) { return 0; }
+int GetFnToggleTurboB(void) { return 0; }
+int GetFnToggleTurboX(void) { return 0; }
+int GetFnToggleTurboY(void) { return 0; }
+int GetFnToggleTurboL1(void) { return 0; }
+int GetFnToggleTurboL2(void) { return 0; }
+int GetFnToggleTurboR1(void) { return 0; }
+int GetFnToggleTurboR2(void) { return 0; }
 
-void SetMutedBrightness(int value){}
-void SetMutedColortemp(int value){}
-void SetMutedContrast(int value){}
-void SetMutedSaturation(int value){}
-void SetMutedExposure(int value){}
-void SetMutedVolume(int value){}
-void SetMuteDisablesDpad(int value) {}
-void SetMuteEmulatesJoystick(int value) {}
-void SetMuteTurboA(int value) {}
-void SetMuteTurboB(int value) {}
-void SetMuteTurboX(int value) {}
-void SetMuteTurboY(int value) {}
-void SetMuteTurboL1(int value) {}
-void SetMuteTurboL2(int value) {}
-void SetMuteTurboR1(int value) {}
-void SetMuteTurboR2(int value) {}
+void SetFnToggleBrightness(int value){}
+void SetFnToggleColortemp(int value){}
+void SetFnToggleContrast(int value){}
+void SetFnToggleSaturation(int value){}
+void SetFnToggleExposure(int value){}
+void SetFnToggleVolume(int value){}
+void SetFnToggleDisablesDpad(int value) {}
+void SetFnToggleEmulatesJoystick(int value) {}
+void SetFnToggleTurboA(int value) {}
+void SetFnToggleTurboB(int value) {}
+void SetFnToggleTurboX(int value) {}
+void SetFnToggleTurboY(int value) {}
+void SetFnToggleTurboL1(int value) {}
+void SetFnToggleTurboL2(int value) {}
+void SetFnToggleTurboR1(int value) {}
+void SetFnToggleTurboR2(int value) {}
 
 void SetRawBrightness(int value) {}
 void SetRawVolume(int value){}
@@ -406,3 +406,13 @@ int GetHDMI(void) { return 0; }
 void SetHDMI(int value) {}
 
 int GetMute(void) { return 0; }
+int GetFnToggle(void) { return 0; }
+void SetFnToggle(int value) {}
+
+// Desktop platform stubs for vibration control (not supported)
+void SetRawVibration(int value) {}
+void SetVibration(int value) {}
+void TestVibration(int value) {}
+int GetVibration(void) { return 0; }
+int GetFnToggleVibration(void) { return 0; }
+void SetFnToggleVibration(int value) {}

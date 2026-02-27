@@ -370,94 +370,100 @@ int main(int argc, char *argv[])
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.volume_when_toggled"), TR("settings.fn_switch.volume_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20}, 
             {TR("common.unchanged"), TR("settings.muted"), "5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"}, 
-            []() -> std::any { return GetMutedVolume(); },
-            [](const std::any &value) { SetMutedVolume(std::any_cast<int>(value)); },
-            []() { SetMutedVolume(0); }},
+            []() -> std::any { return GetFnToggleVolume(); },
+            [](const std::any &value) { SetFnToggleVolume(std::any_cast<int>(value)); },
+            []() { SetFnToggleVolume(0); }},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.disables_led"), TR("settings.fn_switch.disables_led.desc"), {false, true}, on_off, 
-            []() -> std::any { return CFG_getMuteLEDs(); },
-            [](const std::any &value) { CFG_setMuteLEDs(std::any_cast<bool>(value)); },
-            []() { CFG_setMuteLEDs(CFG_DEFAULT_MUTELEDS); }},
+            []() -> std::any { return CFG_getFnToggleLEDs(); },
+            [](const std::any &value) { CFG_setFnToggleLEDs(std::any_cast<bool>(value)); },
+            []() { CFG_setFnToggleLEDs(CFG_DEFAULT_MUTELEDS); }},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.brightness_when_toggled"), TR("settings.fn_switch.brightness_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10}, 
             {TR("common.unchanged"),"0","1","2","3","4","5","6","7","8","9","10"},
-            []() -> std::any { return GetMutedBrightness(); }, [](const std::any &value)
-            { SetMutedBrightness(std::any_cast<int>(value)); },
-            []() { SetMutedBrightness(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
+            []() -> std::any { return GetFnToggleBrightness(); }, [](const std::any &value)
+            { SetFnToggleBrightness(std::any_cast<int>(value)); },
+            []() { SetFnToggleBrightness(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.color_temperature_when_toggled"), TR("settings.fn_switch.color_temperature_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40}, 
             {TR("common.unchanged"),"0","1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40"},
-            []() -> std::any{ return GetMutedColortemp(); }, [](const std::any &value)
-            { SetMutedColortemp(std::any_cast<int>(value)); },
-            []() { SetMutedColortemp(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
+            []() -> std::any{ return GetFnToggleColortemp(); }, [](const std::any &value)
+            { SetFnToggleColortemp(std::any_cast<int>(value)); },
+            []() { SetFnToggleColortemp(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.contrast_when_toggled"), TR("settings.fn_switch.contrast_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, -4,-3,-2,-1,0,1,2,3,4,5}, 
             {TR("common.unchanged"),"-4","-3","-2","-1","0","1","2","3","4","5"}, 
-            []() -> std::any  { return GetMutedContrast(); }, [](const std::any &value)
-            { SetMutedContrast(std::any_cast<int>(value)); },
-            []() { SetMutedContrast(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
+            []() -> std::any  { return GetFnToggleContrast(); }, [](const std::any &value)
+            { SetFnToggleContrast(std::any_cast<int>(value)); },
+            []() { SetFnToggleContrast(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.saturation_when_toggled"), TR("settings.fn_switch.saturation_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, -5,-4,-3,-2,-1,0,1,2,3,4,5}, 
             {TR("common.unchanged"),"-5","-4","-3","-2","-1","0","1","2","3","4","5"}, 
-            []() -> std::any{ return GetMutedSaturation(); }, [](const std::any &value)
-            { SetMutedSaturation(std::any_cast<int>(value)); },
-            []() { SetMutedSaturation(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
+            []() -> std::any{ return GetFnToggleSaturation(); }, [](const std::any &value)
+            { SetFnToggleSaturation(std::any_cast<int>(value)); },
+            []() { SetFnToggleSaturation(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.exposure_when_toggled"), TR("settings.fn_switch.exposure_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, -4,-3,-2,-1,0,1,2,3,4,5}, 
             {TR("common.unchanged"),"-4","-3","-2","-1","0","1","2","3","4","5"}, 
-            []() -> std::any  { return GetMutedExposure(); }, [](const std::any &value)
-            { SetMutedExposure(std::any_cast<int>(value)); },
-            []() { SetMutedExposure(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
+            []() -> std::any  { return GetFnToggleExposure(); }, [](const std::any &value)
+            { SetFnToggleExposure(std::any_cast<int>(value)); },
+            []() { SetFnToggleExposure(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_a"), TR("settings.fn_switch.turbo_a.desc"), {0, 1}, on_off, []() -> std::any
-            { return GetMuteTurboA(); },
-            [](const std::any &value) { SetMuteTurboA(std::any_cast<int>(value));},
-            []() { SetMuteTurboA(0);}},
+            { return GetFnToggleTurboA(); },
+            [](const std::any &value) { SetFnToggleTurboA(std::any_cast<int>(value));},
+            []() { SetFnToggleTurboA(0);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_b"), TR("settings.fn_switch.turbo_b.desc"), {0, 1}, on_off, []() -> std::any
-            { return GetMuteTurboB(); },
-            [](const std::any &value) { SetMuteTurboB(std::any_cast<int>(value));},
-            []() { SetMuteTurboB(0);}},
+            { return GetFnToggleTurboB(); },
+            [](const std::any &value) { SetFnToggleTurboB(std::any_cast<int>(value));},
+            []() { SetFnToggleTurboB(0);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_x"), TR("settings.fn_switch.turbo_x.desc"), {0, 1}, on_off, []() -> std::any
-            { return GetMuteTurboX(); },
-            [](const std::any &value) { SetMuteTurboX(std::any_cast<int>(value));},
-            []() { SetMuteTurboX(0);}},
+            { return GetFnToggleTurboX(); },
+            [](const std::any &value) { SetFnToggleTurboX(std::any_cast<int>(value));},
+            []() { SetFnToggleTurboX(0);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_y"), TR("settings.fn_switch.turbo_y.desc"), {0, 1}, on_off, []() -> std::any
-            { return GetMuteTurboY(); },
-            [](const std::any &value) { SetMuteTurboY(std::any_cast<int>(value));},
-            []() { SetMuteTurboY(0);}},
+            { return GetFnToggleTurboY(); },
+            [](const std::any &value) { SetFnToggleTurboY(std::any_cast<int>(value));},
+            []() { SetFnToggleTurboY(0);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_l1"), TR("settings.fn_switch.turbo_l1.desc"), {0, 1}, on_off, []() -> std::any
-            { return GetMuteTurboL1(); },
-            [](const std::any &value) { SetMuteTurboL1(std::any_cast<int>(value));},
-            []() { SetMuteTurboL1(0);}},
+            { return GetFnToggleTurboL1(); },
+            [](const std::any &value) { SetFnToggleTurboL1(std::any_cast<int>(value));},
+            []() { SetFnToggleTurboL1(0);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_l2"), TR("settings.fn_switch.turbo_l2.desc"), {0, 1}, on_off, []() -> std::any
-            { return GetMuteTurboL2(); },
-            [](const std::any &value) { SetMuteTurboL2(std::any_cast<int>(value));},
-            []() { SetMuteTurboL2(0);}},
+            { return GetFnToggleTurboL2(); },
+            [](const std::any &value) { SetFnToggleTurboL2(std::any_cast<int>(value));},
+            []() { SetFnToggleTurboL2(0);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_r1"), TR("settings.fn_switch.turbo_r1.desc"), {0, 1}, on_off, []() -> std::any
-            { return GetMuteTurboR1(); },
-            [](const std::any &value) { SetMuteTurboR1(std::any_cast<int>(value));},
-            []() { SetMuteTurboR1(0);}},
+            { return GetFnToggleTurboR1(); },
+            [](const std::any &value) { SetFnToggleTurboR1(std::any_cast<int>(value));},
+            []() { SetFnToggleTurboR1(0);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.turbo_r2"), TR("settings.fn_switch.turbo_r2.desc"), {0, 1}, on_off, []() -> std::any
-            { return GetMuteTurboR2(); },
-            [](const std::any &value) { SetMuteTurboR2(std::any_cast<int>(value));},
-            []() { SetMuteTurboR2(0);}},
+            { return GetFnToggleTurboR2(); },
+            [](const std::any &value) { SetFnToggleTurboR2(std::any_cast<int>(value));},
+            []() { SetFnToggleTurboR2(0);}},
+            new MenuItem{ListItemType::Generic, TR("settings.fn_switch.vibration_when_toggled"), TR("settings.fn_switch.vibration_when_toggled.desc"),
+            {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10},
+            {TR("common.unchanged"), TR("settings.gamepad.vibration.off"),"10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"},
+            []() -> std::any { return GetFnToggleVibration(); },
+            [](const std::any &value) { SetFnToggleVibration(std::any_cast<int>(value)); },
+            []() { SetFnToggleVibration(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
         };
         if(is_brick) {
             muteItems.push_back(
                 new MenuItem{ListItemType::Generic, TR("settings.fn_switch.dpad_mode_when_toggled"), TR("settings.fn_switch.dpad_mode_when_toggled.desc"), {0, 1, 2}, {TR("settings.fn_switch.dpad_mode.dpad"), TR("settings.fn_switch.dpad_mode.joystick"), TR("settings.fn_switch.dpad_mode.both")}, []() -> std::any
                 {
-                    if(!GetMuteDisablesDpad() && !GetMuteEmulatesJoystick()) return 0;
-                    if(GetMuteDisablesDpad() && GetMuteEmulatesJoystick()) return 1;
+                    if(!GetFnToggleDisablesDpad() && !GetFnToggleEmulatesJoystick()) return 0;
+                    if(GetFnToggleDisablesDpad() && GetFnToggleEmulatesJoystick()) return 1;
                     return 2; 
                 },
                 [](const std::any &value)
                 { 
                     int v = std::any_cast<int>(value);
-                    SetMuteDisablesDpad((v == 1)); 
-                    SetMuteEmulatesJoystick((v > 0));
+                    SetFnToggleDisablesDpad((v == 1)); 
+                    SetFnToggleEmulatesJoystick((v > 0));
                 },
                 []()
                 { 
-                    SetMuteDisablesDpad(0); 
-                    SetMuteEmulatesJoystick(0);
+                    SetFnToggleDisablesDpad(0); 
+                    SetFnToggleEmulatesJoystick(0);
                 }});
         }
             muteItems.push_back(new MenuItem{ListItemType::Button, tr_settings_reset_defaults.c_str(), tr_settings_reset_defaults_desc.c_str(), ResetCurrentMenu});
@@ -500,12 +506,27 @@ int main(int argc, char *argv[])
             },
         });
 
+        auto gamepadMenu = new MenuList(MenuItemType::Fixed, TR("settings.gamepad"),
+        {
+            new MenuItem{ListItemType::Generic, TR("settings.gamepad.vibration"), TR("settings.gamepad.vibration.desc"),
+            {0,1,2,3,4,5,6,7,8,9,10},
+            {TR("settings.gamepad.vibration.off"),"10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"},
+            []() -> std::any { return GetVibration(); },
+            [](const std::any &value) { SetVibration(std::any_cast<int>(value)); TestVibration(std::any_cast<int>(value)); },
+            []() { SetVibration(5); }},
+            new MenuItem{ListItemType::Generic, TR("settings.gamepad.swap_dpad_left_stick"), TR("settings.gamepad.swap_dpad_left_stick.desc"), {false, true}, on_off,
+            []() -> std::any { return CFG_getSwapDpadLeftStick(); },
+            [](const std::any &value) { CFG_setSwapDpadLeftStick(std::any_cast<bool>(value)); },
+            []() { CFG_setSwapDpadLeftStick(false); }},
+        });
+
         ctx.menu = new MenuList(MenuItemType::List, TR("settings.main"),
         {
             new MenuItem{ListItemType::Generic, tr_settings_appearance.c_str(), TR("settings.appearance.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, appearanceMenu},
             new MenuItem{ListItemType::Generic, TR("settings.display"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, displayMenu},
             new MenuItem{ListItemType::Generic, TR("settings.system"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, systemMenu},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch"), TR("settings.fn_switch.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, muteMenu},
+            new MenuItem{ListItemType::Generic, TR("settings.gamepad"), TR("settings.gamepad.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, gamepadMenu},
             new MenuItem{ListItemType::Generic, TR("settings.network"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, networkMenu},
             new MenuItem{ListItemType::Generic, TR("settings.bluetooth"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, btMenu},
             new MenuItem{ListItemType::Generic, TR("settings.about"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, aboutMenu},

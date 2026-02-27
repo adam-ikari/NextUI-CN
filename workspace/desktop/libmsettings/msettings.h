@@ -45,41 +45,51 @@ int GetHDMI(void);
 void SetHDMI(int value); // 0-1
 
 int GetMute(void);
+int GetFnToggle(void);
+void SetFnToggle(int value); // 0-1
 
-// custom mute mode persistence layer
+// custom FnToggle mode persistence layer
 
-int GetMutedBrightness(void);
-int GetMutedColortemp(void);
-int GetMutedContrast(void);
-int GetMutedSaturation(void);
-int GetMutedExposure(void);
-int GetMutedVolume(void);
-int GetMuteDisablesDpad(void);
-int GetMuteEmulatesJoystick(void);
-int GetMuteTurboA(void);
-int GetMuteTurboB(void);
-int GetMuteTurboX(void);
-int GetMuteTurboY(void);
-int GetMuteTurboL1(void);
-int GetMuteTurboL2(void);
-int GetMuteTurboR1(void);
-int GetMuteTurboR2(void);
+int GetFnToggleBrightness(void);
+int GetFnToggleColortemp(void);
+int GetFnToggleContrast(void);
+int GetFnToggleSaturation(void);
+int GetFnToggleExposure(void);
+int GetFnToggleVolume(void);
+int GetFnToggleDisablesDpad(void);
+int GetFnToggleEmulatesJoystick(void);
+int GetFnToggleTurboA(void);
+int GetFnToggleTurboB(void);
+int GetFnToggleTurboX(void);
+int GetFnToggleTurboY(void);
+int GetFnToggleTurboL1(void);
+int GetFnToggleTurboL2(void);
+int GetFnToggleTurboR1(void);
+int GetFnToggleTurboR2(void);
 
-void SetMutedBrightness(int);
-void SetMutedColortemp(int);
-void SetMutedContrast(int);
-void SetMutedSaturation(int);
-void SetMutedExposure(int);
-void SetMutedVolume(int);
-void SetMuteDisablesDpad(int);
-void SetMuteEmulatesJoystick(int);
-void SetMuteTurboA(int);
-void SetMuteTurboB(int);
-void SetMuteTurboX(int);
-void SetMuteTurboY(int);
-void SetMuteTurboL1(int);
-void SetMuteTurboL2(int);
-void SetMuteTurboR1(int);
-void SetMuteTurboR2(int);
+void SetFnToggleBrightness(int);
+void SetFnToggleColortemp(int);
+void SetFnToggleContrast(int);
+void SetFnToggleSaturation(int);
+void SetFnToggleExposure(int);
+void SetFnToggleVolume(int);
+void SetFnToggleDisablesDpad(int);
+void SetFnToggleEmulatesJoystick(int);
+void SetFnToggleTurboA(int);
+void SetFnToggleTurboB(int);
+void SetFnToggleTurboX(int);
+void SetFnToggleTurboY(int);
+void SetFnToggleTurboL1(int);
+void SetFnToggleTurboL2(int);
+void SetFnToggleTurboR1(int);
+void SetFnToggleTurboR2(int);
+
+// Desktop platform stubs for vibration control (not supported)
+void SetRawVibration(int value); // 0-100
+void SetVibration(int value); // 0-10 (0=off, 10=100%)
+void TestVibration(int value); // 0-100 (percentage), test vibration intensity
+int GetVibration(void);
+int GetFnToggleVibration(void);
+void SetFnToggleVibration(int);
 
 #endif  // __msettings_h__

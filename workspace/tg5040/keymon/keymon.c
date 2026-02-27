@@ -63,7 +63,7 @@ static void* watchMute(void *arg) {
 	int is_muted,was_muted;
 	
 	is_muted = was_muted = getInt(MUTE_STATE_PATH);
-	SetMute(is_muted);
+	SetFnToggle(is_muted);
 	
 	while(!quit) {
 		usleep(200000); // 5 times per second
@@ -72,8 +72,8 @@ static void* watchMute(void *arg) {
 		// swallow mute val -1 on shutdown
 		if (is_muted >= 0 && was_muted!=is_muted) {
 			was_muted = is_muted;
-			SetMute(is_muted);
-			if (GetMute()) {
+			SetFnToggle(is_muted);
+			if (GetFnToggle()) {
 				// tmp solution
 				system("echo 1500000 > /sys/class/motor/voltage");
 				system("echo 1 > /sys/class/gpio/gpio227/value");
