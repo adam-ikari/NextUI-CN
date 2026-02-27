@@ -237,7 +237,7 @@ static Settings DefaultSettings = {
 	.jack = 0,
 	.audiosink = AUDIO_SINK_DEFAULT,
 	.toggled_vibration = SETTINGS_DEFAULT_MUTE_NO_CHANGE,
-	.vibration = 50, // 50% by default
+	.vibration = 5, // 0-10, where 5 = 50%
 };
 static Settings* settings;
 
@@ -719,19 +719,19 @@ void SetVolume(int value) { // 0-20
 	SaveSettings();
 }
 
-void SetVibration(int value) { // 0-100 (percentage)
+void SetVibration(int value) { // 0-10 (0 = off, 10 = 100%)
 	// Clamp value to valid range
 	if (value < 0) value = 0;
-	if (value > 100) value = 100;
+	if (value > 10) value = 10;
 	
 	settings->vibration = value;
 	SaveSettings();
 }
 
-void TestVibration(int value) { // 0-100 (percentage)
-	// Test vibration at the set intensity to give user feedback
-	// No scaling needed - value is already 0-100
-	SetRawVibration(value);
+void TestVibration(int value) {
+	// Scale 0-10 to 0-100 for SetRawVibration
+	int scaled = value * 10; // 0-10 -> 0-100
+	SetRawVibration(scaled);
 }
 
 // monitored and set by thread in keymon
