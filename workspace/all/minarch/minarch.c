@@ -5287,9 +5287,6 @@ const void* lastframe = NULL;
 static Uint32* rgbaData = NULL;
 static size_t rgbaDataSize = 0;
 
-static Uint16* tempRgb565Data = NULL;
-static size_t tempRgb565Size = 0;
-
 static void video_refresh_callback(const void* data, unsigned width, unsigned height, size_t pitch) {
 
 	// I need to check quit here because sometimes quit is true but callback is still called by the core after and it still runs one more frame and it looks ugly :D
@@ -5305,40 +5302,10 @@ static void video_refresh_callback(const void* data, unsigned width, unsigned he
 		}
 
 		if(ambient_mode && !fast_forward && data) {
-			// Check pixel format and convert if necessary
-			if (fmt == RETRO_PIXEL_FORMAT_XRGB8888) {
-				// Allocate/resize temporary buffer for RGB565 conversion
-				if (!tempRgb565Data || tempRgb565Size != width * height) {
-					if (tempRgb565Data) free(tempRgb565Data);
-					tempRgb565Size = width * height;
-					tempRgb565Data = (Uint16*)malloc(tempRgb565Size * sizeof(Uint16));
-					if (!tempRgb565Data) {
-						printf("Failed to allocate memory for RGB565 conversion.\n");
-						return;
-					}
-				}
-
-				// Convert XRGB8888 to RGB565
-				const uint32_t* src = (const uint32_t*)data;
-				unsigned srcPitchInPixels = pitch / sizeof(uint32_t);
-				for (unsigned y = 0; y < height; ++y) {
-					for (unsigned x = 0; x < width; ++x) {
-						uint32_t pixel = src[y * srcPitchInPixels + x];
-						uint8_t r = (pixel >> 16) & 0xFF;
-						uint8_t g = (pixel >> 8) & 0xFF;
-						uint8_t b = pixel & 0xFF;
-						// Convert RGB888 to RGB565: 5 bits for R, 6 bits for G, 5 bits for B
-						tempRgb565Data[y * width + x] = ((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3);
-					}
-				}
-
-				// Use converted RGB565 data for ambient light
-				size_t rgb565Pitch = width * sizeof(Uint16);
-				GFX_setAmbientColor(tempRgb565Data, width, height, rgb565Pitch, ambient_mode);
-			} else {
-				// RGB565 format, use data directly
-				GFX_setAmbientColor(data, width, height, pitch, ambient_mode);
-			}
+			// Pass pixel format to GFX_setAmbientColor
+			// 0 = RGB565, 1 = RGB888 (XRGB8888)
+			int pixel_format = (fmt == RETRO_PIXEL_FORMAT_XRGB8888) ? 1 : 0;
+			GFX_setAmbientColor(data, width, height, pitch, ambient_mode, pixel_format);
 		}
 
 		if (!data) {
@@ -7863,7 +7830,6 @@ int main(int argc , char* argv[]) {
 	SDL_FreeSurface(converted); 
 	
 	if(rgbaData) free(rgbaData);
-	if(tempRgb565Data) free(tempRgb565Data);
 
 	PLAT_clearTurbo();
 

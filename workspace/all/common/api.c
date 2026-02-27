@@ -465,14 +465,13 @@ void chmodfile(const char *file, int writable)
 	}
 }
 
-uint32_t GFX_extract_average_color(const void *data, unsigned width, unsigned height, size_t pitch)
+uint32_t GFX_extract_average_color(const void *data, unsigned width, unsigned height, size_t pitch, int pixel_format)
 {
 	if (!data)
 	{
 		return 0;
 	}
 
-	const uint16_t *pixels = (const uint16_t *)data;
 	int pixel_count = width * height;
 
 	uint64_t total_r = 0;
@@ -480,19 +479,29 @@ uint32_t GFX_extract_average_color(const void *data, unsigned width, unsigned he
 	uint64_t total_b = 0;
 	uint32_t colorful_pixel_count = 0;
 
+	// Process pixels based on format
 	for (unsigned y = 0; y < height; y++)
 	{
 		for (unsigned x = 0; x < width; x++)
 		{
-			uint16_t pixel = pixels[y * (pitch / 2) + x];
+			uint8_t r, g, b;
 
-			uint8_t r = ((pixel & 0xF800) >> 11) << 3;
-			uint8_t g = ((pixel & 0x07E0) >> 5) << 2;
-			uint8_t b = (pixel & 0x001F) << 3;
-
-			r |= r >> 5;
-			g |= g >> 6;
-			b |= b >> 5;
+			if (pixel_format == 0) { // RGB565
+				const uint16_t *pixels = (const uint16_t *)data;
+				uint16_t pixel = pixels[y * (pitch / 2) + x];
+				r = ((pixel & 0xF800) >> 11) << 3;
+				g = ((pixel & 0x07E0) >> 5) << 2;
+				b = (pixel & 0x001F) << 3;
+				r |= r >> 5;
+				g |= g >> 6;
+				b |= b >> 5;
+			} else { // RGB888 (XRGB8888)
+				const uint32_t *pixels = (const uint32_t *)data;
+				uint32_t pixel = pixels[y * (pitch / 4) + x];
+				r = (pixel >> 16) & 0xFF;
+				g = (pixel >> 8) & 0xFF;
+				b = pixel & 0xFF;
+			}
 
 			uint8_t max_c = fmaxf(fmaxf(r, g), b);
 			uint8_t min_c = fminf(fminf(r, g), b);
@@ -508,23 +517,33 @@ uint32_t GFX_extract_average_color(const void *data, unsigned width, unsigned he
 		}
 	}
 
+	// Fallback: use all pixels if no colorful pixels found
 	if (colorful_pixel_count == 0)
 	{
-
 		colorful_pixel_count = pixel_count;
 		total_r = total_g = total_b = 0;
 		for (unsigned y = 0; y < height; y++)
 		{
 			for (unsigned x = 0; x < width; x++)
 			{
-				uint16_t pixel = pixels[y * (pitch / 2) + x];
-				uint8_t r = ((pixel & 0xF800) >> 11) << 3;
-				uint8_t g = ((pixel & 0x07E0) >> 5) << 2;
-				uint8_t b = (pixel & 0x001F) << 3;
+				uint8_t r, g, b;
 
-				r |= r >> 5;
-				g |= g >> 6;
-				b |= b >> 5;
+				if (pixel_format == 0) { // RGB565
+					const uint16_t *pixels = (const uint16_t *)data;
+					uint16_t pixel = pixels[y * (pitch / 2) + x];
+					r = ((pixel & 0xF800) >> 11) << 3;
+					g = ((pixel & 0x07E0) >> 5) << 2;
+					b = (pixel & 0x001F) << 3;
+					r |= r >> 5;
+					g |= g >> 6;
+					b |= b >> 5;
+				} else { // RGB888 (XRGB8888)
+					const uint32_t *pixels = (const uint32_t *)data;
+					uint32_t pixel = pixels[y * (pitch / 4) + x];
+					r = (pixel >> 16) & 0xFF;
+					g = (pixel >> 8) & 0xFF;
+					b = pixel & 0xFF;
+				}
 
 				total_r += r;
 				total_g += g;
@@ -539,13 +558,12 @@ uint32_t GFX_extract_average_color(const void *data, unsigned width, unsigned he
 
 	return (avg_r << 16) | (avg_g << 8) | avg_b;
 }
-
-void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size_t pitch, int mode)
+void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size_t pitch, int mode, int pixel_format)
 {
 	if (mode == 0)
 		return;
 
-	uint32_t dominant_color = GFX_extract_average_color(data, width, height, pitch);
+	uint32_t dominant_color = GFX_extract_average_color(data, width, height, pitch, pixel_format);
 
 	if (mode == 1 || mode == 2 || mode == 5)
 	{
