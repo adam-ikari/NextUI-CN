@@ -1293,6 +1293,16 @@ void SetRawVibration(int val) { // 0-100
 	if (val < 0) val = 0;
 	if (val > 100) val = 100;
 	
+	// If value is 0, turn off vibration
+	if (val == 0) {
+		FILE *fd = fopen(RUMBLE_PATH, "w");
+		if (fd) {
+			fprintf(fd, "0");
+			fclose(fd);
+		}
+		return;
+	}
+	
 	// Scale 0-100 to 0-0xFFFF (same as VIB_scaleStrength with NUM_INCREMENTS=20)
 	int strength = MIN_STRENGTH + (int)(val * ((long long)(MAX_STRENGTH - MIN_STRENGTH) / 100));
 	
@@ -1302,10 +1312,10 @@ void SetRawVibration(int val) { // 0-100
 		voltage = MIN_VOLTAGE + (int)(strength * ((long long)(MAX_VOLTAGE - MIN_VOLTAGE) / MAX_STRENGTH));
 	}
 	
-	// Enable/disable rumble
+	// Enable rumble
 	FILE *fd = fopen(RUMBLE_PATH, "w");
 	if (fd) {
-		fprintf(fd, "%d", (val > 0) ? 1 : 0);
+		fprintf(fd, "1");
 		fclose(fd);
 	}
 	
@@ -1313,6 +1323,14 @@ void SetRawVibration(int val) { // 0-100
 	fd = fopen(RUMBLE_VOLTAGE_PATH, "w");
 	if (fd) {
 		fprintf(fd, "%d", voltage);
+		fclose(fd);
+	}
+	
+	// Briefly vibrate for user feedback, then turn off
+	usleep(200000); // 200ms vibration
+	fd = fopen(RUMBLE_PATH, "w");
+	if (fd) {
+		fprintf(fd, "0");
 		fclose(fd);
 	}
 }
