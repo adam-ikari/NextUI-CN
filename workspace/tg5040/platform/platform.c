@@ -66,11 +66,6 @@ Shader* shaders[MAXSHADERS] = {
 };
 
 static int nrofshaders = 0; // choose between 1 and 3 pipelines, > pipelines = more cpu usage, but more shader options and shader upscaling stuff
-
-// Global variables for ambient light GPU extraction
-GLuint g_current_render_texture = 0;
-int g_current_render_width = 0;
-int g_current_render_height = 0;
 ///////////////////////////////
 
 int is_brick = 0;
@@ -595,9 +590,6 @@ SDL_Surface* PLAT_initVideo(void) {
 	device_pitch	= p;
 
 	vid.sharpness = SHARPNESS_SOFT;
-
-	// Initialize GPU ambient light color extraction
-	PLAT_initAmbientColorExtraction();
 
 	return vid.screen;
 }
@@ -1761,9 +1753,6 @@ void runShaderPass(GLuint src_texture, GLuint shader_program, GLuint* target_tex
 		last_bound_texture = src_texture;
 	}
 
-	// Update global texture tracking for ambient light
-	g_current_render_texture = src_texture;
-
 	glViewport(x, y, dst_width, dst_height);
 
 	
@@ -2102,142 +2091,6 @@ unsigned char* PLAT_GL_screenCapture(int* outWidth, int* outHeight) {
 }
 
 ///////////////////////////////
-// GPU Average Color Extraction
-///////////////////////////////
-
-static GLuint ambient_fbo = 0;
-static GLuint ambient_texture = 0;
-static GLuint ambient_shader = 0;
-static int ambient_initialized = 0;
-
-// Simple vertex shader for fullscreen quad
-static const char* ambient_vs_src =
-    "attribute vec2 a_position;\n"
-    "varying vec2 v_texcoord;\n"
-    "void main() {\n"
-    "    gl_Position = vec4(a_position, 0.0, 1.0);\n"
-    "    v_texcoord = a_position * 0.5 + 0.5;\n"
-    "}\n";
-
-// Fragment shader that samples texture and outputs color
-static const char* ambient_fs_src =
-    "precision mediump float;\n"
-    "uniform sampler2D u_texture;\n"
-    "varying vec2 v_texcoord;\n"
-    "void main() {\n"
-    "    gl_FragColor = texture2D(u_texture, v_texcoord);\n"
-    "}\n";
-
-int PLAT_initAmbientColorExtraction(void) {
-    if (ambient_initialized) return 1;
-
-    // Create framebuffer
-    glGenFramebuffers(1, &ambient_fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, ambient_fbo);
-
-    // Create 1x1 texture for result
-    glGenTextures(1, &ambient_texture);
-    glBindTexture(GL_TEXTURE_2D, ambient_texture);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-    // Attach texture to framebuffer
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, ambient_texture, 0);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        return 0;
-    }
-
-    // Compile shader
-    GLuint vs = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vs, 1, &ambient_vs_src, NULL);
-    glCompileShader(vs);
-
-    GLuint fs = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fs, 1, &ambient_fs_src, NULL);
-    glCompileShader(fs);
-
-    ambient_shader = glCreateProgram();
-    glAttachShader(ambient_shader, vs);
-    glAttachShader(ambient_shader, fs);
-    glLinkProgram(ambient_shader);
-
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    ambient_initialized = 1;
-    return 1;
-}
-
-uint32_t PLAT_extractAverageColorGPU(GLuint src_texture, int src_w, int src_h) {
-    if (!ambient_initialized) {
-        if (!PLAT_initAmbientColorExtraction()) {
-            return 0;
-        }
-    }
-
-    // Save current state
-    GLint old_fbo;
-    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &old_fbo);
-    GLint old_viewport[4];
-    glGetIntegerv(GL_VIEWPORT, old_viewport);
-
-    // Bind our framebuffer and set viewport to 1x1
-    glBindFramebuffer(GL_FRAMEBUFFER, ambient_fbo);
-    glViewport(0, 0, 1, 1);
-
-    // Use shader and render fullscreen quad
-    glUseProgram(ambient_shader);
-    glBindTexture(GL_TEXTURE_2D, src_texture);
-    glUniform1i(glGetUniformLocation(ambient_shader, "u_texture"), 0);
-
-    // Draw quad - this downsamples entire texture to 1x1
-    GLfloat vertices[] = {
-        -1.0f, -1.0f,
-         1.0f, -1.0f,
-        -1.0f,  1.0f,
-         1.0f,  1.0f
-    };
-    GLint pos_loc = glGetAttribLocation(ambient_shader, "a_position");
-    glEnableVertexAttribArray(pos_loc);
-    glVertexAttribPointer(pos_loc, 2, GL_FLOAT, GL_FALSE, 0, vertices);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glDisableVertexAttribArray(pos_loc);
-
-    // Read the single pixel result
-    uint8_t pixel[4];
-    glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixel);
-
-    // Restore state
-    glBindFramebuffer(GL_FRAMEBUFFER, old_fbo);
-    glViewport(old_viewport[0], old_viewport[1], old_viewport[2], old_viewport[3]);
-
-    // Return RGB value (ignore alpha)
-    return (pixel[0] << 16) | (pixel[1] << 8) | pixel[2];
-}
-
-void PLAT_cleanupAmbientColorExtraction(void) {
-    if (ambient_fbo) {
-        glDeleteFramebuffers(1, &ambient_fbo);
-        ambient_fbo = 0;
-    }
-    if (ambient_texture) {
-        glDeleteTextures(1, &ambient_texture);
-        ambient_texture = 0;
-    }
-    if (ambient_shader) {
-        glDeleteProgram(ambient_shader);
-        ambient_shader = 0;
-    }
-    ambient_initialized = 0;
-}
-
-///////////////////////////////
-
-// TODO: 
 #define OVERLAY_WIDTH PILL_SIZE // unscaled
 #define OVERLAY_HEIGHT PILL_SIZE // unscaled
 #define OVERLAY_BPP 4

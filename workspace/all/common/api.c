@@ -536,12 +536,17 @@ uint32_t GFX_extract_average_color(const void *data, unsigned width, unsigned he
 		avg_g = colorful_g / colorful_count;
 		avg_b = colorful_b / colorful_count;
 	}
-	else
+	else if (total_count > 0)
 	{
 		// Fallback: use all pixels average
 		avg_r = total_r / total_count;
 		avg_g = total_g / total_count;
 		avg_b = total_b / total_count;
+	}
+	else
+	{
+		// Edge case: no pixels sampled
+		avg_r = avg_g = avg_b = 0;
 	}
 
 	return (avg_r << 16) | (avg_g << 8) | avg_b;
