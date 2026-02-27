@@ -7863,6 +7863,7 @@ int main(int argc , char* argv[]) {
 	SDL_FreeSurface(converted); 
 	
 	if(rgbaData) free(rgbaData);
+	if(tempRgb565Data) free(tempRgb565Data);
 
 	PLAT_clearTurbo();
 
