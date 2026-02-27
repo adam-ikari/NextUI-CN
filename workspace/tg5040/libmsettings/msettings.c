@@ -203,9 +203,8 @@ typedef struct SettingsV11 {
 	int jack;
 	int audiosink; // was bluetooth true/false before
 	int toggled_vibration;
-	int vibration;
+	int vibration; // 0-100 (percentage), 0 = disabled, 100 = full strength
 } SettingsV11;
-
 // backwards compatibility to InitSettings!
 #define SETTINGS_VERSION 11
 typedef SettingsV11 Settings;
@@ -238,7 +237,7 @@ static Settings DefaultSettings = {
 	.jack = 0,
 	.audiosink = AUDIO_SINK_DEFAULT,
 	.toggled_vibration = SETTINGS_DEFAULT_MUTE_NO_CHANGE,
-	.vibration = 0, // disabled by default
+	.vibration = 50, // 50% by default
 };
 static Settings* settings;
 
@@ -342,7 +341,48 @@ void InitSettings(void) {
 					memcpy(settings, &DefaultSettings, shm_size);
 
 					// overwrite with migrated data
-					if(version==9) {
+					if(version==10) {
+						printf("Found settings v10.\n");
+						SettingsV10 old;
+						read(fd, &old, sizeof(SettingsV10));
+
+						settings-> disable_dpad_on_mute = old.disable_dpad_on_mute;
+						settings-> emulate_joystick_on_mute = old.emulate_joystick_on_mute;
+						settings-> turbo_a = old.turbo_a;
+						settings-> turbo_b = old.turbo_b;
+						settings-> turbo_x = old.turbo_x;
+						settings-> turbo_y = old.turbo_y;
+						settings-> turbo_l1 = old.turbo_l1;
+						settings-> turbo_l2 = old.turbo_l2;
+						settings-> turbo_r1 = old.turbo_r1;
+						settings-> turbo_r2 = old.turbo_r2;
+
+						settings->toggled_volume = old.toggled_volume;
+
+						settings->toggled_brightness = old.toggled_brightness;
+						settings->toggled_colortemperature = old.toggled_colortemperature;
+						settings->toggled_contrast = old.toggled_contrast;
+						settings->toggled_exposure = old.toggled_exposure;
+						settings->toggled_saturation = old.toggled_saturation;
+
+						settings->saturation = old.saturation;
+						settings->contrast = old.contrast;
+						settings->exposure = old.exposure;
+
+						settings->colortemperature = old.colortemperature;
+
+						settings->brightness = old.brightness;
+						settings->headphones = old.headphones;
+						settings->speaker = old.speaker;
+						settings->mute = old.mute;
+						settings->jack = old.jack;
+						settings->audiosink = old.audiosink;
+						
+						// Migrate vibration from 0-20 to 0-100 (multiply by 5)
+						settings->toggled_vibration = SETTINGS_DEFAULT_MUTE_NO_CHANGE;
+						settings->vibration = 50; // Default to 50% for new field
+					}
+					else if(version==9) {
 						printf("Found settings v9.\n");
 						SettingsV9 old;
 						read(fd, &old, sizeof(SettingsV9));
@@ -377,6 +417,11 @@ void InitSettings(void) {
 						settings->speaker = old.speaker;
 						settings->mute = old.mute;
 						settings->jack = old.jack;
+						settings->audiosink = AUDIO_SINK_DEFAULT;
+						
+						// Vibration field is new, set to default
+						settings->toggled_vibration = SETTINGS_DEFAULT_MUTE_NO_CHANGE;
+						settings->vibration = 50; // Default to 50%
 					}
 					else if(version==8) {
 						printf("Found settings v8.\n");
@@ -674,16 +719,19 @@ void SetVolume(int value) { // 0-20
 	SaveSettings();
 }
 
-void SetVibration(int value) { // 0-20 (displayed as 0-100% in UI)
+void SetVibration(int value) { // 0-100 (percentage)
+	// Clamp value to valid range
+	if (value < 0) value = 0;
+	if (value > 100) value = 100;
+	
 	settings->vibration = value;
 	SaveSettings();
 }
 
-void TestVibration(int value) { // 0-20 (displayed as 0-100% in UI)
+void TestVibration(int value) { // 0-100 (percentage)
 	// Test vibration at the set intensity to give user feedback
-	// Convert 0-20 to 0-100 scale for SetRawVibration
-	int scaled = scaleVolume(value);
-	SetRawVibration(scaled);
+	// No scaling needed - value is already 0-100
+	SetRawVibration(value);
 }
 
 // monitored and set by thread in keymon
@@ -1285,7 +1333,6 @@ void SetRawVolume(int val) { // in: 0-100
 void SetRawVibration(int val) { // 0-100
 	#define MIN_STRENGTH 0x0000
 	#define MAX_STRENGTH 0xFFFF
-	#define NUM_INCREMENTS 20
 	#define MIN_VOLTAGE 500000
 	#define MAX_VOLTAGE 3300000
 	#define RUMBLE_PATH "/sys/class/gpio/gpio227/value"
@@ -1305,7 +1352,7 @@ void SetRawVibration(int val) { // 0-100
 		return;
 	}
 	
-	// Scale 0-100 to 0-0xFFFF (same as VIB_scaleStrength with NUM_INCREMENTS=20)
+	// Scale 0-100 to 0-0xFFFF
 	int strength = MIN_STRENGTH + (int)(val * ((long long)(MAX_STRENGTH - MIN_STRENGTH) / 100));
 	
 	// Calculate voltage
@@ -1316,20 +1363,27 @@ void SetRawVibration(int val) { // 0-100
 	
 	// Enable rumble
 	FILE *fd = fopen(RUMBLE_PATH, "w");
-	if (fd) {
-		fprintf(fd, "1");
-		fclose(fd);
-	}
+	if (!fd) return;
+	fprintf(fd, "1");
+	fclose(fd);
 	
-	// Set vibration voltage
-	fd = fopen(RUMBLE_VOLTAGE_PATH, "w");
-	if (fd) {
-		fprintf(fd, "%d", voltage);
-		fclose(fd);
+	// Set vibration voltage - use separate variable for error checking
+	FILE *voltage_fd = fopen(RUMBLE_VOLTAGE_PATH, "w");
+	if (!voltage_fd) {
+		// Cleanup: turn off rumble before returning
+		fd = fopen(RUMBLE_PATH, "w");
+		if (fd) {
+			fprintf(fd, "0");
+			fclose(fd);
+		}
+		return;
 	}
+	fprintf(voltage_fd, "%d", voltage);
+	fclose(voltage_fd);
 	
 	// Briefly vibrate for user feedback, then turn off
 	usleep(200000); // 200ms vibration
+	
 	fd = fopen(RUMBLE_PATH, "w");
 	if (fd) {
 		fprintf(fd, "0");

@@ -3414,26 +3414,24 @@ int VIB_getStrength(void)
 
 #define MIN_STRENGTH 0x0000
 #define MAX_STRENGTH 0xFFFF
-#define NUM_INCREMENTS 20
 
 int VIB_scaleStrength(int strength)
-{ // scale based on vibration intensity setting (0-20, displayed as 0-100% in UI)
-	int vibration_setting;
+{ // scale based on vibration intensity setting (0-100%)
+	int vibration_percentage;
 	
 	// Check if muted and use muted vibration setting if available
 	if (GetMute() && GetMutedVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) {
-		vibration_setting = GetMutedVibration(); // 0-20, where 0 is off and 20 is 100%
+		vibration_percentage = GetMutedVibration(); // 0-100, where 0 is off and 100 is 100%
 	} else {
-		vibration_setting = GetVibration(); // 0-20, where 0 is off and 20 is 100%
+		vibration_percentage = GetVibration(); // 0-100, where 0 is off and 100 is 100%
 	}
 	
-	if (vibration_setting == 0)
+	if (vibration_percentage == 0)
 		return 0; // vibration disabled
 	
-	// Scale input strength (0-0xFFFF) by the vibration setting percentage
-	// vibration_setting 20 = 100%, 10 = 50%, etc.
-	int scaled_strength = MIN_STRENGTH + (int)(strength * ((long long)MAX_STRENGTH * vibration_setting / (NUM_INCREMENTS * MAX_STRENGTH)));
-	return scaled_strength; // between 0x0000 and 0xFFFF
+	// Scale input strength (0-0xFFFF) by the vibration percentage
+	// Simple formula: strength * percentage / 100
+	return (strength * vibration_percentage) / 100;
 }
 
 void VIB_singlePulse(int strength, int duration_ms)
