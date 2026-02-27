@@ -734,7 +734,7 @@ settings.fn_switch.vibration_when_toggled.desc=震动强度（0-100%）
 settings.gamepad=手柄设置
 settings.gamepad.desc=手柄相关设置
 settings.gamepad.vibration=震动强度
-settings.gamepad.vibration.desc=全局震动强度（0-10，0=关闭，10=100%）
+settings.gamepad.vibration.desc=全局震动强度（0-10）
 settings.gamepad.vibration.off=不震动
 settings.gamepad.swap_dpad_left_stick=方向键和左摇杆切换
 settings.gamepad.swap_dpad_left_stick.desc=启用后，方向键和左摇杆的功能互换
