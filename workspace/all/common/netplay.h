@@ -81,13 +81,10 @@ typedef struct {
     netplay_role_t role;
     char device_name[NETPLAY_DEVICE_NAME_MAX];
     
-    // Hosting
+    // Socket (used as server listening socket when HOST, or client connection socket when CLIENT)
     int server_socket;
     int client_sockets[NETPLAY_MAX_PEERS];
     int client_count;
-    
-    // Client
-    int server_socket;
     char server_ip[16];
     
     // Discovery

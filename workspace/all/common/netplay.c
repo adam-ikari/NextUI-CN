@@ -510,6 +510,7 @@ int NET_connect_to_host(netplay_context_t *ctx, const char *host_ip) {
     FD_ZERO(&read_fds);
     FD_SET(ctx->server_socket, &read_fds);
     
+    struct timeval timeout;
     timeout.tv_sec = 10;
     timeout.tv_usec = 0;
     
