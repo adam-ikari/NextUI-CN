@@ -4038,7 +4038,7 @@ void LEDS_applyRules()
 		LEDS_setProfile(LIGHT_PROFILE_CHARGING);
 	}
 	// - if critical battery, critical battery takes priority over everything
-	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE) {
+	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE && !pwr.is_charging) {
 		//LOG_info("LEDS_applyRules: critical battery\n");
 		LEDS_setProfile(LIGHT_PROFILE_CRITICAL_BATTERY);
 	}
@@ -4048,7 +4048,7 @@ void LEDS_applyRules()
 		LEDS_setProfile(LIGHT_PROFILE_OFF);
 	}
 	// other rules
-	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE + 10 && pwr.charge >= PWR_LOW_CHARGE) {
+	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE + 10 && pwr.charge >= PWR_LOW_CHARGE && !pwr.is_charging) {
 		//LOG_info("LEDS_applyRules: low battery\n");
 		LEDS_setProfile(LIGHT_PROFILE_LOW_BATTERY);
 	}
