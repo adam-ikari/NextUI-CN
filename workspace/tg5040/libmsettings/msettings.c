@@ -178,7 +178,7 @@ typedef struct SettingsV11 {
 	int colortemperature;
 	int headphones;
 	int speaker;
-	int mute;
+	int fnToggle;
 	int contrast;
 	int saturation;
 	int exposure;
@@ -546,7 +546,7 @@ void InitSettings(void) {
 		
 		// these shouldn't be persisted
 		// settings->jack = 0;
-		settings->mute = 0;
+		settings->fnToggle = 0;
 	}
 	// printf("brightness: %i\nspeaker: %i \n", settings->brightness, settings->speaker);
 	system("amixer");
@@ -559,7 +559,7 @@ void InitSettings(void) {
 	}
 
 	// This will implicitly update all other settings based on FN switch state
-	SetMute(settings->mute);
+	SetFnToggle(settings->fnToggle);
 }
 int InitializedSettings(void) {
 	return (settings != NULL);
@@ -586,8 +586,8 @@ int GetColortemp(void) { // 0-10
 	return settings->colortemperature;
 }
 int GetVolume(void) { // 0-20
-	if (settings->mute && GetMutedVolume() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
-		return GetMutedVolume();
+	if (settings->fnToggle && GetFnToggleVolume() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
+		return GetFnToggleVolume();
 	
 	if(settings->jack || settings->audiosink != AUDIO_SINK_DEFAULT)
 		return settings->headphones;
@@ -610,8 +610,8 @@ int GetHDMI(void) {
 	return 0;
 };
 
-int GetMute(void) {
-	return settings->mute;
+int GetFnToggle(void) {
+	return settings->fnToggle;
 }
 int GetContrast(void)
 {
@@ -625,71 +625,71 @@ int GetExposure(void)
 {
 	return settings->exposure;
 }
-int GetMutedBrightness(void)
+int GetFnToggleBrightness(void)
 {
 	return settings->toggled_brightness;
 }
-int GetMutedColortemp(void)
+int GetFnToggleColortemp(void)
 {
 	return settings->toggled_colortemperature;
 }
-int GetMutedContrast(void)
+int GetFnToggleContrast(void)
 {
 	return settings->toggled_contrast;
 }
-int GetMutedSaturation(void)
+int GetFnToggleSaturation(void)
 {
 	return settings->toggled_saturation;
 }
-int GetMutedExposure(void)
+int GetFnToggleExposure(void)
 {
 	return settings->toggled_exposure;
 }
-int GetMutedVolume(void)
+int GetFnToggleVolume(void)
 {
 	return settings->toggled_volume;
 }
-int GetMuteDisablesDpad(void)
+int GetFnToggleDisablesDpad(void)
 {
 	return settings->disable_dpad_on_mute;
 }
-int GetMuteEmulatesJoystick(void)
+int GetFnToggleEmulatesJoystick(void)
 {
 	return settings->emulate_joystick_on_mute;
 }
-int GetMuteTurboA(void)
+int GetFnToggleTurboA(void)
 {
 	return settings->turbo_a;
 }
-int GetMuteTurboB(void)
+int GetFnToggleTurboB(void)
 {
 	return settings->turbo_b;
 }
-int GetMuteTurboX(void)
+int GetFnToggleTurboX(void)
 {
 	return settings->turbo_x;
 }
-int GetMuteTurboY(void)
+int GetFnToggleTurboY(void)
 {
 	return settings->turbo_y;
 }
-int GetMuteTurboL1(void)
+int GetFnToggleTurboL1(void)
 {
 	return settings->turbo_l1;
 }
-int GetMuteTurboL2(void)
+int GetFnToggleTurboL2(void)
 {
 	return settings->turbo_l2;
 }
-int GetMuteTurboR1(void)
+int GetFnToggleTurboR1(void)
 {
 	return settings->turbo_r1;
 }
-int GetMuteTurboR2(void)
+int GetFnToggleTurboR2(void)
 {
 	return settings->turbo_r2;
 }
-int GetMutedVibration(void)
+int GetFnToggleVibration(void)
 {
 	return settings->toggled_vibration;
 }
@@ -707,8 +707,8 @@ void SetColortemp(int value) {
 	SaveSettings();
 }
 void SetVolume(int value) { // 0-20
-	if (settings->mute && GetMutedVolume() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
-		return SetRawVolume(scaleVolume(GetMutedVolume()));
+	if (settings->fnToggle && GetFnToggleVolume() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
+		return SetRawVolume(scaleVolume(GetFnToggleVolume()));
 	
 	if (settings->jack || settings->audiosink != AUDIO_SINK_DEFAULT)
 		settings->headphones = value;
@@ -757,42 +757,42 @@ void SetAudioSink(int value) {
 
 void SetHDMI(int value){};
 
-void SetMute(int value) {
-	settings->mute = value;
-	if (settings->mute) {
-		if (GetMutedVolume() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
-			SetRawVolume(scaleVolume(GetMutedVolume()));
-		// custom mute mode display settings
-		if(GetMutedBrightness() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
-			SetRawBrightness(scaleBrightness(GetMutedBrightness()));
-		if(GetMutedColortemp() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
-			SetRawColortemp(scaleColortemp(GetMutedColortemp()));
-		if(GetMutedContrast() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
-			SetRawContrast(scaleContrast(GetMutedContrast()));
-		if(GetMutedSaturation() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
-			SetRawSaturation(scaleSaturation(GetMutedSaturation()));
-		if(GetMutedExposure() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
-			SetRawExposure(scaleExposure(GetMutedExposure()));
-		// Vibration scaling is handled by VIB_scaleStrength based on GetMutedVibration()
-		if(is_brick && GetMuteDisablesDpad())
+void SetFnToggle(int value) {
+	settings->fnToggle = value;
+	if (settings->fnToggle) {
+		if (GetFnToggleVolume() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
+			SetRawVolume(scaleVolume(GetFnToggleVolume()));
+		// custom FnToggle mode display settings
+		if(GetFnToggleBrightness() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
+			SetRawBrightness(scaleBrightness(GetFnToggleBrightness()));
+		if(GetFnToggleColortemp() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
+			SetRawColortemp(scaleColortemp(GetFnToggleColortemp()));
+		if(GetFnToggleContrast() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
+			SetRawContrast(scaleContrast(GetFnToggleContrast()));
+		if(GetFnToggleSaturation() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
+			SetRawSaturation(scaleSaturation(GetFnToggleSaturation()));
+		if(GetFnToggleExposure() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
+			SetRawExposure(scaleExposure(GetFnToggleExposure()));
+		// Vibration scaling is handled by VIB_scaleStrength based on GetFnToggleVibration()
+		if(is_brick && GetFnToggleDisablesDpad())
 			disableDpad(1);
-		if(is_brick && GetMuteEmulatesJoystick())
+		if(is_brick && GetFnToggleEmulatesJoystick())
 			emulateJoystick(1);
-		if(GetMuteTurboA())
+		if(GetFnToggleTurboA())
 			turboA(1);
-		if(GetMuteTurboB())
+		if(GetFnToggleTurboB())
 			turboB(1);
-		if(GetMuteTurboX())
+		if(GetFnToggleTurboX())
 			turboX(1);
-		if(GetMuteTurboY())
+		if(GetFnToggleTurboY())
 			turboY(1);
-		if(GetMuteTurboL1())
+		if(GetFnToggleTurboL1())
 			turboL1(1);
-		if(GetMuteTurboL2())
+		if(GetFnToggleTurboL2())
 			turboL2(1);
-		if(GetMuteTurboR1())
+		if(GetFnToggleTurboR1())
 			turboR1(1);
-		if(GetMuteTurboR2())
+		if(GetFnToggleTurboR2())
 			turboR2(1);
 	}
 	else {
@@ -804,26 +804,26 @@ void SetMute(int value) {
 		SetExposure(GetExposure());
 		// Vibration scaling is handled by VIB_scaleStrength based on GetVibration()
 		if(is_brick) {
-			if(GetMuteDisablesDpad())
+			if(GetFnToggleDisablesDpad())
 				disableDpad(0);
-			if(GetMuteEmulatesJoystick())
+			if(GetFnToggleEmulatesJoystick())
 				emulateJoystick(0);
 		}
-		if(GetMuteTurboA())
+		if(GetFnToggleTurboA())
 			turboA(0);
-		if(GetMuteTurboB())
+		if(GetFnToggleTurboB())
 			turboB(0);
-		if(GetMuteTurboX())
+		if(GetFnToggleTurboX())
 			turboX(0);
-		if(GetMuteTurboY())
+		if(GetFnToggleTurboY())
 			turboY(0);
-		if(GetMuteTurboL1())
+		if(GetFnToggleTurboL1())
 			turboL1(0);
-		if(GetMuteTurboL2())
+		if(GetFnToggleTurboL2())
 			turboL2(0);
-		if(GetMuteTurboR1())
+		if(GetFnToggleTurboR1())
 			turboR1(0);
-		if(GetMuteTurboR2())
+		if(GetFnToggleTurboR2())
 			turboR2(0);
 	}
 }
@@ -846,101 +846,101 @@ void SetExposure(int value)
 	SaveSettings();
 }
 
-void SetMutedBrightness(int value)
+void SetFnToggleBrightness(int value)
 {
 	settings->toggled_brightness = value;
 	SaveSettings();
 }
 
-void SetMutedColortemp(int value)
+void SetFnToggleColortemp(int value)
 {
 	settings->toggled_colortemperature = value;
 	SaveSettings();
 }
 
-void SetMutedContrast(int value)
+void SetFnToggleContrast(int value)
 {
 	settings->toggled_contrast = value;
 	SaveSettings();
 }
 
-void SetMutedSaturation(int value)
+void SetFnToggleSaturation(int value)
 {
 	settings->toggled_saturation = value;
 	SaveSettings();
 }
 
-void SetMutedExposure(int value)
+void SetFnToggleExposure(int value)
 {
 	settings->toggled_exposure = value;
 	SaveSettings();
 }
 
-void SetMutedVolume(int value)
+void SetFnToggleVolume(int value)
 {
 	settings->toggled_volume = value;
 	SaveSettings();
 }
-void SetMutedVibration(int value)
+void SetFnToggleVibration(int value)
 {
 	settings->toggled_vibration = value;
 	SaveSettings();
 }
 
-void SetMuteDisablesDpad(int value)
+void SetFnToggleDisablesDpad(int value)
 {
 	settings->disable_dpad_on_mute = value;
 	SaveSettings();
 }
-void SetMuteEmulatesJoystick(int value)
+void SetFnToggleEmulatesJoystick(int value)
 {
 	settings->emulate_joystick_on_mute = value;
 	SaveSettings();
 }
 
-void SetMuteTurboA(int value)
+void SetFnToggleTurboA(int value)
 {
 	settings->turbo_a = value;
 	SaveSettings();
 }
 
-void SetMuteTurboB(int value)
+void SetFnToggleTurboB(int value)
 {
 	settings->turbo_b = value;
 	SaveSettings();
 }
 
-void SetMuteTurboX(int value)
+void SetFnToggleTurboX(int value)
 {
 	settings->turbo_x = value;
 	SaveSettings();
 }
 
-void SetMuteTurboY(int value)
+void SetFnToggleTurboY(int value)
 {
 	settings->turbo_y = value;
 	SaveSettings();
 }
 
-void SetMuteTurboL1(int value)
+void SetFnToggleTurboL1(int value)
 {
 	settings->turbo_l1 = value;
 	SaveSettings();
 }
 
-void SetMuteTurboL2(int value)
+void SetFnToggleTurboL2(int value)
 {
 	settings->turbo_l2 = value;
 	SaveSettings();
 }
 
-void SetMuteTurboR1(int value)
+void SetFnToggleTurboR1(int value)
 {
 	settings->turbo_r1 = value;
 	SaveSettings();
 }
 
-void SetMuteTurboR2(int value)
+void SetFnToggleTurboR2(int value)
 {
 	settings->turbo_r2 = value;
 	SaveSettings();
@@ -1261,8 +1261,8 @@ static int get_a2dp_simple_control_name(char *buf, size_t buflen) {
 }
 
 void SetRawVolume(int val) { // in: 0-100
-	if (settings->mute && GetMutedVolume() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
-		val = scaleVolume(GetMutedVolume());
+	if (settings->fnToggle && GetFnToggleVolume() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) 
+		val = scaleVolume(GetFnToggleVolume());
 	
 	// Clamp value to valid range to prevent audio system errors
 	if (val < 0) val = 0;

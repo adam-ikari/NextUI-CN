@@ -234,8 +234,8 @@ void CFG_setStateFormat(int);
 bool CFG_getUseExtractedFileName(void);
 void CFG_setUseExtractedFileName(bool);
 // Enable/disable mute also shutting off LEDs.
-bool CFG_getMuteLEDs(void);
-void CFG_setMuteLEDs(bool);
+bool CFG_getFnToggleLEDs(void);
+void CFG_setFnToggleLEDs(bool);
 // Set game art width percentage.
 double CFG_getGameArtWidth(void);
 void CFG_setGameArtWidth(double zeroToOne);

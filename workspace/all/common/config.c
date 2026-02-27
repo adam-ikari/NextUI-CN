@@ -245,7 +245,7 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
             }
             if (sscanf(line, "muteLeds=%i", &temp_value) == 1)
             {
-                CFG_setMuteLEDs(temp_value);
+                CFG_setFnToggleLEDs(temp_value);
                 continue;
             }
             if (sscanf(line, "artWidth=%i", &temp_value) == 1)
@@ -608,12 +608,12 @@ void CFG_setUseExtractedFileName(bool use)
     CFG_sync();
 }
 
-bool CFG_getMuteLEDs(void)
+bool CFG_getFnToggleLEDs(void)
 {
     return settings.muteLeds;
 }
 
-void CFG_setMuteLEDs(bool on)
+void CFG_setFnToggleLEDs(bool on)
 {
     settings.muteLeds = on;
     CFG_sync();
@@ -815,7 +815,7 @@ void CFG_get(const char *key, char *value)
     }
     else if (strcmp(key, "muteLeds") == 0)
     {
-        sprintf(value, "%i", CFG_getMuteLEDs());
+        sprintf(value, "%i", CFG_getFnToggleLEDs());
     }
     else if (strcmp(key, "artWidth") == 0)
     {

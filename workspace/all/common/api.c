@@ -3425,8 +3425,8 @@ int VIB_scaleStrength(int strength)
 	int vibration_intensity;
 	
 	// Check if in FN toggle mode and use FN toggle vibration setting if available
-	if (GetMute() && GetMutedVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) {
-		vibration_intensity = GetMutedVibration(); // 0-10, where 0 is off and 10 is 100%
+	if (GetFnToggle() && GetFnToggleVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) {
+		vibration_intensity = GetFnToggleVibration(); // 0-10, where 0 is off and 10 is 100%
 	} else {
 		vibration_intensity = GetVibration(); // 0-10, where 0 is off and 10 is 100%
 	}
@@ -3583,7 +3583,7 @@ void PWR_update(int *_dirty, int *_show_setting, PWR_callback_t before_sleep, PW
 	static uint32_t mod_unpressed_at = 0;  // timestamp of last time settings modifier key was NOT down
 	static uint32_t was_muted = -1;
 	if (was_muted == -1 && InitializedSettings())
-		was_muted = GetMute();
+		was_muted = GetFnToggle();
 
 	static int was_charging = -1;
 	if (was_charging == -1) was_charging = pwr.is_charging;
@@ -3687,7 +3687,7 @@ void PWR_update(int *_dirty, int *_show_setting, PWR_callback_t before_sleep, PW
 
 	if (InitializedSettings())
 	{
-		int muted = GetMute();
+		int muted = GetFnToggle();
 		if (muted != was_muted)
 		{
 			was_muted = muted;
@@ -4043,7 +4043,7 @@ void LEDS_applyRules()
 		LEDS_setProfile(LIGHT_PROFILE_CRITICAL_BATTERY);
 	}
 	// - if muted, muted takes priority over everything except critical battery
-	else if(InitializedSettings() && CFG_getMuteLEDs() && GetMute()) {
+	else if(InitializedSettings() && CFG_getFnToggleLEDs() && GetFnToggle()) {
 		//LOG_info("LEDS_applyRules: muted\n");
 		LEDS_setProfile(LIGHT_PROFILE_OFF);
 	}
