@@ -4034,9 +4034,14 @@ void LEDS_applyRules()
 	// e.g.
 	// - if charging and low battery, charging takes priority
 	if (pwr.initialized && pwr.is_charging) {
-		// Use default profile (user can configure via LedControl tool)
-		//LOG_info("LEDS_applyRules: charging (use default)\n");
-		LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
+		// Check if charging breathing LED is enabled
+		if (InitializedSettings() && CFG_getChargingBreathingLed()) {
+			// Use hardcoded breathing profile
+			LEDS_setProfile(LIGHT_PROFILE_CHARGING);
+		} else {
+			// Use default profile (user can configure via LedControl tool)
+			LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
+		}
 	}
 	// - if critical battery, critical battery takes priority over everything
 	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE && !pwr.is_charging) {
@@ -4124,11 +4129,13 @@ void LEDS_initLeds()
 		lightsCriticalBattery[i].cycles = -1; // infinite
 
 		// LIGHT_PROFILE_CHARGING
-		// Disabled charging indicator
-		// lightsCharging[i] = lightsDefault[i];
-		// lightsCharging[i].effect = 2; // breathe
-		// lightsCharging[i].color1 = 0x00FF00;
-		// lightsCharging[i].cycles = -1; // infinite	
+		// Hardcoded breathing effect for charging LED
+		lightsCharging[i] = lightsDefault[i];
+		lightsCharging[i].effect = 2; // breathe
+		lightsCharging[i].color1 = 0x00FF00; // green
+		lightsCharging[i].brightness = 100; // hardcoded brightness
+		lightsCharging[i].inbrightness = 0; // min brightness
+		lightsCharging[i].cycles = -1; // infinite
 
 		// LIGHT_PROFILE_SLEEP
 		lightsSleep[i] = lightsDefault[i];

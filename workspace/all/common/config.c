@@ -50,6 +50,7 @@ void CFG_defaults(NextUISettings *cfg)
         .showQuickSwitcherUi = CFG_DEFAULT_SHOWQUICKWITCHERUI,
 
         .fnToggleLeds = CFG_DEFAULT_FNTOGGLELEDS,
+        .chargingBreathingLed = CFG_DEFAULT_CHARGINGBREATHINGLED,
 
         .screenTimeoutSecs = CFG_DEFAULT_SCREENTIMEOUTSECS,
         .suspendTimeoutSecs = CFG_DEFAULT_SUSPENDTIMEOUTSECS,
@@ -246,6 +247,11 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
             if (sscanf(line, "fnToggleLeds=%i", &temp_value) == 1)
             {
                 CFG_setFnToggleLEDs(temp_value);
+                continue;
+            }
+            if (sscanf(line, "chargingBreathingLed=%i", &temp_value) == 1)
+            {
+                CFG_setChargingBreathingLed(temp_value);
                 continue;
             }
             if (sscanf(line, "artWidth=%i", &temp_value) == 1)
@@ -619,6 +625,17 @@ void CFG_setFnToggleLEDs(bool on)
     CFG_sync();
 }
 
+bool CFG_getChargingBreathingLed(void)
+{
+    return settings.chargingBreathingLed;
+}
+
+void CFG_setChargingBreathingLed(bool on)
+{
+    settings.chargingBreathingLed = on;
+    CFG_sync();
+}
+
 double CFG_getGameArtWidth(void)
 {
     return settings.gameArtWidth;
@@ -817,6 +834,10 @@ void CFG_get(const char *key, char *value)
     {
         sprintf(value, "%i", CFG_getFnToggleLEDs());
     }
+    else if (strcmp(key, "chargingBreathingLed") == 0)
+    {
+        sprintf(value, "%i", CFG_getChargingBreathingLed());
+    }
     else if (strcmp(key, "artWidth") == 0)
     {
         sprintf(value, "%i", (int)(CFG_getGameArtWidth()) * 100);
@@ -914,6 +935,7 @@ void CFG_sync(void)
     fprintf(file, "stateFormat=%i\n", settings.stateFormat);
     fprintf(file, "useExtractedFileName=%i\n", settings.useExtractedFileName);
     fprintf(file, "fnToggleLeds=%i\n", settings.fnToggleLeds);
+    fprintf(file, "chargingBreathingLed=%i\n", settings.chargingBreathingLed);
     fprintf(file, "artWidth=%i\n", (int)(settings.gameArtWidth * 100));
     fprintf(file, "wifi=%i\n", settings.wifi);
     fprintf(file, "defaultView=%i\n", settings.defaultView);
@@ -958,6 +980,7 @@ void CFG_print(void)
     printf("\t\"stateFormat\": %i,\n", settings.stateFormat);
     printf("\t\"useExtractedFileName\": %i,\n", settings.useExtractedFileName);
     printf("\t\"fnToggleLeds\": %i,\n", settings.fnToggleLeds);
+    printf("\t\"chargingBreathingLed\": %i,\n", settings.chargingBreathingLed);
     printf("\t\"artWidth\": %i,\n", (int)(settings.gameArtWidth * 100));
     printf("\t\"wifi\": %i,\n", settings.wifi);
     printf("\t\"defaultView\": %i,\n", settings.defaultView);
