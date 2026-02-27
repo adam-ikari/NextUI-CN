@@ -729,7 +729,7 @@ settings.fn_switch.dpad_mode.dpad=方向键
 settings.fn_switch.dpad_mode.joystick=摇杆
 settings.fn_switch.dpad_mode.both=同时
 settings.fn_switch.vibration_when_toggled=切换时震动
-settings.fn_switch.vibration_when_toggled.desc=震动（0-100%）
+settings.fn_switch.vibration_when_toggled.desc=FN切换时震动（不改变 / 0-100%）
 
 settings.gamepad=手柄设置
 settings.gamepad.desc=手柄相关设置
