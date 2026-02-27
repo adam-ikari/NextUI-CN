@@ -406,3 +406,11 @@ int GetHDMI(void) { return 0; }
 void SetHDMI(int value) {}
 
 int GetMute(void) { return 0; }
+
+// Desktop platform stubs for vibration control (not supported)
+void SetRawVibration(int value) {}
+void SetVibration(int value) {}
+void TestVibration(int value) {}
+int GetVibration(void) { return 0; }
+int GetMutedVibration(void) { return 0; }
+void SetMutedVibration(int value) {}

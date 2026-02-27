@@ -82,4 +82,12 @@ void SetMuteTurboL2(int);
 void SetMuteTurboR1(int);
 void SetMuteTurboR2(int);
 
+// Desktop platform stubs for vibration control (not supported)
+void SetRawVibration(int value); // 0-100
+void SetVibration(int value); // 0-10 (0=off, 10=100%)
+void TestVibration(int value); // 0-100 (percentage), test vibration intensity
+int GetVibration(void);
+int GetMutedVibration(void);
+void SetMutedVibration(int);
+
 #endif  // __msettings_h__
