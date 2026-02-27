@@ -441,7 +441,7 @@ int main(int argc, char *argv[])
             []() { SetMuteTurboR2(0);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.vibration_when_toggled"), TR("settings.fn_switch.vibration_when_toggled.desc"),
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100},
-            {TR("common.unchanged"), TR("common.off"),"5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"},
+            {TR("common.unchanged"), TR("settings.gamepad.vibration.off"),"5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"},
             []() -> std::any { return GetMutedVibration(); },
             [](const std::any &value) { SetMutedVibration(std::any_cast<int>(value)); },
             []() { SetMutedVibration(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
@@ -510,7 +510,7 @@ int main(int argc, char *argv[])
         {
             new MenuItem{ListItemType::Generic, TR("settings.gamepad.vibration"), TR("settings.gamepad.vibration.desc"),
             {0,5,10,15,20,25,30,35,40,45,50,55,60,65,70,75,80,85,90,95,100},
-            {TR("common.off"),"5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"},
+            {TR("settings.gamepad.vibration.off"),"5%","10%","15%","20%","25%","30%","35%","40%","45%","50%","55%","60%","65%","70%","75%","80%","85%","90%","95%","100%"},
             []() -> std::any { return GetVibration(); },
             [](const std::any &value) { SetVibration(std::any_cast<int>(value)); TestVibration(std::any_cast<int>(value)); },
             []() { SetVibration(50); }},
