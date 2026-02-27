@@ -691,8 +691,8 @@ settings.safe_poweroff=安全关机
 settings.safe_poweroff.desc=绕过原厂关机流程以避免“limbo bug”。\n直接指示 PMIC 软断开电池。
 
 settings.main=主菜单
-settings.fn_switch=FN 按键功能设置
-settings.fn_switch.desc=FN 按键快捷设置
+settings.fn_switch=FN 开关功能设置
+settings.fn_switch.desc=FN 开关快捷设置
 settings.fn_switch.volume_when_toggled=切换时音量
 settings.fn_switch.volume_when_toggled.desc=扬声器音量（0-20）
 settings.fn_switch.disables_led=切换时LED
