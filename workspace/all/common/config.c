@@ -293,7 +293,7 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
 
     if (fontLoaded)
     {
-        int migratedId = clamp(loadedFontId, 0, 1);
+        int migratedId = clamp(loadedFontId, 0, 2);
         if (fontOrder < 2)
             migratedId = 1 - migratedId;
         CFG_setFontId(migratedId);
@@ -319,16 +319,20 @@ int CFG_getFontId(void)
 
 void CFG_setFontId(int id)
 {
-    settings.font = clamp(id, 0, 1);
+    settings.font = clamp(id, 0, 2);
 
     char *fontPath;
     if (settings.font == 0)
         fontPath = RES_PATH "/font1.ttf";
-    else
+    else if (settings.font == 1)
         fontPath = RES_PATH "/font2.ttf";
+    else
+        fontPath = RES_PATH "/font3.ttf";
 
     if(settings.onFontChange)
         settings.onFontChange(fontPath);
+
+    CFG_sync();
 }
 
 uint32_t CFG_getColor(int color_id)
@@ -850,8 +854,10 @@ void CFG_get(const char *key, char *value)
     {
         if (CFG_getFontId() == 0)
             sprintf(value, "\"%s\"", RES_PATH "/font1.ttf");
-        else
+        else if (CFG_getFontId() == 1)
             sprintf(value, "\"%s\"", RES_PATH "/font2.ttf");
+        else
+            sprintf(value, "\"%s\"", RES_PATH "/font3.ttf");
     }
 
     else {
@@ -962,8 +968,10 @@ void CFG_print(void)
     // meta, not a real setting
     if (settings.font == 0)
         printf("\t\"fontpath\": \"%s\"\n", RES_PATH "/font1.ttf");
-    else
+    else if (settings.font == 1)
         printf("\t\"fontpath\": \"%s\"\n", RES_PATH "/font2.ttf");
+    else
+        printf("\t\"fontpath\": \"%s\"\n", RES_PATH "/font3.ttf");
 
     printf("}\n");
 }

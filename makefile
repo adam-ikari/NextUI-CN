@@ -30,7 +30,7 @@ ifeq ($(PLATFORM), desktop)
 else
 	TOOLCHAIN_FILE := makefile.toolchain
 endif
-RELEASE_BASE=NextUI-$(RELEASE_TIME)$(RELEASE_BETA)
+RELEASE_BASE=NextUI-Adam-$(RELEASE_TIME)$(RELEASE_BETA)
 RELEASE_DOT:=$(shell find ./releases/. -regex ".*/${RELEASE_BASE}-[0-9]+-base\.zip" | wc -l | sed 's/ //g')
 RELEASE_NAME ?= $(RELEASE_BASE)-$(RELEASE_DOT)
 
@@ -187,6 +187,10 @@ setup: name
 	mkdir -p ./releases
 	cp -R ./skeleton ./build
 	
+	# sync translation file from workspace to build (single source of truth)
+	mkdir -p ./build/SYSTEM/i18n
+	cp ./workspace/i18n/locales/zh_CN.lang ./build/SYSTEM/i18n/zh_CN.lang
+	
 	# remove authoring detritus
 	cd ./build && find . -type f -name '.keep' -delete
 	cd ./build && find . -type f -name '*.meta' -delete
@@ -239,11 +243,15 @@ package: tidy
 	cd ./build/SYSTEM && echo "$(RELEASE_NAME)\n$(BUILD_HASH)" > version.txt
 	# ./commits.sh > ./build/SYSTEM/commits.txt
 	cd ./build && find . -type f -name '.DS_Store' -delete
+
+	# Remove Loading app from extras (don't include in package)
+	rm -rf "./build/EXTRAS/Tools/tg5040/Remove Loading.pak"
+
 	mkdir -p ./build/PAYLOAD
 	mv ./build/SYSTEM ./build/PAYLOAD/.system
 	cp -R ./build/BOOT/.tmp_update ./build/PAYLOAD/
 	cp -R ./build/EXTRAS/Tools ./build/PAYLOAD/
-	
+
 	cd ./build/PAYLOAD && zip -r MinUI.zip .system .tmp_update Tools
 	mv ./build/PAYLOAD/MinUI.zip ./build/BASE
 
@@ -259,11 +267,12 @@ package: tidy
 	# Move renamed .pakz files into base folder
 	mkdir -p ./build/BASE
 	mv $(VENDOR_DEST)/* ./build/BASE/
-	
+
 	# TODO: can I just add everything in BASE to zip?
 	# cd ./build/BASE && zip -r ../../releases/$(RELEASE_NAME)-base.zip Bios Roms Saves miyoo miyoo354 trimui rg35xx rg35xxplus gkdpixel miyoo355 magicx em_ui.sh MinUI.zip README.txt
-	cd ./build/BASE && zip -r ../../releases/$(RELEASE_NAME)-base.zip Bios Roms Saves Shaders trimui em_ui.sh MinUI.zip *.pakz README.txt
-	cd ./build/EXTRAS && zip -r ../../releases/$(RELEASE_NAME)-extras.zip Bios Emus Roms Saves Shaders Tools README.txt
+	mkdir -p ./releases
+	cd ./build/BASE && mkdir -p ../../releases/$(dir $(RELEASE_NAME)) && zip -r ../../releases/$(RELEASE_NAME)-base.zip Bios Roms Saves Shaders trimui MinUI.zip *.pakz README.txt
+	cd ./build/EXTRAS && mkdir -p ../../releases/$(dir $(RELEASE_NAME)) && zip -r ../../releases/$(RELEASE_NAME)-extras.zip Bios Emus Roms Saves Shaders Tools README.txt
 	echo "$(RELEASE_VERSION)" > ./build/latest.txt
 
 	# compound zip (brew install libzip needed) 

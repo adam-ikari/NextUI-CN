@@ -26,6 +26,7 @@
 #include "utils.h"
 #include "scaler.h"
 #include "i18n.h"
+#include "netplay.h"
 #include <dirent.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL.h>
@@ -40,6 +41,13 @@ static int simple_mode = 0;
 static int was_threaded = 0;
 static int should_run_core = 1; // used by threaded video
 enum retro_pixel_format fmt;
+
+// Netplay
+static netplay_context_t netplay_ctx;
+static int netplay_enabled = 0;
+static int netplay_show_devices = 0;
+static netplay_device_t discovered_devices[16];
+static int discovered_device_count = 0;
 
 static pthread_t		core_pt;
 static pthread_mutex_t	core_mx;
@@ -1576,6 +1584,9 @@ static char** i18n_tearing_labels = NULL;
 static char** i18n_sync_ref_labels = NULL;
 static char** i18n_overclock_labels = NULL;
 static char** i18n_max_ff_labels = NULL;
+static char** i18n_sharpness_labels = NULL;
+static char** i18n_button_labels = NULL;
+static char** i18n_gamepad_labels = NULL;
 
 static char** i18n_nrofshaders_labels = NULL;
 static char** i18n_shupscale_labels = NULL;
@@ -1625,6 +1636,363 @@ static const char* Minarch_translateCommonValue(const char* value) {
 	if (!strcasecmp(value, "disabled")) return TR("common.disabled");
 	if (!strcasecmp(value, "true")) return TR("common.true");
 	if (!strcasecmp(value, "false")) return TR("common.false");
+	
+	// PCSX-ReArmed region
+	if (!strcasecmp(value, "ntsc")) return TR("minarch.region.ntsc");
+	if (!strcasecmp(value, "pal")) return TR("minarch.region.pal");
+	
+	// PCSX-ReArmed bios
+	if (!strcasecmp(value, "hle")) return TR("minarch.bios.hle");
+	
+	// PCSX-ReArmed multitap
+	if (!strcasecmp(value, "port 1 only")) return TR("minarch.multitap.port1_only");
+	if (!strcasecmp(value, "port 2 only")) return TR("minarch.multitap.port2_only");
+	if (!strcasecmp(value, "both")) return TR("minarch.multitap.both");
+	
+	// PCSX-ReArmed negcon response
+	if (!strcasecmp(value, "linear")) return TR("minarch.negcon.linear");
+	if (!strcasecmp(value, "quadratic")) return TR("minarch.negcon.quadratic");
+	if (!strcasecmp(value, "cubic")) return TR("minarch.negcon.cubic");
+	
+	// PCSX-ReArmed analog axis bounds
+	if (!strcasecmp(value, "circle")) return TR("minarch.analog.circle");
+	if (!strcasecmp(value, "square")) return TR("minarch.analog.square");
+	
+	// PCSX-ReArmed threaded rendering
+	if (!strcasecmp(value, "sync")) return TR("minarch.render.sync");
+	if (!strcasecmp(value, "async")) return TR("minarch.render.async");
+	
+	// PCSX-ReArmed spu interpolation
+	if (!strcasecmp(value, "simple")) return TR("minarch.interpolation.simple");
+	if (!strcasecmp(value, "gaussian")) return TR("minarch.interpolation.gaussian");
+	if (!strcasecmp(value, "cubic")) return TR("minarch.interpolation.cubic");
+	
+	// PCSX-ReArmed cd access method
+	if (!strcasecmp(value, "precache")) return TR("minarch.cd.precache");
+	
+	// PCSX-ReArmed dynamic recompiler
+	if (!strcasecmp(value, "interpreter")) return TR("minarch.cpu.interpreter");
+	
+	// Common video filters (NES, SNES, etc.)
+	if (!strcasecmp(value, "disabled")) return TR("common.disabled");
+	if (!strcasecmp(value, "enabled")) return TR("common.enabled");
+	if (!strcasecmp(value, "monochrome")) return TR("minarch.filter.monochrome");
+	if (!strcasecmp(value, "composite")) return TR("minarch.filter.composite");
+	if (!strcasecmp(value, "s-video")) return TR("minarch.filter.svideo");
+	if (!strcasecmp(value, "svideo")) return TR("minarch.filter.svideo");
+	if (!strcasecmp(value, "rgb")) return TR("minarch.filter.rgb");
+	
+	// Common display modes
+	if (!strcasecmp(value, "sharp")) return TR("minarch.display.sharp");
+	if (!strcasecmp(value, "smooth")) return TR("minarch.display.smooth");
+	if (!strcasecmp(value, "grayscale")) return TR("minarch.display.grayscale");
+	
+	// System types
+	if (!strcasecmp(value, "dendy")) return TR("minarch.system.dendy");
+	
+	// Color modes
+	if (!strcasecmp(value, "color")) return TR("minarch.color.color");
+	if (!strcasecmp(value, "internal")) return TR("minarch.color.internal");
+	
+	// Sound quality
+	if (!strcasecmp(value, "low")) return TR("minarch.quality.low");
+	if (!strcasecmp(value, "medium")) return TR("minarch.quality.medium");
+	if (!strcasecmp(value, "high")) return TR("minarch.quality.high");
+	if (!strcasecmp(value, "max")) return TR("minarch.quality.max");
+	
+	// Audio channels
+	if (!strcasecmp(value, "mono")) return TR("minarch.audio.mono");
+	if (!strcasecmp(value, "stereo")) return TR("minarch.audio.stereo");
+	
+	// Snes9x specific
+	if (!strcasecmp(value, "merge")) return TR("minarch.blend.merge");
+	if (!strcasecmp(value, "blur")) return TR("minarch.blend.blur");
+	if (!strcasecmp(value, "rf")) return TR("minarch.filter.rf");
+	if (!strcasecmp(value, "auto")) return TR("common.auto");
+	
+	// Common aspect ratios
+	if (!strcasecmp(value, "4:3")) return TR("minarch.ratio.4_3");
+	if (!strcasecmp(value, "uncorrected")) return TR("minarch.ratio.uncorrected");
+	
+	// PicoDrive specific
+	if (!strcasecmp(value, "3 button pad")) return TR("minarch.pad.3button");
+	if (!strcasecmp(value, "6 button pad")) return TR("minarch.pad.6button");
+	if (!strcasecmp(value, "par")) return TR("minarch.ratio.par");
+	if (!strcasecmp(value, "crt")) return TR("minarch.ratio.crt");
+	if (!strcasecmp(value, "low-pass")) return TR("minarch.filter.lowpass");
+	if (!strcasecmp(value, "japan ntsc")) return TR("minarch.region.japan_ntsc");
+	if (!strcasecmp(value, "japan pal")) return TR("minarch.region.japan_pal");
+	if (!strcasecmp(value, "us")) return TR("minarch.region.us");
+	if (!strcasecmp(value, "europe")) return TR("minarch.region.europe");
+	
+	// Overclock percentages
+	if (!strcasecmp(value, "+25%")) return TR("minarch.overclock.+25");
+	if (!strcasecmp(value, "+50%")) return TR("minarch.overclock.+50");
+	if (!strcasecmp(value, "+75%")) return TR("minarch.overclock.+75");
+	if (!strcasecmp(value, "+100%")) return TR("minarch.overclock.+100");
+	if (!strcasecmp(value, "+200%")) return TR("minarch.overclock.+200");
+	if (!strcasecmp(value, "+400%")) return TR("minarch.overclock.+400");
+	
+	// FCEUMM specific
+	if (!strcasecmp(value, "famicom")) return TR("minarch.system.famicom");
+	if (!strcasecmp(value, "8:7 par")) return TR("minarch.ratio.8_7_par");
+	if (!strcasecmp(value, "2x-postrender")) return TR("minarch.overclock.2x_postrender");
+	if (!strcasecmp(value, "2x-vblank")) return TR("minarch.overclock.2x_vblank");
+	if (!strcasecmp(value, "lightgun")) return TR("minarch.input.lightgun");
+	if (!strcasecmp(value, "touchscreen")) return TR("minarch.input.touchscreen");
+	if (!strcasecmp(value, "player 1")) return TR("minarch.turbo.player1");
+	if (!strcasecmp(value, "player 2")) return TR("minarch.turbo.player2");
+	
+	// Gambatte specific
+	if (!strcasecmp(value, "auto")) return TR("common.auto");
+	if (!strcasecmp(value, "gbc")) return TR("minarch.system.gbc");
+	if (!strcasecmp(value, "sgb")) return TR("minarch.system.sgb");
+	if (!strcasecmp(value, "internal")) return TR("minarch.color.internal");
+	if (!strcasecmp(value, "custom")) return TR("minarch.color.custom");
+	if (!strcasecmp(value, "gb - dmg")) return TR("minarch.palette.gb_dmg");
+	if (!strcasecmp(value, "gb - pocket")) return TR("minarch.palette.gb_pocket");
+	if (!strcasecmp(value, "gb - light")) return TR("minarch.palette.gb_light");
+	if (!strcasecmp(value, "gbc only")) return TR("minarch.color.gbc_only");
+	if (!strcasecmp(value, "always")) return TR("common.always");
+	if (!strcasecmp(value, "accurate")) return TR("minarch.mode.accurate");
+	if (!strcasecmp(value, "fast")) return TR("minarch.mode.fast");
+	if (!strcasecmp(value, "central")) return TR("minarch.position.central");
+	if (!strcasecmp(value, "above screen")) return TR("minarch.position.above_screen");
+	if (!strcasecmp(value, "below screen")) return TR("minarch.position.below_screen");
+	if (!strcasecmp(value, "gb")) return TR("minarch.system.gb");
+	if (!strcasecmp(value, "gba")) return TR("minarch.system.gba");
+	
+	// mGBA specific
+	if (!strcasecmp(value, "autodetect")) return TR("common.autodetect");
+	if (!strcasecmp(value, "game boy")) return TR("minarch.system.game_boy");
+	if (!strcasecmp(value, "super game boy")) return TR("minarch.system.super_game_boy");
+	if (!strcasecmp(value, "game boy color")) return TR("minarch.system.game_boy_color");
+	if (!strcasecmp(value, "game boy advance")) return TR("minarch.system.game_boy_advance");
+	if (!strcasecmp(value, "remove known")) return TR("minarch.idle.remove_known");
+	if (!strcasecmp(value, "detect and remove")) return TR("minarch.idle.detect_and_remove");
+	if (!strcasecmp(value, "don't remove")) return TR("minarch.idle.dont_remove");
+	
+	// PCE FAST specific
+	if (!strcasecmp(value, "system card 3")) return TR("minarch.bios.system_card_3");
+	if (!strcasecmp(value, "games express")) return TR("minarch.bios.games_express");
+	if (!strcasecmp(value, "system card 1")) return TR("minarch.bios.system_card_1");
+	if (!strcasecmp(value, "system card 2")) return TR("minarch.bios.system_card_2");
+	if (!strcasecmp(value, "fast")) return TR("minarch.speed.fast");
+	if (!strcasecmp(value, "medium")) return TR("minarch.speed.medium");
+	if (!strcasecmp(value, "slow")) return TR("minarch.speed.slow");
+	
+	// Virtual Boy specific
+	if (!strcasecmp(value, "red & blue")) return TR("minarch.anaglyph.red_blue");
+	if (!strcasecmp(value, "red & cyan")) return TR("minarch.anaglyph.red_cyan");
+	if (!strcasecmp(value, "red & electric cyan")) return TR("minarch.anaglyph.red_electric_cyan");
+	if (!strcasecmp(value, "red & green")) return TR("minarch.anaglyph.red_green");
+	if (!strcasecmp(value, "green & magenta")) return TR("minarch.anaglyph.green_magenta");
+	if (!strcasecmp(value, "yellow & blue")) return TR("minarch.anaglyph.yellow_blue");
+	if (!strcasecmp(value, "black & red")) return TR("minarch.palette.black_red");
+	if (!strcasecmp(value, "black & white")) return TR("minarch.palette.black_white");
+	if (!strcasecmp(value, "invert x")) return TR("minarch.invert.x");
+	if (!strcasecmp(value, "invert y")) return TR("minarch.invert.y");
+	if (!strcasecmp(value, "invert both")) return TR("minarch.invert.both");
+	
+	// Stella2014 (Atari 2600) specific
+	if (!strcasecmp(value, "simple")) return TR("minarch.blend.simple");
+	if (!strcasecmp(value, "ghosting (65%)")) return TR("minarch.ghosting.65");
+	if (!strcasecmp(value, "ghosting (75%)")) return TR("minarch.ghosting.75");
+	if (!strcasecmp(value, "ghosting (85%)")) return TR("minarch.ghosting.85");
+	if (!strcasecmp(value, "ghosting (95%)")) return TR("minarch.ghosting.95");
+	
+	// Gearcoleco (ColecoVision) specific
+	if (!strcasecmp(value, "1:1 par")) return TR("minarch.ratio.1_1_par");
+	if (!strcasecmp(value, "4:3 dar")) return TR("minarch.ratio.4_3_dar");
+	if (!strcasecmp(value, "16:9 dar")) return TR("minarch.ratio.16_9_dar");
+	if (!strcasecmp(value, "16:10 dar")) return TR("minarch.ratio.16_10_dar");
+	if (!strcasecmp(value, "top+bottom")) return TR("minarch.overscan.top_bottom");
+	if (!strcasecmp(value, "full (284 width)")) return TR("minarch.overscan.full_284");
+	if (!strcasecmp(value, "full (320 width)")) return TR("minarch.overscan.full_320");
+	if (!strcasecmp(value, "super action controller")) return TR("minarch.spinner.super_action");
+	if (!strcasecmp(value, "wheel controller")) return TR("minarch.spinner.wheel");
+	if (!strcasecmp(value, "roller controller")) return TR("minarch.spinner.roller");
+	
+	// BlueMSX (MSX/SVI/ColecoVision/SG-1000) specific
+	if (!strcasecmp(value, "msx")) return TR("minarch.system.msx");
+	if (!strcasecmp(value, "msxturbor")) return TR("minarch.system.msx_turbo_r");
+	if (!strcasecmp(value, "msx2")) return TR("minarch.system.msx2");
+	if (!strcasecmp(value, "msx2+")) return TR("minarch.system.msx2_plus");
+	if (!strcasecmp(value, "sega - sg-1000")) return TR("minarch.system.sega_sg1000");
+	if (!strcasecmp(value, "sega - sc-3000")) return TR("minarch.system.sega_sc3000");
+	if (!strcasecmp(value, "sega - sf-7000")) return TR("minarch.system.sega_sf7000");
+	if (!strcasecmp(value, "svi - spectravideo svi-318")) return TR("minarch.system.svi_318");
+	if (!strcasecmp(value, "svi - spectravideo svi-328")) return TR("minarch.system.svi_328");
+	if (!strcasecmp(value, "svi - spectravideo svi-328 mk2")) return TR("minarch.system.svi_328_mk2");
+	if (!strcasecmp(value, "colecovision")) return TR("minarch.system.colecovision");
+	if (!strcasecmp(value, "colecovision (spectravideo svi-603)")) return TR("minarch.system.colecovision_svi603");
+	if (!strcasecmp(value, "50hz")) return TR("minarch.freq.50hz");
+	if (!strcasecmp(value, "60hz")) return TR("minarch.freq.60hz");
+	
+	// PokeMini (Pokémon Mini) specific
+	if (!strcasecmp(value, "dotmatrix")) return TR("minarch.filter.dotmatrix");
+	if (!strcasecmp(value, "scanline")) return TR("minarch.filter.scanline");
+	if (!strcasecmp(value, "analog")) return TR("minarch.mode.analog");
+	if (!strcasecmp(value, "3shades")) return TR("minarch.shades.3");
+	if (!strcasecmp(value, "2shades")) return TR("minarch.shades.2");
+	if (!strcasecmp(value, "default")) return TR("common.default");
+	if (!strcasecmp(value, "old")) return TR("minarch.palette.old");
+	if (!strcasecmp(value, "monochrome")) return TR("minarch.palette.monochrome");
+	if (!strcasecmp(value, "green")) return TR("minarch.palette.green");
+	if (!strcasecmp(value, "green vector")) return TR("minarch.palette.green_vector");
+	if (!strcasecmp(value, "red")) return TR("minarch.palette.red");
+	if (!strcasecmp(value, "red vector")) return TR("minarch.palette.red_vector");
+	if (!strcasecmp(value, "blue lcd")) return TR("minarch.palette.blue_lcd");
+	if (!strcasecmp(value, "ledbacklight")) return TR("minarch.palette.led_backlight");
+	if (!strcasecmp(value, "girl power")) return TR("minarch.palette.girl_power");
+	if (!strcasecmp(value, "blue")) return TR("minarch.palette.blue");
+	if (!strcasecmp(value, "blue vector")) return TR("minarch.palette.blue_vector");
+	if (!strcasecmp(value, "sepia")) return TR("minarch.palette.sepia");
+	if (!strcasecmp(value, "monochrome vector")) return TR("minarch.palette.monochrome_vector");
+	
+	// Caprice32 (Amstrad CPC) specific
+	if (!strcasecmp(value, "onloading")) return TR("minarch.status.onloading");
+	if (!strcasecmp(value, "french")) return TR("minarch.lang.french");
+	if (!strcasecmp(value, "spanish")) return TR("minarch.lang.spanish");
+	if (!strcasecmp(value, "joystick_port2")) return TR("minarch.joystick.port2");
+	
+	// VICE (Commodore) specific
+	if (!strcasecmp(value, "c64 pal auto")) return TR("minarch.model.c64_pal_auto");
+	if (!strcasecmp(value, "c64 ntsc auto")) return TR("minarch.model.c64_ntsc_auto");
+	if (!strcasecmp(value, "c64c pal auto")) return TR("minarch.model.c64c_pal_auto");
+	if (!strcasecmp(value, "c64c ntsc auto")) return TR("minarch.model.c64c_ntsc_auto");
+	if (!strcasecmp(value, "c64 pal")) return TR("minarch.model.c64_pal");
+	if (!strcasecmp(value, "c64 ntsc")) return TR("minarch.model.c64_ntsc");
+	if (!strcasecmp(value, "c64c pal")) return TR("minarch.model.c64c_pal");
+	if (!strcasecmp(value, "c64c ntsc")) return TR("minarch.model.c64c_ntsc");
+	if (!strcasecmp(value, "c64sx pal")) return TR("minarch.model.c64sx_pal");
+	if (!strcasecmp(value, "c64sx ntsc")) return TR("minarch.model.c64sx_ntsc");
+	if (!strcasecmp(value, "c128 pal auto")) return TR("minarch.model.c128_pal_auto");
+	if (!strcasecmp(value, "c128 ntsc auto")) return TR("minarch.model.c128_ntsc_auto");
+	if (!strcasecmp(value, "c128 d pal auto")) return TR("minarch.model.c128_d_pal_auto");
+	if (!strcasecmp(value, "c128 d ntsc auto")) return TR("minarch.model.c128_d_ntsc_auto");
+	if (!strcasecmp(value, "c128 dcr pal auto")) return TR("minarch.model.c128_dcr_pal_auto");
+	if (!strcasecmp(value, "c128 dcr ntsc auto")) return TR("minarch.model.c128_dcr_ntsc_auto");
+	if (!strcasecmp(value, "c128 pal")) return TR("minarch.model.c128_pal");
+	if (!strcasecmp(value, "c128 ntsc")) return TR("minarch.model.c128_ntsc");
+	if (!strcasecmp(value, "vic20 pal auto")) return TR("minarch.model.vic20_pal_auto");
+	if (!strcasecmp(value, "vic20 ntsc auto")) return TR("minarch.model.vic20_ntsc_auto");
+	if (!strcasecmp(value, "vic20 pal")) return TR("minarch.model.vic20_pal");
+	if (!strcasecmp(value, "vic20 ntsc")) return TR("minarch.model.vic20_ntsc");
+	if (!strcasecmp(value, "vdc")) return TR("minarch.output.vdc");
+	if (!strcasecmp(value, "vicii")) return TR("minarch.output.vicii");
+	if (!strcasecmp(value, "soft")) return TR("minarch.reset.soft");
+	if (!strcasecmp(value, "hard")) return TR("minarch.reset.hard");
+	if (!strcasecmp(value, "freeze")) return TR("minarch.reset.freeze");
+	if (!strcasecmp(value, "small")) return TR("minarch.crop.small");
+	if (!strcasecmp(value, "medium")) return TR("minarch.crop.medium");
+	if (!strcasecmp(value, "maximum")) return TR("minarch.crop.maximum");
+	if (!strcasecmp(value, "auto_disable")) return TR("minarch.crop.auto_disable");
+	if (!strcasecmp(value, "manual")) return TR("minarch.crop.manual");
+	if (!strcasecmp(value, "both")) return TR("minarch.crop.both");
+	if (!strcasecmp(value, "horizontal")) return TR("minarch.crop.horizontal");
+	if (!strcasecmp(value, "vertical")) return TR("minarch.crop.vertical");
+	if (!strcasecmp(value, "16:9")) return TR("minarch.ratio.16_9");
+	if (!strcasecmp(value, "16:10")) return TR("minarch.ratio.16_10");
+	if (!strcasecmp(value, "5:4")) return TR("minarch.ratio.5_4");
+	if (!strcasecmp(value, "enabled_noblur")) return TR("minarch.filter.enabled_noblur");
+	if (!strcasecmp(value, "enabled_lowblur")) return TR("minarch.filter.enabled_lowblur");
+	if (!strcasecmp(value, "enabled_medblur")) return TR("minarch.filter.enabled_medblur");
+	if (!strcasecmp(value, "resid")) return TR("minarch.sid.resid");
+	if (!strcasecmp(value, "resid-fp")) return TR("minarch.sid.resid_fp");
+	if (!strcasecmp(value, "fastsid")) return TR("minarch.sid.fastsid");
+	if (!strcasecmp(value, "jump")) return TR("minarch.face.jump");
+	if (!strcasecmp(value, "rotate")) return TR("minarch.face.rotate");
+	if (!strcasecmp(value, "rotate_jump")) return TR("minarch.face.rotate_jump");
+	if (!strcasecmp(value, "autostart")) return TR("minarch.reset.autostart");
+	if (!strcasecmp(value, "warp")) return TR("minarch.warp");
+	if (!strcasecmp(value, "mute")) return TR("minarch.mute");
+	if (!strcasecmp(value, "disk")) return TR("minarch.media.disk");
+	if (!strcasecmp(value, "tape")) return TR("minarch.media.tape");
+	if (!strcasecmp(value, "bottom")) return TR("minarch.position.bottom");
+	if (!strcasecmp(value, "top")) return TR("minarch.position.top");
+	if (!strcasecmp(value, "brown")) return TR("minark.vkbd.brown");
+	if (!strcasecmp(value, "beige")) return TR("minarch.vkbd.beige");
+	if (!strcasecmp(value, "dark")) return TR("minarch.vkbd.dark");
+	if (!strcasecmp(value, "light")) return TR("minarch.vkbd.light");
+	if (!strcasecmp(value, "amber")) return TR("minarch.palette.amber");
+	
+	// PUAE (Amiga) specific
+	if (!strcasecmp(value, "a500og")) return TR("minarch.model.a500og");
+	if (!strcasecmp(value, "a500plus")) return TR("minarch.model.a500plus");
+	if (!strcasecmp(value, "a1200og")) return TR("minarch.model.a1200og");
+	if (!strcasecmp(value, "cd32fr")) return TR("minarch.model.cd32fr");
+	if (!strcasecmp(value, "minimum")) return TR("minarch.crop.minimum");
+	if (!strcasecmp(value, "smaller")) return TR("minarch.crop.smaller");
+	if (!strcasecmp(value, "large")) return TR("minarch.crop.large");
+	if (!strcasecmp(value, "larger")) return TR("minarch.crop.larger");
+	if (!strcasecmp(value, "lores")) return TR("minarch.resolution.lores");
+	if (!strcasecmp(value, "hires")) return TR("minarch.resolution.hires");
+	if (!strcasecmp(value, "superhires")) return TR("minarch.resolution.superhires");
+	if (!strcasecmp(value, "single")) return TR("minarch.line.single");
+	if (!strcasecmp(value, "double")) return TR("minarch.line.double");
+	if (!strcasecmp(value, "none")) return TR("minarch.collision.none");
+	if (!strcasecmp(value, "sprites")) return TR("minarch.collision.sprites");
+	if (!strcasecmp(value, "playfields")) return TR("minarch.collision.playfields");
+	if (!strcasecmp(value, "full")) return TR("minarch.collision.full");
+	if (!strcasecmp(value, "cd32")) return TR("minarch.vkbd.cd32");
+	if (!strcasecmp(value, "anti")) return TR("minarch.interpolation.anti");
+	if (!strcasecmp(value, "sinc")) return TR("minarch.interpolation.sinc");
+	if (!strcasecmp(value, "emulated")) return TR("minarch.filter.emulated");
+	if (!strcasecmp(value, "standard")) return TR("minarch.filter.standard");
+	if (!strcasecmp(value, "enhanced")) return TR("minarch.filter.enhanced");
+	if (!strcasecmp(value, "internal")) return TR("minarch.sound.internal");
+	if (!strcasecmp(value, "files")) return TR("minarch.whdload.files");
+	if (!strcasecmp(value, "hdfs")) return TR("minarch.whdload.hdfs");
+	if (!strcasecmp(value, "native")) return TR("minarch.whdload.native");
+	if (!strcasecmp(value, "config")) return TR("minarch.whdload.config");
+	if (!strcasecmp(value, "splash")) return TR("minarch.whdload.splash");
+	if (!strcasecmp(value, "rh")) return TR("minarch.interpolation.rh");
+	if (!strcasecmp(value, "crux")) return TR("minarch.interpolation.crux");
+	
+	// FBNeo (Arcade) specific
+	if (!strcasecmp(value, "alternate")) return TR("minarch.vertical.alternate");
+	if (!strcasecmp(value, "hide with lightgun device")) return TR("minarch.crosshair.hide_lightgun");
+	if (!strcasecmp(value, "always hide")) return TR("minarch.crosshair.always_hide");
+	if (!strcasecmp(value, "always show")) return TR("minarch.crosshair.always_show");
+	if (!strcasecmp(value, "hold start")) return TR("minarch.diag.hold_start");
+	if (!strcasecmp(value, "start + a + b")) return TR("minarch.diag.start_ab");
+	if (!strcasecmp(value, "hold start + a + b")) return TR("minarch.diag.hold_start_ab");
+	if (!strcasecmp(value, "start + l + r")) return TR("minarch.diag.start_lr");
+	if (!strcasecmp(value, "hold start + l + r")) return TR("minarch.diag.hold_start_lr");
+	if (!strcasecmp(value, "hold select")) return TR("minarch.diag.hold_select");
+	if (!strcasecmp(value, "select + a + b")) return TR("minarch.diag.select_ab");
+	if (!strcasecmp(value, "hold select + a + b")) return TR("minarch.diag.hold_select_ab");
+	if (!strcasecmp(value, "select + l + r")) return TR("minarch.diag.select_lr");
+	if (!strcasecmp(value, "hold select + l + r")) return TR("minarch.diag.hold_select_lr");
+	if (!strcasecmp(value, "use bios set in bios dipswitch")) return TR("minarch.neogeo.use_dipswitch");
+	if (!strcasecmp(value, "mvs europe/asia (english)")) return TR("minarch.neogeo.mvs_eur");
+	if (!strcasecmp(value, "mvs usa (english - censored)")) return TR("minarch.neogeo.mvs_usa");
+	if (!strcasecmp(value, "mvs japan (japanese)")) return TR("minarch.neogeo.mvs_jap");
+	if (!strcasecmp(value, "aes europe/asia (english)")) return TR("minarch.neogeo.aes_eur");
+	if (!strcasecmp(value, "aes japan (japanese)")) return TR("minarch.neogeo.aes_jap");
+	if (!strcasecmp(value, "unibios")) return TR("minarch.neogeo.unibios");
+	if (!strcasecmp(value, "shared")) return TR("minarch.memcard.shared");
+	if (!strcasecmp(value, "per-game")) return TR("minarch.memcard.per_game");
+	if (!strcasecmp(value, "fixed")) return TR("minarch.frameskip.fixed");
+	if (!strcasecmp(value, "auto")) return TR("common.auto");
+	if (!strcasecmp(value, "manual")) return TR("minarch.frameskip.manual");
+	if (!strcasecmp(value, "2-point 1st order")) return TR("minarch.interpolation.2point_1st");
+	if (!strcasecmp(value, "4-point 3rd order")) return TR("minarch.interpolation.4point_3rd");
+	
+	// Atari 800/5200 specific
+	if (!strcasecmp(value, "400/800 (os b)")) return TR("minarch.system.400_800_osb");
+	if (!strcasecmp(value, "800xl (64k)")) return TR("minarch.system.800xl_64k");
+	if (!strcasecmp(value, "130xe (128k)")) return TR("minarch.system.130xe_128k");
+	if (!strcasecmp(value, "sio acceleration")) return TR("minarch.sio.acceleration");
+	if (!strcasecmp(value, "boot from cassette")) return TR("minarch.boot.cassette");
+	if (!strcasecmp(value, "hi-res artifacting")) return TR("minarch.hires.artifacting");
+	if (!strcasecmp(value, "autodetect a5200 carttype")) return TR("minarch.autodetect.a5200_cart");
+	if (!strcasecmp(value, "joy hack a5200 for robotron")) return TR("minarch.joyhack.robotron");
+	if (!strcasecmp(value, "retroarch keyboard type")) return TR("minarch.keyboard.type");
+	if (!strcasecmp(value, "poll")) return TR("minarch.keyboard.poll");
+	if (!strcasecmp(value, "callback")) return TR("minarch.keyboard.callback");
+	
 	return value;
 }
 
@@ -1669,6 +2037,9 @@ static void Minarch_initFrontendI18nOnce(void) {
 	i18n_overclock_labels = Minarch_buildI18nLabels(overclock_keys, overclock_labels);
 	i18n_max_ff_labels = Minarch_buildI18nLabels(max_ff_keys, max_ff_labels);
 
+	static const char* sharpness_keys[] = {"minarch.sharpness.nearest", "minarch.sharpness.linear", NULL};
+	i18n_sharpness_labels = Minarch_buildI18nLabels(sharpness_keys, sharpness_labels);
+
 	static const char* nrofshaders_keys[] = {"common.off", NULL, NULL, NULL, NULL};
 	static const char* shupscale_keys[] = {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "minarch.shaders.upscale.screen", NULL};
 	static const char* shscaletype_keys[] = {"minarch.shaders.scale_from.source", "minarch.shaders.scale_from.relative", NULL};
@@ -1676,6 +2047,26 @@ static void Minarch_initFrontendI18nOnce(void) {
 	i18n_nrofshaders_labels = Minarch_buildI18nLabels(nrofshaders_keys, nrofshaders_labels);
 	i18n_shupscale_labels = Minarch_buildI18nLabels(shupscale_keys, shupscale_labels);
 	i18n_shscaletype_labels = Minarch_buildI18nLabels(shscaletype_keys, shscaletype_labels);
+
+	// Button labels for controls and shortcuts
+	static const char* button_keys[] = {
+		"common.none",
+		"common.up", "common.down", "common.left", "common.right",
+		"common.a", "common.b", "common.x", "common.y",
+		"common.start", "common.select",
+		"common.l1", "common.r1", "common.l2", "common.r2", "common.l3", "common.r3",
+		"common.menu_up", "common.menu_down", "common.menu_left", "common.menu_right",
+		"common.menu_a", "common.menu_b", "common.menu_x", "common.menu_y",
+		"common.menu_start", "common.menu_select",
+		"common.menu_l1", "common.menu_r1", "common.menu_l2", "common.menu_r2",
+		"common.menu_l3", "common.menu_r3",
+		NULL
+	};
+	i18n_button_labels = Minarch_buildI18nLabels(button_keys, button_labels);
+
+	// Gamepad type labels
+	static const char* gamepad_keys[] = {"minarch.gamepad.standard", "minarch.gamepad.dualshock", NULL};
+	i18n_gamepad_labels = Minarch_buildI18nLabels(gamepad_keys, gamepad_labels);
 }
 
 enum {
@@ -2547,7 +2938,7 @@ static void Config_load(void) {
 	config.frontend.options[FE_OPT_SCREENY].name = (char*)TR("minarch.frontend.offset_screen_y");
 
 	config.frontend.options[FE_OPT_SHARPNESS].name = (char*)TR("minarch.frontend.screen_sharpness");
-	// Keep NEAREST/LINEAR as-is; these are technical.
+	config.frontend.options[FE_OPT_SHARPNESS].labels = i18n_sharpness_labels;
 
 	config.frontend.options[FE_OPT_TEARING].name = (char*)TR("minarch.frontend.vsync");
 	config.frontend.options[FE_OPT_TEARING].labels = i18n_tearing_labels;
@@ -5545,7 +5936,7 @@ static int OptionEmulator_openMenu(MenuList* list, int index) {
 
 int OptionControls_bind(MenuList* list, int i) {
 	MenuItem* item = &list->items[i];
-	if (item->values!=button_labels) {
+	if (item->values!=i18n_button_labels) {
 		// LOG_info("changed gamepad_type\n");
 		return MENU_CALLBACK_NOP;
 	}
@@ -5580,7 +5971,7 @@ int OptionControls_bind(MenuList* list, int i) {
 }
 static int OptionControls_unbind(MenuList* list, int i) {
 	MenuItem* item = &list->items[i];
-	if (item->values!=button_labels) return MENU_CALLBACK_NOP;
+	if (item->values!=i18n_button_labels) return MENU_CALLBACK_NOP;
 	
 	ButtonMapping* button = &config.controls[item->id];
 	button->local = -1;
@@ -5589,7 +5980,7 @@ static int OptionControls_unbind(MenuList* list, int i) {
 }
 static int OptionControls_optionChanged(MenuList* list, int i) {
 	MenuItem* item = &list->items[i];
-	if (item->values!=gamepad_labels) return MENU_CALLBACK_NOP;
+	if (item->values!=i18n_gamepad_labels) return MENU_CALLBACK_NOP;
 
 	if (has_custom_controllers) {
 		gamepad_type = item->value;
@@ -5621,7 +6012,7 @@ static int OptionControls_openMenu(MenuList* list, int i) {
 			item->name = (char*)TR("minarch.controller");
 			item->desc = (char*)TR("minarch.controller.desc");
 			item->value = gamepad_type;
-			item->values = gamepad_labels;
+			item->values = i18n_gamepad_labels;
 			item->on_change = OptionControls_optionChanged;
 		}
 		
@@ -5637,7 +6028,7 @@ static int OptionControls_openMenu(MenuList* list, int i) {
 			item->desc = NULL;
 			item->value = button->local + 1;
 			if (button->mod) item->value += LOCAL_BUTTON_COUNT;
-			item->values = button_labels;
+			item->values = i18n_button_labels;
 		}
 	}
 	else {
@@ -5726,7 +6117,7 @@ static int OptionShortcuts_openMenu(MenuList* list, int i) {
 			item->desc = NULL;
 			item->value = button->local + 1;
 			if (button->mod) item->value += LOCAL_BUTTON_COUNT;
-			item->values = button_labels;
+			item->values = i18n_button_labels;
 		}
 	}
 	else {
@@ -6165,7 +6556,7 @@ static int Menu_options(MenuList* list) {
 		}
 		else {
 			MenuItem* item = &items[selected];
-			if (item->values && item->values!=button_labels) { // not an input binding
+			if (item->values && item->values!=i18n_button_labels) { // not an input binding
 				if (PAD_justRepeated(BTN_LEFT)) {
 					if (item->value>0) item->value -= 1;
 					else {
@@ -7318,6 +7709,7 @@ int main(int argc , char* argv[]) {
 	
 	LEDS_initLeds();
 	VIB_init();
+	NET_init(&netplay_ctx, "NextUI Device");
 	PWR_init();
 	if (!HAS_POWER_BUTTON)
 		PWR_disableSleep();
@@ -7460,6 +7852,7 @@ finish:
 	MSG_quit();
 	PWR_quit();
 	VIB_quit();
+	NET_quit(&netplay_ctx);
 	SND_removeDeviceWatcher();
 	// Disabling this is a dumb hack for bluetooth, we should really be using 
 	// bluealsa with --keep-alive=-1 - but SDL wont reconnect the stream on next start.

@@ -78,6 +78,8 @@
 #define FONT_TINY 10	// multi char button label
 #define FONT_MICRO 7	// icon overlay text
 
+#define TEXT_Y_OFFSET 0 // vertical offset for text rendering (positive moves text down)
+
 #ifndef MAX_LIGHTS
 #define MAX_LIGHTS 0
 #endif

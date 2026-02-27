@@ -10,26 +10,40 @@ In this repo we supply those files via the skeleton overlay:
 
 - `skeleton/SYSTEM/res/font1.ttf`
 - `skeleton/SYSTEM/res/font2.ttf`
+- `skeleton/SYSTEM/res/font3.ttf`
 
 Anything under `skeleton/` is intended to be copied into the final SD card layout, so it survives upstream rebases.
 
-## ChillRound mapping (current convention)
+## Font mapping (current convention)
 
-We use ChillRound from:
+We use three fonts from their respective GitHub releases:
 
-`https://github.com/Warren2060/ChillRound/releases`
+### Font 1: Dream Han Sans CN W10 (梦源黑体)
+Source: `https://github.com/Pal3love/dream-han-cjk/releases`
 
-And map release files into NextUI assets:
+Mapping:
+- `DreamHanSansCN-W10.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体)
 
-- `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold-unhinted.otf`
-- `ChillRoundM.otf`  → `skeleton/SYSTEM/res/BPreplayBold.otf` (alias)
-- `ChillRoundM.ttf` → `skeleton/SYSTEM/res/font1.ttf` (默认字体，较粗字重)
-- `ChillRound.ttf`  → `skeleton/SYSTEM/res/font2.ttf` (可选字体，常规字重)
+### Font 2: Fusion Pixel (缝合像素)
+Source: `https://github.com/TakWolf/fusion-pixel-font/releases`
+
+Mapping:
+- `fusion-pixel-12px-proportional-zh_hans.ttf` → `skeleton/SYSTEM/res/font2.ttf` (可选字体)
+- `fusion-pixel-12px-proportional-zh_hans.ttf` → `skeleton/SYSTEM/res/BPreplayBold-unhinted.ttf`
+- `fusion-pixel-12px-proportional-zh_hans.ttf` → `skeleton/SYSTEM/res/BPreplayBold.ttf` (alias)
+
+### Font 3: ChillRound (寒蝉半圆体)
+Source: `https://github.com/Warren2060/ChillRound/releases`
+
+Mapping:
+- `ChillRoundM.ttf` → `skeleton/SYSTEM/res/font3.ttf` (可选字体)
 
 Notes:
-- `BPreplayBold-unhinted.otf` is used by some UI elements as a bold face.
-- `font1.ttf` is the default UI font (ID depends on upstream config).
-- `font2.ttf` is also replaced to keep both selectable fonts CJK-capable.
+- `BPreplayBold-unhinted.ttf` and `BPreplayBold.ttf` are used by some UI elements as a bold face.
+- `font1.ttf` is the default UI font (ID 0).
+- `font2.ttf` is the second UI font (ID 1).
+- `font3.ttf` is the third UI font (ID 2).
+- All three fonts support Simplified Chinese characters optimally.
 
 ## Re-sync fonts (Windows PowerShell)
 
