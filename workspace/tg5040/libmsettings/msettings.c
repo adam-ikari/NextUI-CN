@@ -238,7 +238,7 @@ static Settings DefaultSettings = {
 	.jack = 0,
 	.audiosink = AUDIO_SINK_DEFAULT,
 	.toggled_vibration = SETTINGS_DEFAULT_MUTE_NO_CHANGE,
-	.vibration = 8, // default vibration strength
+	.vibration = 0, // disabled by default
 };
 static Settings* settings;
 
