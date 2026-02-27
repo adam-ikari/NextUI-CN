@@ -195,6 +195,11 @@ int NET_broadcast_discovery(netplay_context_t *ctx) {
         return -1;
     }
     
+    if (sent != offset) {
+        printf("NET: Broadcast partial send: %d/%d bytes\n", sent, offset);
+        return -1;
+    }
+    
     return sent;
 }
 
@@ -242,8 +247,11 @@ int NET_handle_discovery_packet(netplay_context_t *ctx, const char *data, int le
             return -1;
         }
         
-        sendto(ctx->broadcast_socket, response, offset, 0,
-               (struct sockaddr*)&addr, addr_len);
+        if (sendto(ctx->broadcast_socket, response, offset, 0,
+               (struct sockaddr*)&addr, addr_len) < 0) {
+        printf("NET: Failed to send discovery response: %s\n", strerror(errno));
+        return -1;
+    }
         
         return 0;
     }
@@ -286,10 +294,12 @@ int NET_start_hosting(netplay_context_t *ctx) {
         return -1;
     }
     
+    pthread_mutex_lock(&ctx->mutex);
     ctx->role = NETPLAY_ROLE_HOST;
     ctx->state = NETPLAY_STATE_HOSTING;
     ctx->client_count = 0;
     ctx->frame_count = 0;
+    pthread_mutex_unlock(&ctx->mutex);
     
     printf("NET: Started hosting on port %d\n", NETPLAY_PORT);
     
@@ -297,6 +307,8 @@ int NET_start_hosting(netplay_context_t *ctx) {
 }
 
 void NET_stop_hosting(netplay_context_t *ctx) {
+    pthread_mutex_lock(&ctx->mutex);
+    
     if (ctx->server_socket >= 0) {
         close(ctx->server_socket);
         ctx->server_socket = -1;
@@ -313,20 +325,34 @@ void NET_stop_hosting(netplay_context_t *ctx) {
     ctx->role = NETPLAY_ROLE_NONE;
     ctx->state = NETPLAY_STATE_IDLE;
     
+    pthread_mutex_unlock(&ctx->mutex);
+    
     printf("NET: Stopped hosting\n");
 }
 
 int NET_poll_host(netplay_context_t *ctx) {
-    if (ctx->state != NETPLAY_STATE_HOSTING || ctx->server_socket < 0) {
+    int server_socket, client_count;
+    int client_sockets[NETPLAY_MAX_PEERS];
+    netplay_state_t state;
+    
+    pthread_mutex_lock(&ctx->mutex);
+    server_socket = ctx->server_socket;
+    state = ctx->state;
+    client_count = ctx->client_count;
+    memcpy(client_sockets, ctx->client_sockets, sizeof(client_sockets));
+    pthread_mutex_unlock(&ctx->mutex);
+    
+    if (state != NETPLAY_STATE_HOSTING || server_socket < 0) {
         return -1;
     }
     
     // Accept new connections
     struct sockaddr_in client_addr;
     socklen_t addr_len = sizeof(client_addr);
-    int client_sock = accept(ctx->server_socket, (struct sockaddr*)&client_addr, &addr_len);
+    int client_sock = accept(server_socket, (struct sockaddr*)&client_addr, &addr_len);
     
     if (client_sock >= 0) {
+        pthread_mutex_lock(&ctx->mutex);
         if (ctx->client_count < NETPLAY_MAX_PEERS) {
             // Find empty slot
             for (int i = 0; i < NETPLAY_MAX_PEERS; i++) {
@@ -334,8 +360,11 @@ int NET_poll_host(netplay_context_t *ctx) {
                     ctx->client_sockets[i] = client_sock;
                     ctx->client_count++;
                     
-                    char *ip = inet_ntoa(client_addr.sin_addr);
-                    printf("NET: Client %d connected from %s\n", i + 1, ip);
+                    char ip_str[INET_ADDRSTRLEN];
+                    inet_ntop(AF_INET, &client_addr.sin_addr, ip_str, sizeof(ip_str));
+                    printf("NET: Client %d connected from %s\n", i + 1, ip_str);
+                    
+                    pthread_mutex_unlock(&ctx->mutex);
                     
                     // Send connect response
                     uint8_t response[sizeof(netpacket_header_t)];
@@ -346,10 +375,15 @@ int NET_poll_host(netplay_context_t *ctx) {
                     header->length = 0;
                     header->sequence = 0;
                     
-                    send(client_sock, response, sizeof(response), 0);
+                    if (send(client_sock, response, sizeof(response), 0) < 0) {
+                        printf("NET: Failed to send connect response to client %d: %s\n", i + 1, strerror(errno));
+                    }
                     
+                    pthread_mutex_lock(&ctx->mutex);
                     if (ctx->on_connection_state_changed) {
+                        pthread_mutex_unlock(&ctx->mutex);
                         ctx->on_connection_state_changed(ctx->state);
+                        pthread_mutex_lock(&ctx->mutex);
                     }
                     
                     break;
@@ -359,28 +393,40 @@ int NET_poll_host(netplay_context_t *ctx) {
             printf("NET: Connection rejected (max peers reached)\n");
             close(client_sock);
         }
+        pthread_mutex_unlock(&ctx->mutex);
     }
     
     // Poll existing clients
+    pthread_mutex_lock(&ctx->mutex);
+    memcpy(client_sockets, ctx->client_sockets, sizeof(client_sockets));
+    client_count = ctx->client_count;
+    pthread_mutex_unlock(&ctx->mutex);
+    
     for (int i = 0; i < NETPLAY_MAX_PEERS; i++) {
-        if (ctx->client_sockets[i] >= 0) {
+        if (client_sockets[i] >= 0) {
             uint8_t buffer[MAX_PACKET_SIZE];
-            int received = recv(ctx->client_sockets[i], buffer, MAX_PACKET_SIZE, MSG_DONTWAIT);
+            int received = recv(client_sockets[i], buffer, MAX_PACKET_SIZE, MSG_DONTWAIT);
             
             if (received <= 0) {
                 // Client disconnected
-                close(ctx->client_sockets[i]);
-                ctx->client_sockets[i] = -1;
-                ctx->client_count--;
-                
-                printf("NET: Client %d disconnected\n", i + 1);
-                
-                if (ctx->client_count == 0) {
-                    ctx->state = NETPLAY_STATE_HOSTING;
-                    if (ctx->on_connection_state_changed) {
-                        ctx->on_connection_state_changed(ctx->state);
+                pthread_mutex_lock(&ctx->mutex);
+                if (ctx->client_sockets[i] == client_sockets[i]) {
+                    close(ctx->client_sockets[i]);
+                    ctx->client_sockets[i] = -1;
+                    ctx->client_count--;
+                    
+                    printf("NET: Client %d disconnected\n", i + 1);
+                    
+                    if (ctx->client_count == 0) {
+                        ctx->state = NETPLAY_STATE_HOSTING;
+                        if (ctx->on_connection_state_changed) {
+                            pthread_mutex_unlock(&ctx->mutex);
+                            ctx->on_connection_state_changed(ctx->state);
+                            pthread_mutex_lock(&ctx->mutex);
+                        }
                     }
                 }
+                pthread_mutex_unlock(&ctx->mutex);
             } else {
                 // Process packet
                 netpacket_header_t *header = (netpacket_header_t*)buffer;
@@ -396,7 +442,9 @@ int NET_poll_host(netplay_context_t *ctx) {
                     // Parse input
                     if (header->length >= sizeof(netplay_input_t)) {
                         netplay_input_t *input = (netplay_input_t*)(buffer + sizeof(netpacket_header_t));
+                        pthread_mutex_lock(&ctx->mutex);
                         memcpy(&ctx->remote_inputs[i], input, sizeof(netplay_input_t));
+                        pthread_mutex_unlock(&ctx->mutex);
                         
                         if (ctx->on_input_received) {
                             ctx->on_input_received(input);
@@ -419,13 +467,19 @@ int NET_poll_host(netplay_context_t *ctx) {
                         pong_header->length = 0;
                     }
                     
-                    send(ctx->client_sockets[i], pong, sizeof(netpacket_header_t) + pong_header->length, 0);
+                    if (send(client_sockets[i], pong, sizeof(netpacket_header_t) + pong_header->length, 0) < 0) {
+                        printf("NET: Failed to send pong to client %d: %s\n", i + 1, strerror(errno));
+                    }
                 } else if (header->type == NETPACKET_PONG) {
                     // Handle pong response and calculate latency
                     if (header->length == sizeof(uint32_t)) {
                         uint32_t ping_time = *(uint32_t*)(buffer + sizeof(netpacket_header_t));
-                        uint32_t current_time = time(NULL) * 1000;
+                        struct timespec ts;
+                        clock_gettime(CLOCK_MONOTONIC, &ts);
+                        uint32_t current_time = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+                        pthread_mutex_lock(&ctx->mutex);
                         ctx->latency_ms = (current_time - ping_time) / 2;  // RTT / 2 = one-way latency
+                        pthread_mutex_unlock(&ctx->mutex);
                         printf("NET: Latency updated to %u ms (from client %d)\n", ctx->latency_ms, i + 1);
                     }
                 }
@@ -433,7 +487,11 @@ int NET_poll_host(netplay_context_t *ctx) {
         }
     }
     
-    return ctx->client_count;
+    pthread_mutex_lock(&ctx->mutex);
+    client_count = ctx->client_count;
+    pthread_mutex_unlock(&ctx->mutex);
+    
+    return client_count;
 }
 
 // Client functions
@@ -443,8 +501,8 @@ int NET_connect_to_host(netplay_context_t *ctx, const char *host_ip) {
         return -1;
     }
     
-    strncpy(ctx->server_ip, host_ip, 15);
-    ctx->server_ip[15] = '\0';
+    strncpy(ctx->server_ip, host_ip, sizeof(ctx->server_ip) - 1);
+    ctx->server_ip[sizeof(ctx->server_ip) - 1] = '\0';
     
     // Set socket to non-blocking first
     if (set_nonblocking(ctx->server_socket) < 0) {
@@ -461,14 +519,18 @@ int NET_connect_to_host(netplay_context_t *ctx, const char *host_ip) {
     addr.sin_port = htons(NETPLAY_PORT);
     inet_pton(AF_INET, host_ip, &addr.sin_addr);
     
+    pthread_mutex_lock(&ctx->mutex);
     ctx->state = NETPLAY_STATE_CONNECTING;
+    pthread_mutex_unlock(&ctx->mutex);
     
     int result = connect(ctx->server_socket, (struct sockaddr*)&addr, sizeof(addr));
     if (result < 0 && errno != EINPROGRESS) {
         printf("NET: Failed to connect to %s: %s\n", host_ip, strerror(errno));
         close(ctx->server_socket);
         ctx->server_socket = -1;
+        pthread_mutex_lock(&ctx->mutex);
         ctx->state = NETPLAY_STATE_ERROR;
+        pthread_mutex_unlock(&ctx->mutex);
         return -1;
     }
     
@@ -488,7 +550,9 @@ int NET_connect_to_host(netplay_context_t *ctx, const char *host_ip) {
             printf("NET: Connection timeout or error to %s\n", host_ip);
             close(ctx->server_socket);
             ctx->server_socket = -1;
+            pthread_mutex_lock(&ctx->mutex);
             ctx->state = NETPLAY_STATE_ERROR;
+            pthread_mutex_unlock(&ctx->mutex);
             return -1;
         }
         
@@ -499,7 +563,9 @@ int NET_connect_to_host(netplay_context_t *ctx, const char *host_ip) {
             printf("NET: Connection failed to %s: %s\n", host_ip, strerror(error));
             close(ctx->server_socket);
             ctx->server_socket = -1;
+            pthread_mutex_lock(&ctx->mutex);
             ctx->state = NETPLAY_STATE_ERROR;
+            pthread_mutex_unlock(&ctx->mutex);
             return -1;
         }
     }
@@ -519,7 +585,9 @@ int NET_connect_to_host(netplay_context_t *ctx, const char *host_ip) {
         printf("NET: Timeout waiting for connect response from %s\n", host_ip);
         close(ctx->server_socket);
         ctx->server_socket = -1;
+        pthread_mutex_lock(&ctx->mutex);
         ctx->state = NETPLAY_STATE_ERROR;
+        pthread_mutex_unlock(&ctx->mutex);
         return -1;
     }
     
@@ -527,9 +595,11 @@ int NET_connect_to_host(netplay_context_t *ctx, const char *host_ip) {
     if (received >= (int)sizeof(netpacket_header_t)) {
         netpacket_header_t *header = (netpacket_header_t*)buffer;
         if (header->magic == NETPLAY_MAGIC && header->type == NETPACKET_CONNECT_RESPONSE) {
+            pthread_mutex_lock(&ctx->mutex);
             ctx->role = NETPLAY_ROLE_CLIENT;
             ctx->state = NETPLAY_STATE_CONNECTED;
             ctx->frame_count = 0;
+            pthread_mutex_unlock(&ctx->mutex);
             
             printf("NET: Connected to host %s\n", host_ip);
             
@@ -544,13 +614,21 @@ int NET_connect_to_host(netplay_context_t *ctx, const char *host_ip) {
     printf("NET: Failed to receive connect response\n");
     close(ctx->server_socket);
     ctx->server_socket = -1;
+    pthread_mutex_lock(&ctx->mutex);
     ctx->state = NETPLAY_STATE_ERROR;
+    pthread_mutex_unlock(&ctx->mutex);
     
     return -1;
 }
 
 void NET_disconnect(netplay_context_t *ctx) {
-    if (ctx->server_socket >= 0) {
+    int server_socket;
+    
+    pthread_mutex_lock(&ctx->mutex);
+    server_socket = ctx->server_socket;
+    pthread_mutex_unlock(&ctx->mutex);
+    
+    if (server_socket >= 0) {
         // Send disconnect packet
         uint8_t packet[sizeof(netpacket_header_t)];
         netpacket_header_t *header = (netpacket_header_t*)packet;
@@ -560,25 +638,40 @@ void NET_disconnect(netplay_context_t *ctx) {
         header->length = 0;
         header->sequence = 0;
         
-        send(ctx->server_socket, packet, sizeof(packet), 0);
+        if (send(server_socket, packet, sizeof(packet), 0) < 0) {
+            printf("NET: Failed to send disconnect packet: %s\n", strerror(errno));
+        }
         
-        close(ctx->server_socket);
+        close(server_socket);
+        
+        pthread_mutex_lock(&ctx->mutex);
         ctx->server_socket = -1;
+        pthread_mutex_unlock(&ctx->mutex);
     }
     
+    pthread_mutex_lock(&ctx->mutex);
     ctx->role = NETPLAY_ROLE_NONE;
     ctx->state = NETPLAY_STATE_IDLE;
+    pthread_mutex_unlock(&ctx->mutex);
     
     printf("NET: Disconnected\n");
 }
 
 int NET_poll_client(netplay_context_t *ctx) {
-    if (ctx->state != NETPLAY_STATE_CONNECTED || ctx->server_socket < 0) {
+    int server_socket;
+    netplay_state_t state;
+    
+    pthread_mutex_lock(&ctx->mutex);
+    state = ctx->state;
+    server_socket = ctx->server_socket;
+    pthread_mutex_unlock(&ctx->mutex);
+    
+    if (state != NETPLAY_STATE_CONNECTED || server_socket < 0) {
         return -1;
     }
     
     uint8_t buffer[MAX_PACKET_SIZE];
-    int received = recv(ctx->server_socket, buffer, MAX_PACKET_SIZE, MSG_DONTWAIT);
+    int received = recv(server_socket, buffer, MAX_PACKET_SIZE, MSG_DONTWAIT);
     
     if (received < 0) {
         return 0;
@@ -597,7 +690,9 @@ int NET_poll_client(netplay_context_t *ctx) {
     if (header->type == NETPACKET_INPUT_STATE) {
         if (header->length >= sizeof(netplay_input_t)) {
             netplay_input_t *input = (netplay_input_t*)(buffer + sizeof(netpacket_header_t));
+            pthread_mutex_lock(&ctx->mutex);
             memcpy(&ctx->remote_inputs[0], input, sizeof(netplay_input_t));
+            pthread_mutex_unlock(&ctx->mutex);
             
             if (ctx->on_input_received) {
                 ctx->on_input_received(input);
@@ -626,13 +721,19 @@ int NET_poll_client(netplay_context_t *ctx) {
             pong_header->length = 0;
         }
         
-        send(ctx->server_socket, pong, sizeof(netpacket_header_t) + pong_header->length, 0);
+        if (send(server_socket, pong, sizeof(netpacket_header_t) + pong_header->length, 0) < 0) {
+            printf("NET: Failed to send pong to server: %s\n", strerror(errno));
+        }
     } else if (header->type == NETPACKET_PONG) {
         // Handle pong response and calculate latency
         if (header->length == sizeof(uint32_t)) {
             uint32_t ping_time = *(uint32_t*)(buffer + sizeof(netpacket_header_t));
-            uint32_t current_time = time(NULL) * 1000;
+            struct timespec ts;
+            clock_gettime(CLOCK_MONOTONIC, &ts);
+            uint32_t current_time = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+            pthread_mutex_lock(&ctx->mutex);
             ctx->latency_ms = (current_time - ping_time) / 2;  // RTT / 2 = one-way latency
+            pthread_mutex_unlock(&ctx->mutex);
             printf("NET: Latency updated to %u ms (from server)\n", ctx->latency_ms);
         }
     }
@@ -681,12 +782,16 @@ void NET_send_input(netplay_context_t *ctx) {
     
     // Send packets outside of mutex to avoid holding lock during I/O
     if (role == NETPLAY_ROLE_CLIENT && server_socket >= 0) {
-        send(server_socket, packet, offset, 0);
+        if (send(server_socket, packet, offset, 0) < 0) {
+            printf("NET: Failed to send input to server: %s\n", strerror(errno));
+        }
     } else if (role == NETPLAY_ROLE_HOST) {
         // Broadcast to all clients
         for (int i = 0; i < NETPLAY_MAX_PEERS; i++) {
             if (client_sockets[i] >= 0) {
-                send(client_sockets[i], packet, offset, 0);
+                if (send(client_sockets[i], packet, offset, 0) < 0) {
+                    printf("NET: Failed to send input to client %d: %s\n", i + 1, strerror(errno));
+                }
             }
         }
     }
@@ -704,7 +809,19 @@ netplay_input_t *NET_get_remote_input(netplay_context_t *ctx, int player_index) 
 
 // State sync functions
 void NET_send_state(netplay_context_t *ctx, const void *state_data, int size) {
-    if (ctx->state != NETPLAY_STATE_CONNECTED || size > (int)MAX_DATA_SIZE) {
+    netplay_state_t state;
+    netplay_role_t role;
+    uint32_t frame_count;
+    int client_sockets[NETPLAY_MAX_PEERS];
+    
+    pthread_mutex_lock(&ctx->mutex);
+    state = ctx->state;
+    role = ctx->role;
+    frame_count = ctx->frame_count;
+    memcpy(client_sockets, ctx->client_sockets, sizeof(client_sockets));
+    pthread_mutex_unlock(&ctx->mutex);
+    
+    if (state != NETPLAY_STATE_CONNECTED || size > (int)MAX_DATA_SIZE) {
         return;
     }
     
@@ -715,7 +832,7 @@ void NET_send_state(netplay_context_t *ctx, const void *state_data, int size) {
     header->magic = NETPLAY_MAGIC;
     header->type = NETPACKET_STATE_SYNC;
     header->version = 1;
-    header->sequence = ctx->frame_count;
+    header->sequence = frame_count;
     offset += sizeof(netpacket_header_t);
     
     memcpy(packet + offset, state_data, size);
@@ -723,11 +840,13 @@ void NET_send_state(netplay_context_t *ctx, const void *state_data, int size) {
     
     header->length = offset - sizeof(netpacket_header_t);
     
-    if (ctx->role == NETPLAY_ROLE_HOST && ctx->server_socket >= 0) {
+    if (role == NETPLAY_ROLE_HOST) {
         // Broadcast to all clients
         for (int i = 0; i < NETPLAY_MAX_PEERS; i++) {
-            if (ctx->client_sockets[i] >= 0) {
-                send(ctx->client_sockets[i], packet, offset, 0);
+            if (client_sockets[i] >= 0) {
+                if (send(client_sockets[i], packet, offset, 0) < 0) {
+                    printf("NET: Failed to send state to client %d: %s\n", i + 1, strerror(errno));
+                }
             }
         }
     }
@@ -753,7 +872,21 @@ uint32_t NET_get_latency(netplay_context_t *ctx) {
 }
 
 void NET_send_ping(netplay_context_t *ctx) {
-    if (ctx->state != NETPLAY_STATE_CONNECTED) {
+    netplay_state_t state;
+    netplay_role_t role;
+    uint32_t frame_count;
+    int server_socket;
+    int client_sockets[NETPLAY_MAX_PEERS];
+    
+    pthread_mutex_lock(&ctx->mutex);
+    state = ctx->state;
+    role = ctx->role;
+    frame_count = ctx->frame_count;
+    server_socket = ctx->server_socket;
+    memcpy(client_sockets, ctx->client_sockets, sizeof(client_sockets));
+    pthread_mutex_unlock(&ctx->mutex);
+    
+    if (state != NETPLAY_STATE_CONNECTED) {
         return;
     }
     
@@ -762,20 +895,26 @@ void NET_send_ping(netplay_context_t *ctx) {
     header->magic = NETPLAY_MAGIC;
     header->type = NETPACKET_PING;
     header->version = 1;
-    header->sequence = ctx->frame_count;
+    header->sequence = frame_count;
     
-    uint32_t ping_time = time(NULL) * 1000;
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    uint32_t ping_time = ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
     header->length = sizeof(ping_time);
     memcpy(packet + sizeof(netpacket_header_t), &ping_time, sizeof(ping_time));
     
     int packet_size = sizeof(netpacket_header_t) + sizeof(ping_time);
     
-    if (ctx->role == NETPLAY_ROLE_CLIENT && ctx->server_socket >= 0) {
-        send(ctx->server_socket, packet, packet_size, 0);
-    } else if (ctx->role == NETPLAY_ROLE_HOST) {
+    if (role == NETPLAY_ROLE_CLIENT && server_socket >= 0) {
+        if (send(server_socket, packet, packet_size, 0) < 0) {
+            printf("NET: Failed to send ping to server: %s\n", strerror(errno));
+        }
+    } else if (role == NETPLAY_ROLE_HOST) {
         for (int i = 0; i < NETPLAY_MAX_PEERS; i++) {
-            if (ctx->client_sockets[i] >= 0) {
-                send(ctx->client_sockets[i], packet, packet_size, 0);
+            if (client_sockets[i] >= 0) {
+                if (send(client_sockets[i], packet, packet_size, 0) < 0) {
+                    printf("NET: Failed to send ping to client %d: %s\n", i + 1, strerror(errno));
+                }
             }
         }
     }
