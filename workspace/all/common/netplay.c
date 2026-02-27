@@ -199,7 +199,7 @@ int NET_broadcast_discovery(netplay_context_t *ctx) {
 }
 
 int NET_handle_discovery_packet(netplay_context_t *ctx, const char *data, int len) {
-    if (len < sizeof(netpacket_header_t)) {
+    if (len < (int)sizeof(netpacket_header_t)) {
         return -1;
     }
     
@@ -524,7 +524,7 @@ int NET_connect_to_host(netplay_context_t *ctx, const char *host_ip) {
     }
     
     int received = recv(ctx->server_socket, buffer, sizeof(buffer), MSG_DONTWAIT);
-    if (received >= sizeof(netpacket_header_t)) {
+    if (received >= (int)sizeof(netpacket_header_t)) {
         netpacket_header_t *header = (netpacket_header_t*)buffer;
         if (header->magic == NETPLAY_MAGIC && header->type == NETPACKET_CONNECT_RESPONSE) {
             ctx->role = NETPLAY_ROLE_CLIENT;
@@ -584,7 +584,7 @@ int NET_poll_client(netplay_context_t *ctx) {
         return 0;
     }
     
-    if (received < sizeof(netpacket_header_t)) {
+    if (received < (int)sizeof(netpacket_header_t)) {
         return -1;
     }
     
@@ -704,7 +704,7 @@ netplay_input_t *NET_get_remote_input(netplay_context_t *ctx, int player_index) 
 
 // State sync functions
 void NET_send_state(netplay_context_t *ctx, const void *state_data, int size) {
-    if (ctx->state != NETPLAY_STATE_CONNECTED || size > MAX_DATA_SIZE) {
+    if (ctx->state != NETPLAY_STATE_CONNECTED || size > (int)MAX_DATA_SIZE) {
         return;
     }
     
@@ -734,6 +734,9 @@ void NET_send_state(netplay_context_t *ctx, const void *state_data, int size) {
 }
 
 int NET_receive_state(netplay_context_t *ctx, void *state_data, int max_size) {
+    (void)ctx;
+    (void)state_data;
+    (void)max_size;
     // Note: State packets are received in poll_client() and passed via on_state_received callback
     // This function is kept for API compatibility but should not be used.
     // Use the on_state_received callback instead.
