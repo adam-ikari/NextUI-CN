@@ -440,11 +440,11 @@ int main(int argc, char *argv[])
             [](const std::any &value) { SetMuteTurboR2(std::any_cast<int>(value));},
             []() { SetMuteTurboR2(0);}},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.vibration_when_toggled"), TR("settings.fn_switch.vibration_when_toggled.desc"),
-            {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10},
-            {TR("common.unchanged"), TR("settings.gamepad.vibration.off"),"10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"},
+            {0,1,2,3,4,5,6,7,8,9,10},
+            {TR("settings.gamepad.vibration.off"),"10%","20%","30%","40%","50%","60%","70%","80%","90%","100%"},
             []() -> std::any { return GetMutedVibration(); },
             [](const std::any &value) { SetMutedVibration(std::any_cast<int>(value)); },
-            []() { SetMutedVibration(SETTINGS_DEFAULT_MUTE_NO_CHANGE);}},
+            []() { SetMutedVibration(5);}},
         };
         if(is_brick) {
             muteItems.push_back(
