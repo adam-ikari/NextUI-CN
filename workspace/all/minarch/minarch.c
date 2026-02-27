@@ -5295,6 +5295,9 @@ const void* lastframe = NULL;
 static Uint32* rgbaData = NULL;
 static size_t rgbaDataSize = 0;
 
+static Uint16* tempRgb565Data = NULL;
+static size_t tempRgb565Size = 0;
+
 static void video_refresh_callback(const void* data, unsigned width, unsigned height, size_t pitch) {
 
 	// I need to check quit here because sometimes quit is true but callback is still called by the core after and it still runs one more frame and it looks ugly :D
