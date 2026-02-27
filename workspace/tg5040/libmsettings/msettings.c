@@ -719,8 +719,7 @@ void SetMute(int value) {
 			SetRawSaturation(scaleSaturation(GetMutedSaturation()));
 		if(GetMutedExposure() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
 			SetRawExposure(scaleExposure(GetMutedExposure()));
-		if(GetMutedVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE)
-			SetRawVibration(scaleVolume(GetMutedVibration()));
+		// Vibration scaling is handled by VIB_scaleStrength based on GetMutedVibration()
 		if(is_brick && GetMuteDisablesDpad())
 			disableDpad(1);
 		if(is_brick && GetMuteEmulatesJoystick())
@@ -749,7 +748,7 @@ void SetMute(int value) {
 		SetContrast(GetContrast());
 		SetSaturation(GetSaturation());
 		SetExposure(GetExposure());
-		SetVibration(GetVibration());
+		// Vibration scaling is handled by VIB_scaleStrength based on GetVibration()
 		if(is_brick) {
 			if(GetMuteDisablesDpad())
 				disableDpad(0);

@@ -3418,7 +3418,14 @@ int VIB_getStrength(void)
 
 int VIB_scaleStrength(int strength)
 { // scale based on vibration intensity setting (0-20, displayed as 0-100% in UI)
-	int vibration_setting = GetVibration(); // 0-20, where 0 is off and 20 is 100%
+	int vibration_setting;
+	
+	// Check if muted and use muted vibration setting if available
+	if (GetMute() && GetMutedVibration() != SETTINGS_DEFAULT_MUTE_NO_CHANGE) {
+		vibration_setting = GetMutedVibration(); // 0-20, where 0 is off and 20 is 100%
+	} else {
+		vibration_setting = GetVibration(); // 0-20, where 0 is off and 20 is 100%
+	}
 	
 	if (vibration_setting == 0)
 		return 0; // vibration disabled
