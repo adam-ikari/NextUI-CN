@@ -2214,6 +2214,10 @@ int main (int argc, char *argv[]) {
 	LOG_info("i18n: %s (%s)\n", TR("recents"), I18N_loadedPath());
 	InitSettings();
 	
+	// Startup haptic feedback (moved here from PWR_init to ensure settings are initialized first)
+	if (CFG_getHaptics())
+		VIB_singlePulse(VIB_bootStrength, VIB_bootDuration_ms);
+	
 	screen = GFX_init(MODE_MAIN);
 	// LOG_info("- graphics init: %lu\n", SDL_GetTicks() - main_begin);
 	

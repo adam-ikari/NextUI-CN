@@ -3540,9 +3540,9 @@ void PWR_init(void)
 	pwr.poll_network_status = 1;
 	pwr.initialized = 1;
 
-	if (CFG_getHaptics())
-		VIB_singlePulse(VIB_bootStrength, VIB_bootDuration_ms);
-
+	// Skip startup haptic feedback here to prevent crash when InitSettings() hasn't been called yet
+	// Vibration functions depend on settings being initialized. Startup feedback is now handled elsewhere.
+	
 	PWR_initOverlay();
 	PWR_updateBatteryStatus();
 
