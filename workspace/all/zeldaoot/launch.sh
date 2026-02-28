@@ -5,15 +5,33 @@ APP_DIR="/mnt/SDCARD/Emus/ZeldaOOT"
 ROM_PATH="${ZELDA_ROM_PATH:-/mnt/SDCARD/Roms/N64/zelda_oot.n64}"
 SAVE_DIR="/mnt/SDCARD/Saves/N64/ZeldaOOT"
 CONFIG_DIR="/mnt/SDCARD/Config/ZeldaOOT"
+KEYMAP_FILE="$CONFIG_DIR/keymap.json"
 
 # Create directories if they don't exist
 mkdir -p "$SAVE_DIR"
 mkdir -p "$CONFIG_DIR"
 
+# Copy default keymap if not exists
+if [ ! -f "$KEYMAP_FILE" ]; then
+    cp "$APP_DIR/keymaps.json" "$KEYMAP_FILE" 2>/dev/null || true
+fi
+
+# Load user preferences
+CONTROL_SCHEME="${CONTROL_SCHEME:-Default}"
+RUMBLE="${RUMBLE:-true}"
+SHOW_FPS="${SHOW_FPS:-false}"
+SPEED="${SPEED:-100%}"
+
 # Set environment variables
 export ZELDA_ROM_PATH="$ROM_PATH"
 export ZELDA_SAVE_DIR="$SAVE_DIR"
 export ZELDA_CONFIG_DIR="$CONFIG_DIR"
+export ZELDA_KEYMAP="$KEYMAP_FILE"
+export ZELDA_CONTROL_SCHEME="$CONTROL_SCHEME"
+export ZELDA_RUMBLE="$RUMBLE"
+export ZELDA_SHOW_FPS="$SHOW_FPS"
+export ZELDA_SPEED="$SPEED"
+export ZELDA_UI_STYLE="minui"
 
 # Check if ROM exists
 if [ ! -f "$ROM_PATH" ]; then
@@ -30,6 +48,9 @@ cd "$APP_DIR" || exit 1
 echo "Starting Zelda Ocarina of Time..."
 echo "ROM: $ROM_PATH"
 echo "Save: $SAVE_DIR"
+echo "Control Scheme: $CONTROL_SCHEME"
+echo "Rumble: $RUMBLE"
+echo "UI Style: minui"
 
 ./zeldaoot "$ROM_PATH" || {
     echo "ERROR: Failed to launch zeldaoot"

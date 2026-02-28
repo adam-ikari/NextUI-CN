@@ -1,0 +1,120 @@
+{
+  "version": "1.0.0",
+  "schemes": {
+    "Default": {
+      "name": "默认布局",
+      "description": "标准 N64 手柄布局",
+      "mappings": {
+        "dpad_up": "dpad_up",
+        "dpad_down": "dpad_down",
+        "dpad_left": "dpad_left",
+        "dpad_right": "dpad_right",
+        "a_button": "button_a",
+        "b_button": "button_b",
+        "c_up": "button_x",
+        "c_down": "left_shoulder",
+        "c_left": "right_shoulder",
+        "c_right": "button_y",
+        "start": "start",
+        "select": "select",
+        "l_trigger": "button_l",
+        "r_trigger": "button_r",
+        "z_trigger": "left_shoulder"
+      }
+    },
+    "Classic": {
+      "name": "经典布局",
+      "description": "经典手柄布局",
+      "mappings": {
+        "dpad_up": "dpad_up",
+        "dpad_down": "dpad_down",
+        "dpad_left": "dpad_left",
+        "dpad_right": "dpad_right",
+        "a_button": "button_b",
+        "b_button": "button_a",
+        "c_up": "button_y",
+        "c_down": "right_shoulder",
+        "c_left": "button_x",
+        "c_right": "left_shoulder",
+        "start": "start",
+        "select": "select",
+        "l_trigger": "button_l",
+        "r_trigger": "button_r",
+        "z_trigger": "left_shoulder"
+      }
+    },
+    "Arcade": {
+      "name": "街机布局",
+      "description": "街机风格布局",
+      "mappings": {
+        "dpad_up": "dpad_up",
+        "dpad_down": "dpad_down",
+        "dpad_left": "dpad_left",
+        "dpad_right": "dpad_right",
+        "a_button": "button_a",
+        "b_button": "button_b",
+        "c_up": "left_shoulder",
+        "c_down": "right_shoulder",
+        "c_left": "button_x",
+        "c_right": "button_y",
+        "start": "start",
+        "select": "select",
+        "l_trigger": "button_l",
+        "r_trigger": "button_r",
+        "z_trigger": "left_shoulder"
+      }
+    }
+  },
+  "minui_theme": {
+    "colors": {
+      "background": "#000000",
+      "text": "#FFFFFF",
+      "accent": "#7A2155",
+      "selected_bg": "#FFFFFF",
+      "selected_text": "#000000",
+      "list_bg": "#333333",
+      "border": "#000000",
+      "disabled": "#666666"
+    },
+    "font": {
+      "name": "DreamHanSansCN-W16",
+      "size": 24
+    },
+    "layout": {
+      "corner_radius": 8,
+      "item_height": 48,
+      "item_spacing": 8,
+      "padding": 16
+    }
+  },
+  "quick_actions": {
+    "save_state": {
+      "combo": ["select", "start"],
+      "description": "快速存档"
+    },
+    "load_state": {
+      "combo": ["select", "b"],
+      "description": "快速读档"
+    },
+    "screenshot": {
+      "combo": ["select", "x"],
+      "description": "截图"
+    },
+    "fast_forward": {
+      "combo": ["select", "dpad_right"],
+      "description": "加速"
+    },
+    "rewind": {
+      "combo": ["select", "dpad_left"],
+      "description": "倒带"
+    },
+    "toggle_menu": {
+      "combo": ["start", "select"],
+      "description": "切换菜单"
+    },
+    "exit_game": {
+      "combo": ["start", "b"],
+      "description": "退出游戏"
+    }
+  }
+}
