@@ -697,8 +697,6 @@ settings.fn_switch.volume_when_toggled=切换时音量
 settings.fn_switch.volume_when_toggled.desc=扬声器音量（0-20）
 settings.fn_switch.disables_led=切换时LED
 settings.fn_switch.disables_led.desc=切换时关闭LED
-settings.fn_switch.charging_breathing_led=充电呼吸灯
-settings.fn_switch.charging_breathing_led.desc=充电时启用绿色呼吸灯效果
 settings.fn_switch.brightness_when_toggled=切换时亮度
 settings.fn_switch.brightness_when_toggled.desc=屏幕亮度（0-10）
 settings.fn_switch.color_temperature_when_toggled=切换时色温
@@ -747,6 +745,11 @@ settings.about.platform=平台
 settings.about.stock_os_version=原厂系统版本
 settings.about.busybox_version=BusyBox 版本
 settings.about.busybox_not_found=未找到 BusyBox 版本信息。
+
+settings.led=LED
+settings.led.desc=LED 灯光设置
+settings.led.charging_breathing=充电呼吸灯
+settings.led.charging_breathing.desc=充电时启用绿色呼吸灯效果
 
 settings.network=网络
 settings.network.wifi=WiFi
