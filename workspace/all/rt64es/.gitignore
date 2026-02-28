@@ -1,4 +1,5 @@
 build/
 *.so
 *.o
+test_basic
 .DS_Store

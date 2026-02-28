@@ -15,7 +15,7 @@ typedef struct {
     int width;
     int height;
     bool fullscreen;
-    vsync_enabled;
+    bool vsync_enabled;
 } RT64ES_WindowConfig;
 
 // Initialize Zelda64Recomp integration

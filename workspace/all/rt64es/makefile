@@ -17,4 +17,13 @@ install: $(TARGET)
 	@install -d $(PREFIX)/usr/lib $(PREFIX)/usr/include
 	@install -m 755 $(TARGET) $(PREFIX)/usr/lib/
 	@install -m 644 rt64es.h $(PREFIX)/usr/include/
-.PHONY: all clean install
+
+TEST_TARGET = $(BUILD_DIR)/test_basic
+test: $(TEST_TARGET)
+	@echo "Running tests..."
+	@$(TEST_TARGET)
+
+$(TEST_TARGET): test/test_basic.cpp $(TARGET)
+	@$(CXX) $(CXXFLAGS) -I. $< -o $@ -L$(BUILD_DIR) -lrt64es $(LDFLAGS)
+
+.PHONY: all clean install test
