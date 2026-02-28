@@ -1,1 +1,198 @@
-{"name": "Zelda Ocarina of Time", "description": "Zelda Ocarina of Time N64 emulator with RT64ES rendering", "version": "1.0.0", "author": "NextUI Team", "category": "games", "icon": "icon.png", "executable": "zeldaoot", "arguments": [], "environment": {"ZELDA_ROM_PATH": "/mnt/SDCARD/Roms/N64/zelda_oot.n64", "ZELDA_CONFIG_DIR": "/mnt/SDCARD/Config/ZeldaOOT"}, "ui_style": "minui", "requirements": {"gpu": "GLES3.2", "ram": "512MB", "storage": "100MB"}, "features": ["save_states", "cheats", "rewind", "fast_forward", "minui_menu", "button_mapping"], "control_schemes": [{"name": "Default", "description": "Standard N64 layout", "dpad": "dpad", "a": "a_button", "b": "b_button", "x": "x_button", "y": "y_button", "start": "start", "select": "select", "l": "l_button", "r": "r_button", "left_shoulder": "z_button", "right_shoulder": "c_up"}, {"name": "Classic", "description": "Classic controller layout", "dpad": "dpad", "a": "b_button", "b": "a_button", "x": "y_button", "y": "x_button", "start": "start", "select": "select", "l": "l_button", "r": "r_button", "left_shoulder": "z_button", "right_shoulder": "c_down"}, {"name": "Arcade", "description": "Arcade-style layout", "dpad": "dpad", "a": "a_button", "b": "b_button", "x": "c_left", "y": "c_right", "start": "start", "select": "select", "l": "l_button", "r": "r_button", "left_shoulder": "z_button", "right_shoulder": "c_up"}], "controls": {"dpad": "movement", "a": "action", "b": "cancel", "x": "item", "y": "menu", "start": "start", "select": "select", "l": "l_target", "r": "r_target", "left_shoulder": "l_trigger", "right_shoulder": "r_trigger"}, "display": {"default_width": 1024, "default_height": 768, "aspect_ratio": "4:3", "vsync": true, "fullscreen": false, "theme": {"background": "#000000", "text": "#FFFFFF", "accent": "#7A2155", "selected_bg": "#FFFFFF", "selected_text": "#000000", "list_bg": "#333333"}}, "performance": {"target_fps": 60, "resolution_scaling": 1.0, "texture_filtering": "linear", "anti_aliasing": false}, "menu_options": [{"key": "control_scheme", "name": "Button Mapping", "type": "select", "options": ["Default", "Classic", "Arcade"], "default": "Default"}, {"key": "rumble", "name": "Rumble", "type": "toggle", "default": true}, {"key": "show_fps", "name": "Show FPS", "type": "toggle", "default": false}, {"key": "speed", "name": "Speed", "type": "select", "options": ["50%", "75%", "100%", "150%", "200%"], "default": "100%"}, {"key": "save_state_slot", "name": "Save State Slot", "type": "number", "min": 1, "max": 10, "default": 1}]}
+{
+  "name": "Zelda Ocarina of Time",
+  "description": "Zelda Ocarina of Time N64 emulator with RT64ES rendering",
+  "version": "2.0.0",
+  "author": "NextUI Team",
+  "category": "games",
+  "icon": "icon.png",
+  "executable": "zeldaoot",
+  "arguments": [],
+  "environment": {
+    "ZELDA_ROM_PATH": "/mnt/SDCARD/Roms/N64/zelda_oot.n64",
+    "ZELDA_CONFIG_DIR": "/mnt/SDCARD/Config/ZeldaOOT"
+  },
+  "ui_style": "minui",
+  "requirements": {
+    "gpu": "GLES3.2",
+    "ram": "512MB",
+    "storage": "100MB"
+  },
+  "features": [
+    "save_states",
+    "cheats",
+    "rewind",
+    "fast_forward",
+    "minui_menu",
+    "button_mapping",
+    "combo_keys",
+    "custom_mapping"
+  ],
+  "control_schemes": [
+    {
+      "name": "Default",
+      "description": "Standard N64 layout",
+      "dpad": "dpad",
+      "a": "a_button",
+      "b": "b_button",
+      "x": "x_button",
+      "y": "y_button",
+      "start": "start",
+      "select": "select",
+      "l": "l_button",
+      "r": "r_button",
+      "l2": "l_trigger",
+      "r2": "r_trigger"
+    },
+    {
+      "name": "Classic",
+      "description": "Classic controller layout",
+      "dpad": "dpad",
+      "a": "b_button",
+      "b": "a_button",
+      "x": "y_button",
+      "y": "x_button",
+      "start": "start",
+      "select": "select",
+      "l": "l_button",
+      "r": "r_button",
+      "l2": "l_trigger",
+      "r2": "r_trigger"
+    },
+    {
+      "name": "Arcade",
+      "description": "Arcade-style layout",
+      "dpad": "dpad",
+      "a": "a_button",
+      "b": "b_button",
+      "x": "c_left",
+      "y": "c_right",
+      "start": "start",
+      "select": "select",
+      "l": "l_button",
+      "r": "r_button",
+      "l2": "l_trigger",
+      "r2": "r_trigger"
+    }
+  ],
+  "combo_keys": {
+    "r2_a": {
+      "name": "R2 + A",
+      "description": "快速瞄准",
+      "combo": ["r2", "a"],
+      "action": "n64_z"
+    },
+    "r2_b": {
+      "name": "R2 + B",
+      "description": "快速攻击",
+      "combo": ["r2", "b"],
+      "action": "n64_b"
+    },
+    "r2_x": {
+      "name": "R2 + X",
+      "description": "C 上切换",
+      "combo": ["r2", "x"],
+      "action": "n64_c_up"
+    },
+    "r2_y": {
+      "name": "R2 + Y",
+      "description": "C 右切换",
+      "combo": ["r2", "y"],
+      "action": "n64_c_right"
+    },
+    "l2_a": {
+      "name": "L2 + A",
+      "description": "使用道具 A",
+      "combo": ["l2", "a"],
+      "action": "n64_a"
+    },
+    "l2_b": {
+      "name": "L2 + B",
+      "description": "使用道具 B",
+      "combo": ["l2", "b"],
+      "action": "n64_b"
+    },
+    "r2_dpad": {
+      "name": "R2 + 方向键",
+      "description": "旋转视角",
+      "combo": ["r2", "dpad"],
+      "action": "n64_camera"
+    }
+  },
+  "mapping_editor": {
+    "enabled": true,
+    "allow_custom": true,
+    "max_combo_length": 3,
+    "show_hints": true,
+    "auto_save": true
+  },
+  "menu_options": [
+    {
+      "key": "control_scheme",
+      "name": "按键布局",
+      "type": "select",
+      "options": ["Default", "Classic", "Arcade", "Custom"],
+      "default": "Default"
+    },
+    {
+      "key": "edit_mapping",
+      "name": "编辑按键映射",
+      "type": "button",
+      "action": "open_mapping_editor"
+    },
+    {
+      "key": "rumble",
+      "name": "震动",
+      "type": "toggle",
+      "default": true
+    },
+    {
+      "key": "show_fps",
+      "name": "显示 FPS",
+      "type": "toggle",
+      "default": false
+    },
+    {
+      "key": "combo_hints",
+      "name": "组合键提示",
+      "type": "toggle",
+      "default": true
+    },
+    {
+      "key": "speed",
+      "name": "速度",
+      "type": "select",
+      "options": ["50%", "75%", "100%", "150%", "200%"],
+      "default": "100%"
+    },
+    {
+      "key": "save_state_slot",
+      "name": "存档槽位",
+      "type": "number",
+      "min": 1,
+      "max": 10,
+      "default": 1
+    }
+  ],
+  "display": {
+    "default_width": 1024,
+    "default_height": 768,
+    "aspect_ratio": "4:3",
+    "vsync": true,
+    "fullscreen": false,
+    "theme": {
+      "background": "#000000",
+      "text": "#FFFFFF",
+      "accent": "#7A2155",
+      "selected_bg": "#FFFFFF",
+      "selected_text": "#000000",
+      "list_bg": "#333333",
+      "combo_hint": "#FFD700"
+    }
+  },
+  "performance": {
+    "target_fps": 60,
+    "resolution_scaling": 1.0,
+    "texture_filtering": "linear",
+    "anti_aliasing": false
+  }
+}

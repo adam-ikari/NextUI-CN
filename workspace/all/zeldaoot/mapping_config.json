@@ -1,0 +1,171 @@
+{
+  "version": "2.0.0",
+  "current_scheme": "Default",
+  "custom_scheme": {
+    "name": "自定义布局",
+    "description": "用户自定义按键映射",
+    "mappings": {
+      "dpad_up": ["dpad_up"],
+      "dpad_down": ["dpad_down"],
+      "dpad_left": ["dpad_left"],
+      "dpad_right": ["dpad_right"],
+      "a_button": ["button_a"],
+      "b_button": ["button_b"],
+      "c_up": ["button_x"],
+      "c_down": ["left_shoulder"],
+      "c_left": ["right_shoulder"],
+      "c_right": ["button_y"],
+      "start": ["start"],
+      "select": ["select"],
+      "l_trigger": ["button_l", "l1", "l2"],
+      "r_trigger": ["button_r", "r1", "r2"],
+      "z_trigger": ["l2", "r2"]
+    }
+  },
+  "action_mappings": {
+    "n64_a": {
+      "name": "N64 A 键",
+      "description": "确认/跳跃",
+      "default": ["button_a"],
+      "current": ["button_a"],
+      "allow_combo": true,
+      "max_combo": 2
+    },
+    "n64_b": {
+      "name": "N64 B 键",
+      "description": "取消/攻击",
+      "default": ["button_b"],
+      "current": ["button_b"],
+      "allow_combo": true,
+      "max_combo": 2
+    },
+    "n64_c_up": {
+      "name": "C 上",
+      "description": "视角上/道具",
+      "default": ["button_x"],
+      "current": ["button_x"],
+      "allow_combo": true,
+      "max_combo": 3
+    },
+    "n64_c_down": {
+      "name": "C 下",
+      "description": "视角下/道具",
+      "default": ["left_shoulder"],
+      "current": ["left_shoulder"],
+      "allow_combo": true,
+      "max_combo": 3
+    },
+    "n64_c_left": {
+      "name": "C 左",
+      "description": "视角左/道具",
+      "default": ["right_shoulder"],
+      "current": ["right_shoulder"],
+      "allow_combo": true,
+      "max_combo": 3
+    },
+    "n64_c_right": {
+      "name": "C 右",
+      "description": "视角右/道具",
+      "default": ["button_y"],
+      "current": ["button_y"],
+      "allow_combo": true,
+      "max_combo": 3
+    },
+    "n64_z": {
+      "name": "Z 键",
+      "description": "瞄准/锁定",
+      "default": ["l2", "r2"],
+      "current": ["l2", "r2"],
+      "allow_combo": true,
+      "max_combo": 1
+    },
+    "n64_l": {
+      "name": "L 键",
+      "description": "左侧视点",
+      "default": ["button_l", "l1"],
+      "current": ["button_l", "l1"],
+      "allow_combo": true,
+      "max_combo": 1
+    },
+    "n64_r": {
+      "name": "R 键",
+      "description": "右侧视点",
+      "default": ["button_r", "r1"],
+      "current": ["button_r", "r1"],
+      "allow_combo": true,
+      "max_combo": 1
+    },
+    "n64_start": {
+      "name": "Start",
+      "description": "开始/菜单",
+      "default": ["start"],
+      "current": ["start"],
+      "allow_combo": true,
+      "max_combo": 2
+    },
+    "n64_dpad_up": {
+      "name": "方向键 上",
+      "description": "移动上",
+      "default": ["dpad_up"],
+      "current": ["dpad_up"],
+      "allow_combo": true,
+      "max_combo": 3
+    },
+    "n64_dpad_down": {
+      "name": "方向键 下",
+      "description": "移动下",
+      "default": ["dpad_down"],
+      "current": ["dpad_down"],
+      "allow_combo": true,
+      "max_combo": 3
+    },
+    "n64_dpad_left": {
+      "name": "方向键 左",
+      "description": "移动左",
+      "default": ["dpad_left"],
+      "current": ["dpad_left"],
+      "allow_combo": true,
+      "max_combo": 3
+    },
+    "n64_dpad_right": {
+      "name": "方向键 右",
+      "description": "移动右",
+      "default": ["dpad_right"],
+      "current": ["dpad_right"],
+      "allow_combo": true,
+      "max_combo": 3
+    }
+  },
+  "combo_presets": {
+    "快速瞄准": {
+      "name": "快速瞄准",
+      "combo": ["r2", "button_a"],
+      "action": "n64_z"
+    },
+    "快速攻击": {
+      "name": "快速攻击",
+      "combo": ["r2", "button_b"],
+      "action": "n64_b"
+    },
+    "切换道具": {
+      "name": "切换道具",
+      "combo": ["l2", "button_x"],
+      "action": "n64_c_up"
+    },
+    "旋转视角": {
+      "name": "旋转视角",
+      "combo": ["r2", "dpad_up"],
+      "action": "n64_c_up"
+    }
+  },
+  "settings": {
+    "allow_modifiers": true,
+    "modifier_keys": ["l2", "r2", "select"],
+    "show_combo_hints": true,
+    "combo_hint_duration": 2000,
+    "debounce_time": 100,
+    "enable_rumble_on_bind": true,
+    "auto_save_mappings": true,
+    "backup_interval": 300
+  }
+}
