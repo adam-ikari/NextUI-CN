@@ -1,0 +1,50 @@
+{
+    "name": "Zelda Ocarina of Time",
+    "description": "Zelda Ocarina of Time N64 emulator with RT64ES rendering",
+    "version": "1.0.0",
+    "author": "NextUI Team",
+    "category": "games",
+    "icon": "icon.png",
+    "executable": "zeldaoot",
+    "arguments": [],
+    "environment": {
+        "ZELDA_ROM_PATH": "/mnt/SDCARD/Roms/N64/zelda_oot.n64"
+    },
+    "requirements": {
+        "gpu": "GLES3.2",
+        "ram": "512MB",
+        "storage": "100MB"
+    },
+    "features": [
+        "save_states",
+        "cheats",
+        "rewind",
+        "fast_forward"
+    ],
+    "controls": {
+        "dpad": "movement",
+        "a": "action",
+        "b": "cancel",
+        "x": "item",
+        "y": "menu",
+        "start": "start",
+        "select": "select",
+        "l": "l_target",
+        "r": "r_target",
+        "left_shoulder": "l_trigger",
+        "right_shoulder": "r_trigger"
+    },
+    "display": {
+        "default_width": 1024,
+        "default_height": 768,
+        "aspect_ratio": "4:3",
+        "vsync": true,
+        "fullscreen": false
+    },
+    "performance": {
+        "target_fps": 60,
+        "resolution_scaling": 1.0,
+        "texture_filtering": "linear",
+        "anti_aliasing": false
+    }
+}
