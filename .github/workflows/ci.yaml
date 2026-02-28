@@ -172,7 +172,9 @@ jobs:
 
       - name: Remove .patched file if patch changed
         if: steps.core-cached.outputs.core-exists == 'true'
+        id: patch-check
         run: |
+          NEED_REBUILD="false"
           if [[ -d "workspace/${PLATFORM}/cores/src/${{ matrix.core }}/.git" ]]; then
             cd "workspace/${{ PLATFORM }}/cores/src/${{ matrix.core }}"
             # Check if .patched file exists
@@ -181,11 +183,13 @@ jobs:
               rm -f .patched .patched-all
               # Also remove output file to force rebuild
               rm -f "workspace/${PLATFORM}/cores/output/${{ matrix.core }}_libretro.so"
+              NEED_REBUILD="true"
             fi
           fi
+          echo "need-rebuild=${NEED_REBUILD}" >> "$GITHUB_OUTPUT"
 
       - name: Build ${{ matrix.core }} core
-        if: steps.core-cached.outputs.core-exists != 'true'
+        if: steps.core-cached.outputs.core-exists != 'true' || steps.patch-check.outputs.need-rebuild == 'true'
         run: make build-core CORE=${{ matrix.core }}
 
       - name: Upload core
