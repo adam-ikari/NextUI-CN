@@ -8,10 +8,13 @@ extern "C" {
 #define RT64ES_VERSION_MAJOR 0
 #define RT64ES_VERSION_MINOR 1
 #define RT64ES_VERSION_PATCH 0
-#define RT64ES_MAX_TEXTURES 256
-#define RT64ES_MAX_VERTEX_BUFFER (64 * 1024)
-#define RT64ES_MAX_INDEX_BUFFER (128 * 1024)
-#define RT64ES_MAX_DRAW_CALLS 1024
+#define RT64ES_MAX_TEXTURES 512
+#define RT64ES_MAX_VERTEX_BUFFER (512 * 1024)
+#define RT64ES_MAX_INDEX_BUFFER (1024 * 1024)
+#define RT64ES_MAX_DRAW_CALLS 4096
+#define RT64ES_MAX_BATCH_SIZE 256
+#define RT64ES_ENABLE_THREADING 1
+#define RT64ES_ENABLE_DIRTY_RECT 1
 typedef enum {
     RT64ES_SUCCESS = 0,
     RT64ES_ERROR_NO_GLES,
@@ -35,6 +38,19 @@ typedef struct {
     bool depth_test;
     bool alpha_blend;
 } RT64ES_DrawCall;
+
+typedef struct {
+    RT64ES_DrawCall calls[RT64ES_MAX_BATCH_SIZE];
+    uint32_t count;
+    uint32_t texture_id;
+    bool depth_test;
+    bool alpha_blend;
+} RT64ES_DrawBatch;
+
+typedef struct {
+    int x, y, width, height;
+    bool dirty;
+} RT64ES_DirtyRect;
 RT64ES_Error rt64es_init(void);
 RT64ES_Error rt64es_deinit(void);
 RT64ES_Error rt64es_begin_frame(void);
@@ -45,6 +61,12 @@ RT64ES_Error rt64es_set_viewport(int x, int y, int width, int height);
 RT64ES_Error rt64es_present(void);
 RT64ES_Error rt64es_create_texture(const RT64ES_TextureConfig* config, const void* data, uint32_t* out_id);
 RT64ES_Error rt64es_destroy_texture(uint32_t id);
+RT64ES_Error rt64es_begin_batch(uint32_t texture_id, bool depth_test, bool alpha_blend);
+RT64ES_Error rt64es_add_to_batch(const RT64ES_DrawCall* call);
+RT64ES_Error rt64es_end_batch(void);
+RT64ES_Error rt64es_set_dirty_rect(int x, int y, int width, int height);
+RT64ES_Error rt64es_clear_dirty_rects(void);
+bool rt64es_has_dirty_rects(void);
 const char* rt64es_get_error_string(RT64ES_Error error);
 #ifdef __cplusplus
 }

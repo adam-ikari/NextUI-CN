@@ -1,7 +1,7 @@
 BUILD_DIR = build
 PREFIX = $(NEXTUI_PREFIX)
 CXX = $(CROSS_COMPILE)g++
-CXXFLAGS = -march=armv7-a -mfpu=neon -ftree-vectorize -O2 -Wall -std=c++17 -fPIC
+CXXFLAGS = -march=armv7-a -mfpu=neon-vfpv4 -ftree-vectorize -Ofast -flto -fomit-frame-pointer -funroll-loops -fno-math-errno -fno-trapping-math -Wall -std=c++17 -fPIC
 LDFLAGS = -lm -lGLESv3 -lEGL
 TARGET = $(BUILD_DIR)/librt64es.so
 SOURCES = src/rt64es_gles32.cpp
