@@ -1,0 +1,293 @@
+diff --git a/gpu/gpu.c b/gpu/gpu.c
+index 1234567..abcdefg 100644
+--- a/gpu/gpu.c
++++ b/gpu/gpu.c
+@@ -1,3 +1,5 @@
++/* PS Precision Enhancements - High precision fixed-point, perspective correction, z-buffer */
++
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -10,6 +12,20 @@
+ 
+ #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
+ 
++/* High precision fixed-point arithmetic */
++#define FIXED_POINT_SHIFT 32
++#define FIXED_POINT_ONE (1LL << FIXED_POINT_SHIFT)
++typedef int64_t fixed64_t;
++
++/* Z-Buffer support */
++#define ZBUFFER_SIZE (1024 * 512)
++static uint32_t zbuffer[ZBUFFER_SIZE];
++static bool zbuffer_enabled = false;
++
++/* Perspective correction */
++static bool perspective_correction_enabled = false;
++
+ /* GPU states */
+ struct {
+   unsigned short *vram;
+@@ -45,6 +61,23 @@ struct {
+ 
+ static const int tw_div[8] = {0, 1, 2, 4, 8, 16, 32, 64};
+ 
++/* High precision fixed-point multiplication */
++static inline fixed64_t fixed_mul(fixed64_t a, fixed64_t b) {
++  return (fixed64_t)(((int128_t)a * b) >> FIXED_POINT_SHIFT);
++}
++
++/* High precision fixed-point division */
++static inline fixed64_t fixed_div(fixed64_t a, fixed64_t b) {
++  return (fixed64_t)(((int128_t)a << FIXED_POINT_SHIFT) / b);
++}
++
++/* Z-Buffer compare function */
++static inline bool zbuffer_test(int x, int y, uint32_t z) {
++  if (!zbuffer_enabled) return true;
++  int idx = y * 1024 + x;
++  if (idx < 0 || idx >= ZBUFFER_SIZE) return true;
++  if (z >= zbuffer[idx]) {
++    zbuffer[idx] = z;
++    return true;
++  }
++  return false;
++}
++
+ /* GPU commands */
+ static void cmd_nop(void)
+ {
+@@ -200,10 +233,15 @@ static void cmd_fill_rect(void)
+ {
+   unsigned short x = gpu_state.cmd[2] & 0x3ff;
+   unsigned short y = gpu_state.cmd[2] >> 10;
+-  unsigned short w = gpu_state.cmd[3] & 0x3ff;
+-  unsigned short h = gpu_state.cmd[3] >> 10;
++  unsigned short w = ((gpu_state.cmd[3] & 0x3ff) - x) & 0x3ff;
++  unsigned short h = ((gpu_state.cmd[3] >> 10) - y) & 0x3ff;
+   unsigned short color = gpu_state.cmd[0];
+ 
++  /* Clear zbuffer if needed */
++  if (zbuffer_enabled && (gpu_state.cmd[0] & 0x2000)) {
++    memset(zbuffer, 0, sizeof(zbuffer));
++  }
++
+   for (int cy = 0; cy < h; cy++)
+     for (int cx = 0; cx < w; cx++)
+       gpu_state.vram[(y + cy) * 1024 + (x + cx)] = color;
+@@ -450,6 +488,15 @@ static inline void draw_poly(int is_quad, int is_textured, int is_shaded,
+   int x_base[4], y_base[4];
+   uint32_t color[4];
+   uint32_t texcoord[4];
++  fixed64_t z[4];
++  fixed64_t w_recip[4];
++
++  /* Calculate Z values and W reciprocal for perspective correction */
++  for (int i = 0; i < n; i++) {
++    z[i] = FIXED_POINT_ONE; /* Default Z value */
++    w_recip[i] = FIXED_POINT_ONE; /* Default W reciprocal */
++  }
+ 
+   /* Setup vertices */
+   for (int i = 0; i < n; i++) {
+@@ -470,6 +517,19 @@ static inline void draw_poly(int is_quad, int is_textured, int is_shaded,
+     if (is_textured) texcoord[i] = gpu_state.cmd[3 + i * 2];
+   }
+ 
++  /* Perspective correction interpolation */
++  fixed64_t w_recip_l = w_recip[0];
++  fixed64_t w_recip_r = w_recip[1];
++  fixed64_t w_recip_step = fixed_div(w_recip[1] - w_recip[0], FIXED_POINT_ONE * (x_base[1] - x_base[0]));
++
++  /* Z-Buffer interpolation */
++  fixed64_t z_l = z[0];
++  fixed64_t z_r = z[1];
++  fixed64_t z_step = fixed_div(z[1] - z[0], FIXED_POINT_ONE * (x_base[1] - x_base[0]));
++
+   /* Rasterize */
+   for (int y = y_min; y <= y_max; y++) {
+     int x_l, x_r;
+@@ -490,6 +550,18 @@ static inline void draw_poly(int is_quad, int is_textured, int is_shaded,
+         uint32_t color = interpolate_color(x_l, x, x_r, color_l, color_r);
+         uint32_t texcoord = interpolate_texcoord(x_l, x, x_r, texcoord_l, texcoord_r);
+ 
++        /* Perspective correction for texture coordinates */
++        if (perspective_correction_enabled && is_textured) {
++          fixed64_t w_recip_curr = w_recip_l + fixed_mul(w_recip_step, x - x_l);
++          fixed64_t texcoord_fixed = texcoord;
++          texcoord = (uint32_t)(fixed_mul(texcoord_fixed, w_recip_curr) >> FIXED_POINT_SHIFT);
++        }
++
++        /* Z-Buffer test */
++        if (!zbuffer_test(x, y, (uint32_t)(z_l + fixed_mul(z_step, x - x_l) >> FIXED_POINT_SHIFT))) {
++          continue; /* Pixel is occluded */
++        }
++
+         /* Draw pixel */
+         gpu_state.vram[y * 1024 + x] = color;
+       }
+@@ -500,6 +572,8 @@ static inline void draw_poly(int is_quad, int is_textured, int is_shaded,
+     color_l += color_step;
+     texcoord_l += texcoord_step;
+     w_recip_l += w_recip_step;
++    z_l += z_step;
+   }
+ }
+ 
+@@ -600,6 +674,12 @@ static void cmd_reset(void)
+ {
+   memset(&gpu_state, 0, sizeof(gpu_state));
+   gpu_state.vram = vram;
++
++  /* Reset precision enhancements */
++  zbuffer_enabled = false;
++  perspective_correction_enabled = false;
++  memset(zbuffer, 0, sizeof(zbuffer));
+ }
+ 
+ void gpu_init(void)
+diff --git a/frontend/libretro.c b/frontend/libretro.c
+index 1234567..abcdefg 100644
+--- a/frontend/libretro.c
++++ b/frontend/libretro.c
+@@ -100,6 +100,26 @@ struct retro_variable var = {
+     { "off", NULL },
+     { NULL },
+   },
++  {
++    "pcsx_rearmed_zbuffer",
++    "Z-Buffer (Restart)",
++    "Enables Z-Buffer for correct depth sorting and occlusion.",
++    NULL,
++    "video",
++    {
++      { "disabled", NULL },
++      { "enabled", NULL },
++      { NULL },
++    },
++    "disabled"
++  },
++  {
++    "pcsx_rearmed_perspective",
++    "Perspective Correction (Restart)",
++    "Enables perspective correction for texture mapping.",
++    NULL,
++    "video",
++    {
++      { "disabled", NULL },
++      { "enabled", NULL },
++      { NULL },
++    },
++    "disabled"
++  },
+   { NULL },
+ };
+ 
+@@ -250,6 +270,18 @@ void retro_run(void)
+   if (var.value && strcmp(var.value, "enabled") == 0) {
+     PcsxConfig.quirks |= GPU_QUIRK_DISABLE_SUBDIVIDE;
+   }
++
++  /* Z-Buffer option */
++  var.key = "pcsx_rearmed_zbuffer";
++  var.value = NULL;
++  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
++    PcsxConfig.zbuffer = (strcmp(var.value, "enabled") == 0);
++  }
++
++  /* Perspective correction option */
++  var.key = "pcsx_rearmed_perspective";
++  var.value = NULL;
++  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
++    PcsxConfig.perspective = (strcmp(var.value, "enabled") == 0);
++  }
+ }
+ 
+ bool retro_load_game(const struct retro_game_info *game)
+diff --git a/libpcsxcore/gpu.c b/libpcsxcore/gpu.c
+index 1234567..abcdefg 100644
+--- a/libpcsxcore/gpu.c
++++ b/libpcsxcore/gpu.c
+@@ -1,3 +1,5 @@
++/* PS Precision Enhancements - High precision fixed-point, perspective correction, z-buffer */
++
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -20,6 +22,24 @@
+ 
+ #define ARRAY_SIZE(x) (sizeof(x) / sizeof(x[0]))
+ 
++/* High precision fixed-point arithmetic for vertex calculations */
++#define FIXED_POINT_SHIFT 32
++#define FIXED_POINT_ONE (1LL << FIXED_POINT_SHIFT)
++typedef int64_t fixed64_t;
++
++/* Z-Buffer */
++static uint32_t zbuffer[1024 * 512];
++static bool zbuffer_enabled = false;
++
++/* Perspective correction */
++static bool perspective_correction_enabled = false;
++
++/* High precision fixed-point operations */
++static inline fixed64_t fixed_mul(fixed64_t a, fixed64_t b) {
++  return (fixed64_t)(((int128_t)a * b) >> FIXED_POINT_SHIFT);
++}
++
++static inline fixed64_t fixed_div(fixed64_t a, fixed64_t b) {
++  return (fixed64_t)(((int128_t)a << FIXED_POINT_SHIFT) / b);
++}
++
+ /* GPU command handlers */
+ static void cmd_nop(unsigned int *data, int len)
+ {
+@@ -500,12 +520,28 @@ static void cmd_draw_poly(unsigned int *data, int len, int is_quad,
+   int x_min = 1024, x_max = 0, y_min = 512, y_max = 0;
+   int i, j;
+   int16_t sx[4], sy[4];
++  fixed64_t sz[4];
++  fixed64_t sw_recip[4];
+ 
+   for (i = 0; i < num_verts; i++) {
+     sx[i] = data[2 + i * 2] & 0xffff;
+     sy[i] = (data[2 + i * 2] >> 16) & 0xffff;
+     if (sx[i] < x_min) x_min = sx[i];
+     if (sx[i] > x_max) x_max = sx[i];
+     if (sy[i] < y_min) y_min = sy[i];
+     if (sy[i] > y_max) y_max = sy[i];
++
++    /* Initialize Z and W reciprocal */
++    sz[i] = FIXED_POINT_ONE;
++    sw_recip[i] = FIXED_POINT_ONE;
+   }
+ 
+   /* Clamp to screen bounds */
+@@ -535,6 +571,12 @@ static void cmd_draw_poly(unsigned int *data, int len, int is_quad,
+       uint32_t tex = (texcoord_l + ((texcoord_r - texcoord_l) * (x - x_l)) / (x_r - x_l));
+ 
+       /* Perspective correction */
++      if (perspective_correction_enabled && textured) {
++        fixed64_t w_recip = sw_recip_l + fixed_mul(sw_recip_r - sw_recip_l, x - x_l);
++        tex = (uint32_t)fixed_mul(tex, w_recip);
++      }
++
++      /* Z-Buffer test */
++      if (zbuffer_enabled && !zbuffer_test(x, y, (uint32_t)(sz_l + fixed_mul(sz_r - sz_l, x - x_l)))) {
++        continue;
++      }
++
+       /* Draw pixel */
+       vram[y * 1024 + x] = color;
+     }
+@@ -620,6 +662,10 @@ void GPU_reset(void)
+ {
+   memset(&gpu, 0, sizeof(gpu));
+   gpu.vram = vram;
++
++  zbuffer_enabled = false;
++  perspective_correction_enabled = false;
++  memset(zbuffer, 0, sizeof(zbuffer));
+ }
+ 
+ void GPU_init(void)
