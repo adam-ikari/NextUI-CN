@@ -362,12 +362,7 @@ int main(int argc, char *argv[])
             []() -> std::any { return CFG_getPowerOffProtection(); },
             [](const std::any &value) { CFG_setPowerOffProtection(std::any_cast<bool>(value)); },
             []() { CFG_setPowerOffProtection(CFG_DEFAULT_POWEROFFPROTECTION); }},
-            new MenuItem{ListItemType::Button, tr_settings_reset_defaults.c_str(), tr_settings_reset_defaults_desc.c_str(), ResetCurrentMenu},
-        });
-
-        auto ledMenu = new MenuList(MenuItemType::Fixed, TR("settings.led"),
-        {
-            new MenuItem{ListItemType::Generic, TR("settings.led.charging_breathing"), TR("settings.led.charging_breathing.desc"), {false, true}, on_off, 
+            new MenuItem{ListItemType::Generic, TR("settings.system.charging_breathing_led"), TR("settings.system.charging_breathing_led.desc"), {false, true}, on_off, 
             []() -> std::any { return CFG_getChargingBreathingLed(); },
             [](const std::any &value) { CFG_setChargingBreathingLed(std::any_cast<bool>(value)); },
             []() { CFG_setChargingBreathingLed(CFG_DEFAULT_CHARGINGBREATHINGLED); }},
@@ -535,7 +530,6 @@ int main(int argc, char *argv[])
             new MenuItem{ListItemType::Generic, TR("settings.display"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, displayMenu},
             new MenuItem{ListItemType::Generic, TR("settings.system"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, systemMenu},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch"), TR("settings.fn_switch.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, muteMenu},
-            new MenuItem{ListItemType::Generic, TR("settings.led"), TR("settings.led.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, ledMenu},
             new MenuItem{ListItemType::Generic, TR("settings.gamepad"), TR("settings.gamepad.desc"), {}, {}, nullptr, nullptr, DeferToSubmenu, gamepadMenu},
             new MenuItem{ListItemType::Generic, TR("settings.network"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, networkMenu},
             new MenuItem{ListItemType::Generic, TR("settings.bluetooth"), "", {}, {}, nullptr, nullptr, DeferToSubmenu, btMenu},
