@@ -844,3 +844,642 @@ index c1cc62f..6dc1142 100644
     {
        "mgba_audio_low_pass_range",
        "Audio Filter Level",
+diff --git a/Makefile.libretro b/Makefile.libretro
+index 6e974f5..ef2e692 100644
+--- a/Makefile.libretro
++++ b/Makefile.libretro
+@@ -93,8 +93,8 @@ ifneq (,$(findstring unix,$(platform)))
+ else ifneq (,$(findstring trimui,$(platform)))
+    TARGET := $(TARGET_NAME)_libretro.so
+    fpic := -fPIC
+-   SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
+-   DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE
++   SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T -lpthread
++   DEFINES += -std=c99 -D_GNU_SOURCE -DHAVE_LOCALE -DUSE_THREAD
+    CFLAGS += -Ofast -fno-ident
+    CPUFLAGS := -march=armv7-a -mfpu=neon-vfpv4 -mfloat-abi=hard -marm
+    CFLAGS += $(CPUFLAGS) -fpic -fomit-frame-pointer -fno-exceptions -fno-non-call-exceptions -Wno-psabi -Wno-format
+diff --git a/include/mgba/internal/gba/audio.h b/include/mgba/internal/gba/audio.h
+index 9cf6ded..0f20e0a 100644
+--- a/include/mgba/internal/gba/audio.h
++++ b/include/mgba/internal/gba/audio.h
+@@ -91,6 +91,7 @@ struct GBAAudio {
+ 
+ 	bool externalMixing;
+ 	struct GBAAudioMixer* mixer;
++	int outputSampleRate;
+ };
+ 
+ struct GBAMP2kADSR {
+@@ -264,6 +265,7 @@ struct GBAAudioMixer {
+ 	bool (*engage)(struct GBAAudioMixer* mixer, uint32_t address);
+ 	void (*vblank)(struct GBAAudioMixer* mixer);
+ 	void (*step)(struct GBAAudioMixer* mixer);
++	void (*threadStep)(struct GBAAudioMixer* mixer);
+ 
+ 	struct GBAMP2kContext context;
+ 	struct GBAMP2kMusicPlayerInfo player;
+@@ -273,6 +275,14 @@ struct GBAAudioMixer {
+ 	double frame;
+ 
+ 	struct mStereoSample last;
++
++#ifdef USE_THREAD
++	pthread_t audioThread;
++	bool threadRunning;
++	struct mCircleBuffer* sampleBuffer;
++	size_t bufferSize;
++	pthread_mutex_t bufferMutex;
++#endif
+ };
+ 
+ void GBAAudioMixerCreate(struct GBAAudioMixer* mixer);
+diff --git a/include/mgba/internal/gba/renderers/video-software.h b/include/mgba/internal/gba/renderers/video-software.h
+index ce91877..d6cf9f4 100644
+--- a/include/mgba/internal/gba/renderers/video-software.h
++++ b/include/mgba/internal/gba/renderers/video-software.h
+@@ -151,9 +151,26 @@ struct GBAVideoSoftwareRenderer {
+ 	int end;
+ 
+ 	uint8_t lastHighlightAmount;
++
++	// High resolution rendering
++	int renderScale;
++	bool enableHD;
++	bool enableMode7HD;
++	bool enableScaleHD;
++	mColor* hdOutputBuffer;
++	int hdOutputBufferStride;
++
++	// Pixel art scaling algorithm
++	enum {
++		PIXEL_SCALE_NEAREST,
++		PIXEL_SCALE_SCALE2X,
++		PIXEL_SCALE_SCALE3X,
++		PIXEL_SCALE_SCALE4X,
++	} pixelScaleAlgorithm;
+ };
+ 
+ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer);
++void GBAVideoSoftwareRendererSetRenderScale(struct GBAVideoSoftwareRenderer* renderer, int scale);
+ 
+ CXX_GUARD_START
+ 
+diff --git a/src/gba/audio-mixer.c b/src/gba/audio-mixer.c
+index 8cd38eb..2f32998 100644
+--- a/src/gba/audio-mixer.c
++++ b/src/gba/audio-mixer.c
+@@ -8,6 +8,10 @@
+ #include <mgba/internal/gba/gba.h>
+ #include <mgba/internal/gba/video.h>
+ 
++#ifdef USE_THREAD
++#include <pthread.h>
++#endif
++
+ #define OVERSAMPLE 2
+ 
+ static void _mp2kInit(void* cpu, struct mCPUComponent* component);
+@@ -16,6 +20,11 @@ static void _mp2kDeinit(struct mCPUComponent* component);
+ static bool _mp2kEngage(struct GBAAudioMixer* mixer, uint32_t address);
+ static void _mp2kVblank(struct GBAAudioMixer* mixer);
+ static void _mp2kStep(struct GBAAudioMixer* mixer);
++static void _mp2kThreadStep(struct GBAAudioMixer* mixer);
++
++#ifdef USE_THREAD
++static void* _audioThread(void* arg);
++#endif
+ 
+ void GBAAudioMixerCreate(struct GBAAudioMixer* mixer) {
+ 	memset(mixer, 0, sizeof(*mixer));
+@@ -24,6 +33,7 @@ void GBAAudioMixerCreate(struct GBAAudioMixer* mixer) {
+ 	mixer->engage = _mp2kEngage;
+ 	mixer->vblank = _mp2kVblank;
+ 	mixer->step = _mp2kStep;
++	mixer->threadStep = _mp2kThreadStep;
+ }
+ 
+ void _mp2kInit(void* cpu, struct mCPUComponent* component) {
+@@ -40,6 +50,13 @@ void _mp2kInit(void* cpu, struct mCPUComponent* component) {
+ 	memset(&mixer->context, 0, sizeof(mixer->context));
+ 	memset(&mixer->activeTracks, 0, sizeof(mixer->activeTracks));
+ 
++#ifdef USE_THREAD
++	mixer->threadRunning = false;
++	mixer->sampleBuffer = NULL;
++	mixer->bufferSize = 8192;
++	pthread_mutex_init(&mixer->bufferMutex, NULL);
++#endif
++
+ 	size_t i;
+ 	for (i = 0; i < MP2K_MAX_SOUND_CHANNELS; ++i) {
+ 		mixer->activeTracks[i].channel = &mixer->context.chans[i];
+@@ -49,6 +66,19 @@ void _mp2kInit(void* cpu, struct mCPUComponent* component) {
+ 
+ void _mp2kDeinit(struct mCPUComponent* component) {
+ 	struct GBAAudioMixer* mixer = (struct GBAAudioMixer*) component;
++
++#ifdef USE_THREAD
++	if (mixer->threadRunning) {
++		mixer->threadRunning = false;
++		pthread_join(mixer->audioThread, NULL);
++	}
++	if (mixer->sampleBuffer) {
++		mCircleBufferDeinit(mixer->sampleBuffer);
++		free(mixer->sampleBuffer);
++	}
++	pthread_mutex_destroy(&mixer->bufferMutex);
++#endif
++
+ 	size_t i;
+ 	for (i = 0; i < MP2K_MAX_SOUND_CHANNELS; ++i) {
+ 		mCircleBufferDeinit(&mixer->activeTracks[i].buffer);
+@@ -116,13 +146,14 @@ static void _stepSample(struct GBAAudioMixer* mixer, struct GBAMP2kTrack* track)
+ 		return;
+ 	}
+ 	uint32_t loopOffset = memory->load32(cpu, headerAddress + 0x8, 0);
+-	uint32_t endOffset = memory->load32(cpu, headerAddress + 0xC, 0);
+-	uint32_t sampleBase = headerAddress + 0x10;
+-	uint32_t sampleI = track->samplePlaying;
+-	double sampleOffset = track->currentOffset;
+-	double updates = VIDEO_TOTAL_LENGTH / (mixer->tempo * mixer->p->sampleInterval / OVERSAMPLE);
+-	int nSample;
+-	for (nSample = 0; nSample < updates; ++nSample) {
++			uint32_t endOffset = memory->load32(cpu, headerAddress + 0xC, 0);
++			uint32_t sampleBase = headerAddress + 0x10;
++			uint32_t sampleI = track->samplePlaying;
++			double sampleOffset = track->currentOffset;
++			// Use 48kHz for XQ audio mixing instead of GBA sample rate
++			double xqSampleInterval = GBA_ARM7TDMI_FREQUENCY / 48000;
++			double updates = VIDEO_TOTAL_LENGTH / (mixer->tempo * xqSampleInterval / OVERSAMPLE);
++			int nSample;	for (nSample = 0; nSample < updates; ++nSample) {
+ 		int8_t sample = memory->load8(cpu, sampleBase + sampleI, 0);
+ 
+ 		struct GBAStereoSample stereo = {
+@@ -257,7 +288,9 @@ bool _mp2kEngage(struct GBAAudioMixer* mixer, uint32_t address) {
+ }
+ 
+ void _mp2kStep(struct GBAAudioMixer* mixer) {
+-	mixer->frame += mixer->p->sampleInterval;
++	// Use 48kHz for XQ audio mixing
++	double xqSampleInterval = GBA_ARM7TDMI_FREQUENCY / 48000;
++	mixer->frame += xqSampleInterval;
+ 
+ 	while (mixer->frame >= VIDEO_TOTAL_LENGTH / mixer->tempo) {
+ 		int i;
+@@ -274,7 +307,7 @@ void _mp2kStep(struct GBAAudioMixer* mixer) {
+ 		mixer->frame -= VIDEO_TOTAL_LENGTH / mixer->tempo;
+ 	}
+ 
+-	uint32_t interval = mixer->p->sampleInterval / OVERSAMPLE;
++	uint32_t interval = xqSampleInterval / OVERSAMPLE;
+ 	int i;
+ 	for (i = 0; i < OVERSAMPLE; ++i) {
+ 		struct mStereoSample sample = {0};
+@@ -293,6 +326,56 @@ void _mp2kStep(struct GBAAudioMixer* mixer) {
+ 	}
+ }
+ 
++#ifdef USE_THREAD
++static void* _audioThread(void* arg) {
++	struct GBAAudioMixer* mixer = (struct GBAAudioMixer*) arg;
++	struct mTiming* timing = &mixer->p->p->timing;
++
++	while (mixer->threadRunning) {
++		pthread_mutex_lock(&mixer->bufferMutex);
++
++		size_t available = mCircleBufferCapacity(mixer->sampleBuffer) - mCircleBufferSize(mixer->sampleBuffer);
++		if (available >= 2) {
++			for (size_t i = 0; i < 2; ++i) {
++				_mp2kStep(mixer);
++				mCircleBufferWrite16(mixer->sampleBuffer, mixer->last.left);
++				mCircleBufferWrite16(mixer->sampleBuffer, mixer->last.right);
++			}
++		}
++
++		pthread_mutex_unlock(&mixer->bufferMutex);
++
++		usleep(10000);
++	}
++
++	return NULL;
++}
++
++void _mp2kThreadStep(struct GBAAudioMixer* mixer) {
++	if (!mixer->threadRunning) {
++		mixer->sampleBuffer = malloc(sizeof(struct mCircleBuffer));
++		mCircleBufferInit(mixer->sampleBuffer, mixer->bufferSize);
++		mixer->threadRunning = true;
++		pthread_create(&mixer->audioThread, NULL, _audioThread, mixer);
++	}
++
++	pthread_mutex_lock(&mixer->bufferMutex);
++
++	if (mCircleBufferSize(mixer->sampleBuffer) >= 2) {
++		int16_t left, right;
++		mCircleBufferRead16(mixer->sampleBuffer, &left);
++		mCircleBufferRead16(mixer->sampleBuffer, &right);
++		mixer->last.left = left;
++		mixer->last.right = right;
++	} else {
++		mixer->last.left = 0;
++		mixer->last.right = 0;
++	}
++
++	pthread_mutex_unlock(&mixer->bufferMutex);
++}
++#endif
++
+ void _mp2kVblank(struct GBAAudioMixer* mixer) {
+ 	if (!mixer->contextAddress) {
+ 		return;
+diff --git a/src/gba/audio.c b/src/gba/audio.c
+index a3de77e..82e984a 100644
+--- a/src/gba/audio.c
++++ b/src/gba/audio.c
+@@ -13,6 +13,11 @@
+ #include <mgba/internal/gba/serialize.h>
+ #include <mgba/internal/gba/video.h>
+ 
++#ifdef USE_THREAD
++#include <pthread.h>
++#include <unistd.h>
++#endif
++
+ #define MP2K_LOCK_MAX 8
+ 
+ mLOG_DEFINE_CATEGORY(GBA_AUDIO, "GBA Audio", "gba.audio");
+@@ -47,6 +52,7 @@ void GBAAudioInit(struct GBAAudio* audio, size_t samples) {
+ 
+ 	audio->externalMixing = false;
+ 	audio->mixer = NULL;
++	audio->outputSampleRate = GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval;
+ }
+ 
+ void GBAAudioEnableMixer(struct GBAAudio* audio, struct GBAAudioMixer* mixer) {
+@@ -66,6 +72,15 @@ void GBAAudioEnableMixer(struct GBAAudio* audio, struct GBAAudioMixer* mixer) {
+ 		mixer->activeTracks[i].channel = &mixer->context.chans[i];
+ 		mCircleBufferInit(&mixer->activeTracks[i].buffer, 0x10000);
+ 	}
++
++	// Change sample rate to 48kHz when XQ audio is enabled
++	audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / 48000;
++	audio->outputSampleRate = 48000;
++	
++	// Notify core about sample rate change
++	if (audio->p && audio->p->stream && audio->p->stream->audioRateChanged) {
++		audio->p->stream->audioRateChanged(audio->p->stream, audio->outputSampleRate);
++	}
+ }
+ 
+ void GBAAudioReset(struct GBAAudio* audio) {
+@@ -106,10 +121,15 @@ void GBAAudioReset(struct GBAAudio* audio) {
+ 	audio->enable = false;
+ 
+ 	if (audio->sampleInterval != GBA_ARM7TDMI_FREQUENCY / 0x8000) {
++		// Sample rate was changed (likely by XQ audio), keep it
++		audio->outputSampleRate = GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval;
++	} else {
+ 		audio->sampleInterval = GBA_ARM7TDMI_FREQUENCY / 0x8000;
+-		if (audio->p->stream && audio->p->stream->audioRateChanged) {
+-			audio->p->stream->audioRateChanged(audio->p->stream, GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval);
+-		}
++		audio->outputSampleRate = GBA_ARM7TDMI_FREQUENCY / audio->sampleInterval;
++	}
++	
++	if (audio->p->stream && audio->p->stream->audioRateChanged) {
++		audio->p->stream->audioRateChanged(audio->p->stream, audio->outputSampleRate);
+ 	}
+ 	audio->psg.sampleInterval = audio->sampleInterval;
+ }
+@@ -374,15 +394,32 @@ static int _applyBias(struct GBAAudio* audio, int sample) {
+ void GBAAudioSample(struct GBAAudio* audio, int32_t timestamp) {
+ 	if (audio->externalMixing && audio->mixer && audio->mixer->step) {
+ 		int maxSample = 2 << GBARegisterSOUNDBIASGetResolution(audio->soundbias);
+-
+-		// Call mixer step to update internal state
+-		audio->mixer->step(audio->mixer);
+-
+-		// Get the last sample from the mixer
+-		for (int i = 0; i < maxSample; ++i) {
++		int samplesNeeded = maxSample;
++
++#ifdef USE_THREAD
++		// Use thread-based mixing if available
++		if (audio->mixer->threadStep) {
++			for (int i = 0; i < samplesNeeded; ++i) {
++				audio->mixer->threadStep(audio->mixer);
++				audio->currentSamples[i].left = audio->mixer->last.left;
++				audio->currentSamples[i].right = audio->mixer->last.right;
++			}
++		} else {
++			// Fallback to synchronous mixing
++			for (int i = 0; i < samplesNeeded; ++i) {
++				audio->mixer->step(audio->mixer);
++				audio->currentSamples[i].left = audio->mixer->last.left;
++				audio->currentSamples[i].right = audio->mixer->last.right;
++			}
++		}
++#else
++		// For 48kHz output, call mixer step for each sample
++		for (int i = 0; i < samplesNeeded; ++i) {
++			audio->mixer->step(audio->mixer);
+ 			audio->currentSamples[i].left = audio->mixer->last.left;
+ 			audio->currentSamples[i].right = audio->mixer->last.right;
+ 		}
++#endif
+ 
+ 		audio->sampleIndex = maxSample;
+ 		audio->lastSample += SAMPLE_INTERVAL;
+diff --git a/src/gba/renderers/video-software.c b/src/gba/renderers/video-software.c
+index c5bc37b..776ecf6 100644
+--- a/src/gba/renderers/video-software.c
++++ b/src/gba/renderers/video-software.c
+@@ -88,6 +88,30 @@ void GBAVideoSoftwareRendererCreate(struct GBAVideoSoftwareRenderer* renderer) {
+ 	renderer->d.highlightAmount = 0;
+ 
+ 	renderer->temporaryBuffer = NULL;
++
++	// Initialize high resolution rendering
++	renderer->renderScale = 1;
++	renderer->enableHD = false;
++	renderer->enableMode7HD = false;
++	renderer->enableScaleHD = false;
++	renderer->hdOutputBuffer = NULL;
++	renderer->hdOutputBufferStride = 0;
++	renderer->pixelScaleAlgorithm = PIXEL_SCALE_NEAREST;
++}
++
++void GBAVideoSoftwareRendererSetRenderScale(struct GBAVideoSoftwareRenderer* renderer, int scale) {
++	if (scale < 1 || scale > 5) {
++		scale = 1;
++	}
++
++	// Free old HD buffer if scale changed
++	if (renderer->renderScale != scale && renderer->hdOutputBuffer) {
++		free(renderer->hdOutputBuffer);
++		renderer->hdOutputBuffer = NULL;
++		renderer->hdOutputBufferStride = 0;
++	}
++
++	renderer->renderScale = scale;
+ }
+ 
+ static void GBAVideoSoftwareRendererInit(struct GBAVideoRenderer* renderer) {
+@@ -160,6 +184,13 @@ static void GBAVideoSoftwareRendererReset(struct GBAVideoRenderer* renderer) {
+ 
+ static void GBAVideoSoftwareRendererDeinit(struct GBAVideoRenderer* renderer) {
+ 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
++
++	// Free high resolution buffer
++	if (softwareRenderer->hdOutputBuffer) {
++		free(softwareRenderer->hdOutputBuffer);
++		softwareRenderer->hdOutputBuffer = NULL;
++	}
++
+ 	UNUSED(softwareRenderer);
+ }
+ 
+@@ -739,6 +770,22 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
+ 		mappedMemoryFree(softwareRenderer->temporaryBuffer, GBA_VIDEO_HORIZONTAL_PIXELS * GBA_VIDEO_VERTICAL_PIXELS * 4);
+ 		softwareRenderer->temporaryBuffer = 0;
+ 	}
++
++	// Scale entire frame to HD resolution
++	if (softwareRenderer->renderScale > 1) {
++		if (!softwareRenderer->hdOutputBuffer) {
++			int hdWidth = GBA_VIDEO_HORIZONTAL_PIXELS * softwareRenderer->renderScale;
++			int hdHeight = GBA_VIDEO_VERTICAL_PIXELS * softwareRenderer->renderScale;
++			softwareRenderer->hdOutputBufferStride = hdWidth;
++			softwareRenderer->hdOutputBuffer = malloc(hdWidth * hdHeight * BYTES_PER_PIXEL);
++		}
++
++		// Scale all scanlines
++		for (int y = 0; y < GBA_VIDEO_VERTICAL_PIXELS; ++y) {
++			_scaleToHD(softwareRenderer, y);
++		}
++	}
++
+ 	softwareRenderer->bg[2].sx = softwareRenderer->bg[2].refx;
+ 	softwareRenderer->bg[2].sy = softwareRenderer->bg[2].refy;
+ 	softwareRenderer->bg[3].sx = softwareRenderer->bg[3].refx;
+@@ -774,8 +821,118 @@ static void GBAVideoSoftwareRendererFinishFrame(struct GBAVideoRenderer* rendere
+ 
+ static void GBAVideoSoftwareRendererGetPixels(struct GBAVideoRenderer* renderer, size_t* stride, const void** pixels) {
+ 	struct GBAVideoSoftwareRenderer* softwareRenderer = (struct GBAVideoSoftwareRenderer*) renderer;
+-	*stride = softwareRenderer->outputBufferStride;
+-	*pixels = softwareRenderer->outputBuffer;
++
++	// Return high resolution buffer if enabled
++	if (softwareRenderer->renderScale > 1 && softwareRenderer->hdOutputBuffer) {
++		*stride = softwareRenderer->hdOutputBufferStride;
++		*pixels = softwareRenderer->hdOutputBuffer;
++	} else {
++		*stride = softwareRenderer->outputBufferStride;
++		*pixels = softwareRenderer->outputBuffer;
++	}
++}
++
++// Pixel art scaling algorithms - Scale2x
++static inline mColor _scale2xPixel(const mColor* src, int x, int y, int stride) {
++	mColor E = src[y * stride + x];
++	mColor A = (y > 0) ? src[(y - 1) * stride + x] : E;
++	mColor B = (y > 0 && x < GBA_VIDEO_HORIZONTAL_PIXELS - 1) ? src[(y - 1) * stride + x + 1] : E;
++	mColor C = (x < GBA_VIDEO_HORIZONTAL_PIXELS - 1) ? src[y * stride + x + 1] : E;
++	mColor D = (y < GBA_VIDEO_VERTICAL_PIXELS - 1 && x < GBA_VIDEO_HORIZONTAL_PIXELS - 1) ? src[(y + 1) * stride + x + 1] : E;
++	mColor F = (y < GBA_VIDEO_VERTICAL_PIXELS - 1) ? src[(y + 1) * stride + x] : E;
++	mColor G = (y < GBA_VIDEO_VERTICAL_PIXELS - 1 && x > 0) ? src[(y + 1) * stride + x - 1] : E;
++	mColor H = (x > 0) ? src[y * stride + x - 1] : E;
++	mColor I = (y > 0 && x > 0) ? src[(y - 1) * stride + x - 1] : E;
++
++	// E0 = I == B && B != F && D != I ? D : E
++	mColor E0 = (I == B && B != F && D != I) ? D : E;
++	// E1 = C == D && D != H && B != C ? B : E
++	mColor E1 = (C == D && D != H && B != C) ? B : E;
++	// E2 = G == F && F != A && D != G ? D : E
++	mColor E2 = (G == F && F != A && D != G) ? D : E;
++	// E3 = A == H && H != C && G != A ? G : E
++	mColor E3 = (A == H && H != C && G != A) ? G : E;
++
++	return E0; // Return top-left pixel
++}
++
++// High resolution scaling helper - pixel art scaling
++static void _scaleToHD(struct GBAVideoSoftwareRenderer* renderer, int y) {
++	if (renderer->renderScale <= 1 || !renderer->hdOutputBuffer) {
++		return;
++	}
++
++	const mColor* srcBuffer = renderer->outputBuffer;
++	int srcStride = renderer->outputBufferStride;
++	int scale = renderer->renderScale;
++
++	// Scale using pixel art algorithm
++	for (int sy = 0; sy < scale; ++sy) {
++		int hdY = y * scale + sy;
++		if (hdY >= GBA_VIDEO_VERTICAL_PIXELS * scale) {
++			break;
++		}
++
++		mColor* dstRow = &renderer->hdOutputBuffer[renderer->hdOutputBufferStride * hdY];
++
++		for (int x = 0; x < GBA_VIDEO_HORIZONTAL_PIXELS; ++x) {
++			mColor srcPixel = srcBuffer[srcStride * y + x];
++
++			if (renderer->pixelScaleAlgorithm == PIXEL_SCALE_NEAREST) {
++				// Simple nearest neighbor scaling
++				for (int sx = 0; sx < scale; ++sx) {
++					int hdX = x * scale + sx;
++					if (hdX >= GBA_VIDEO_HORIZONTAL_PIXELS * scale) {
++						break;
++					}
++					dstRow[hdX] = srcPixel;
++				}
++			} else if (renderer->pixelScaleAlgorithm == PIXEL_SCALE_SCALE2X && scale == 2) {
++				// Scale2x algorithm for 2x scaling
++				mColor E = srcPixel;
++				mColor A = (y > 0) ? srcBuffer[srcStride * (y - 1) + x] : E;
++				mColor B = (y > 0 && x < GBA_VIDEO_HORIZONTAL_PIXELS - 1) ? srcBuffer[srcStride * (y - 1) + x + 1] : E;
++				mColor C = (x < GBA_VIDEO_HORIZONTAL_PIXELS - 1) ? srcBuffer[srcStride * y + x + 1] : E;
++				mColor D = (y < GBA_VIDEO_VERTICAL_PIXELS - 1 && x < GBA_VIDEO_HORIZONTAL_PIXELS - 1) ? srcBuffer[srcStride * (y + 1) + x + 1] : E;
++				mColor F = (y < GBA_VIDEO_VERTICAL_PIXELS - 1) ? srcBuffer[srcStride * (y + 1) + x] : E;
++				mColor G = (y < GBA_VIDEO_VERTICAL_PIXELS - 1 && x > 0) ? srcBuffer[srcStride * (y + 1) + x - 1] : E;
++				mColor H = (x > 0) ? srcBuffer[srcStride * y + x - 1] : E;
++				mColor I = (y > 0 && x > 0) ? srcBuffer[srcStride * (y - 1) + x - 1] : E;
++
++				mColor E0 = (I == B && B != F && D != I) ? D : E;
++				mColor E1 = (C == D && D != H && B != C) ? B : E;
++				mColor E2 = (G == F && F != A && D != G) ? D : E;
++				mColor E3 = (A == H && H != C && G != A) ? G : E;
++
++				int hdX = x * scale;
++				if (hdX + 1 < GBA_VIDEO_HORIZONTAL_PIXELS * scale) {
++					dstRow[hdX] = E0;
++					dstRow[hdX + 1] = E1;
++				} else if (hdX < GBA_VIDEO_HORIZONTAL_PIXELS * scale) {
++					dstRow[hdX] = E0;
++				}
++
++				// Next row (E2, E3) will be handled in next sy iteration
++				if (sy == 1) {
++					if (hdX + 1 < GBA_VIDEO_HORIZONTAL_PIXELS * scale) {
++						dstRow[hdX] = E2;
++						dstRow[hdX + 1] = E3;
++					} else if (hdX < GBA_VIDEO_HORIZONTAL_PIXELS * scale) {
++						dstRow[hdX] = E2;
++					}
++				}
++			} else {
++				// For other scales, use nearest neighbor
++				for (int sx = 0; sx < scale; ++sx) {
++					int hdX = x * scale + sx;
++					if (hdX >= GBA_VIDEO_HORIZONTAL_PIXELS * scale) {
++						break;
++					}
++					dstRow[hdX] = srcPixel;
++				}
++			}
++		}
++	}
+ }
+ 
+ static void GBAVideoSoftwareRendererPutPixels(struct GBAVideoRenderer* renderer, size_t stride, const void* pixels) {
+diff --git a/src/platform/libretro/libretro.c b/src/platform/libretro/libretro.c
+index 41094f9..d977edc 100644
+--- a/src/platform/libretro/libretro.c
++++ b/src/platform/libretro/libretro.c
+@@ -24,6 +24,7 @@
+ #include <mgba/gba/core.h>
+ #include <mgba/gba/interface.h>
+ #include <mgba/internal/gba/gba.h>
++#include <mgba/internal/gba/renderers/video-software.h>
+ #endif
+ #include <mgba-util/memory.h>
+ #include <mgba-util/vfs.h>
+@@ -338,6 +339,44 @@ static void _loadXQAudioSettings(struct mCore* core) {
+ 			GBACoreEnableMixer(core);
+ 		}
+ 	}
++
++	// Handle render scale option
++	var.key = "mgba_render_scale";
++	var.value = 0;
++
++	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
++		int scale = 1;
++		if (strcmp(var.value, "2x") == 0) {
++			scale = 2;
++		} else if (strcmp(var.value, "3x") == 0) {
++			scale = 3;
++		} else if (strcmp(var.value, "4x") == 0) {
++			scale = 4;
++		} else if (strcmp(var.value, "5x") == 0) {
++			scale = 5;
++		}
++
++		if (core->videoRenderer && core->platform == mPLATFORM_GBA) {
++			struct GBAVideoSoftwareRenderer* renderer = (struct GBAVideoSoftwareRenderer*) core->videoRenderer;
++			GBAVideoSoftwareRendererSetRenderScale(renderer, scale);
++		}
++	}
++
++	// Handle pixel scale algorithm option
++	var.key = "mgba_pixel_scale";
++	var.value = 0;
++
++	if (environCallback(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value) {
++		int algorithm = PIXEL_SCALE_NEAREST;
++		if (strcmp(var.value, "scale2x") == 0) {
++			algorithm = PIXEL_SCALE_SCALE2X;
++		}
++
++		if (core->videoRenderer && core->platform == mPLATFORM_GBA) {
++			struct GBAVideoSoftwareRenderer* renderer = (struct GBAVideoSoftwareRenderer*) core->videoRenderer;
++			renderer->pixelScaleAlgorithm = algorithm;
++		}
++	}
+ }
+ #endif
+ 
+diff --git a/src/platform/libretro/libretro_core_options.h b/src/platform/libretro/libretro_core_options.h
+index c1cc62f..3678707 100644
+--- a/src/platform/libretro/libretro_core_options.h
++++ b/src/platform/libretro/libretro_core_options.h
+@@ -236,6 +236,37 @@ struct retro_core_option_v2_definition option_defs_us[] = {
+       },
+       "disabled"
+    },
++   {
++      "mgba_render_scale",
++      "Render Scale (Restart)",
++      NULL,
++      "Scales the internal rendering resolution for improved visual quality. Higher values provide sharper output at the cost of performance.",
++      NULL,
++      "video",
++      {
++         { "1x", "1x (Original)" },
++         { "2x", "2x" },
++         { "3x", "3x" },
++         { "4x", "4x" },
++         { "5x", "5x" },
++         { NULL, NULL },
++      },
++      "1x"
++   },
++   {
++      "mgba_pixel_scale",
++      "Pixel Scale Algorithm (Restart)",
++      NULL,
++      "Selects the pixel art scaling algorithm for high resolution rendering. Scale2x provides cleaner edges while maintaining the original pixel art style.",
++      NULL,
++      "video",
++      {
++         { "nearest", "Nearest Neighbor" },
++         { "scale2x", "Scale2x (Recommended)" },
++         { NULL, NULL },
++      },
++      "nearest"
++   },
+    {
+       "mgba_audio_low_pass_range",
+       "Audio Filter Level",
