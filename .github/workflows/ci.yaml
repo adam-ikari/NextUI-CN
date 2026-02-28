@@ -93,6 +93,19 @@ jobs:
           echo "core-hash=${CORE_HASH}" >> "$GITHUB_OUTPUT"
           echo "Core ${{ matrix.core }} hash: ${CORE_HASH}"
 
+      - name: Get patch hash
+        id: patch-hash
+        run: |
+          if [[ -f "workspace/${PLATFORM}/cores/patches/${{ matrix.core }}.patch" ]]; then
+            PATCH_HASH=$(sha256sum "workspace/${PLATFORM}/cores/patches/${{ matrix.core }}.patch" | cut -d' ' -f1)
+          elif [[ -f "workspace/all/cores/patches/${{ matrix.core }}.patch" ]]; then
+            PATCH_HASH=$(sha256sum "workspace/all/cores/patches/${{ matrix.core }}.patch" | cut -d' ' -f1)
+          else
+            PATCH_HASH="none"
+          fi
+          echo "patch-hash=${PATCH_HASH}" >> "$GITHUB_OUTPUT"
+          echo "Patch ${{ matrix.core }} hash: ${PATCH_HASH}"
+
       - name: Cache toolchains
         uses: actions/cache@v4
         with:
@@ -103,7 +116,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: workspace/${{ env.PLATFORM }}/cores/output/${{ matrix.core }}_libretro.so
-          key: core-${{ env.PLATFORM }}-${{ matrix.core }}-${{ steps.core-hash.outputs.core-hash }}-${{ steps.toolchain-hash.outputs.toolchain-hash }}
+          key: core-${{ env.PLATFORM }}-${{ matrix.core }}-${{ steps.core-hash.outputs.core-hash }}-${{ steps.toolchain-hash.outputs.toolchain-hash }}-${{ steps.patch-hash.outputs.patch-hash }}
 
       - name: Restore toolchain from cache
         run: |
@@ -146,15 +159,29 @@ jobs:
       - name: Setup
         run: make setup
 
-      - name: Check if core is cached
+- name: Check if core is cached
         id: core-cached
         run: |
-          if [[ -f "workspace/${PLATFORM}/cores/output/${{ matrix.core }}_libretro.so" ]]; then
+          if [[ -f "workspace/${{ PLATFORM }}/cores/output/${{ matrix.core }}_libretro.so" ]]; then
             echo "core-exists=true" >> "$GITHUB_OUTPUT"
             echo "Core ${{ matrix.core }} already compiled, skipping build"
           else
             echo "core-exists=false" >> "$GITHUB_OUTPUT"
             echo "Core ${{ matrix.core }} not cached, will build"
+          fi
+
+      - name: Remove .patched file if patch changed
+        if: steps.core-cached.outputs.core-exists == 'true'
+        run: |
+          if [[ -d "workspace/${PLATFORM}/cores/src/${{ matrix.core }}/.git" ]]; then
+            cd "workspace/${{ PLATFORM }}/cores/src/${{ matrix.core }}"
+            # Check if .patched file exists
+            if [[ -f ".patched" ]]; then
+              echo ".patched file exists, removing to force patch reapplication"
+              rm -f .patched .patched-all
+              # Also remove output file to force rebuild
+              rm -f "workspace/${PLATFORM}/cores/output/${{ matrix.core }}_libretro.so"
+            fi
           fi
 
       - name: Build ${{ matrix.core }} core
