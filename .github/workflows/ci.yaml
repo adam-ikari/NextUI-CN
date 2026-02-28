@@ -92,6 +92,22 @@ jobs:
           echo "core-hash=${CORE_HASH}" >> "$GITHUB_OUTPUT"
           echo "Core ${{ matrix.core }} hash: ${CORE_HASH}"
 
+      - name: Get patch hash
+        id: patch-hash
+        run: |
+          PATCH_HASH="none"
+          # Check for single patch file in patches/
+          if [[ -f "patches/${{ matrix.core }}.patch" ]]; then
+            PATCH_HASH=$(sha256sum "patches/${{ matrix.core }}.patch" | cut -d' ' -f1)
+          fi
+          # Check for patch directory in all/cores/patches/
+          if [[ -d "workspace/all/cores/patches/${{ matrix.core }}" ]]; then
+            # Calculate hash of all patch files combined
+            PATCH_HASH=$(find "workspace/all/cores/patches/${{ matrix.core }}" -name "*.patch" -type f -exec sha256sum {} + | sort | sha256sum | cut -d' ' -f1)
+          fi
+          echo "patch-hash=${PATCH_HASH}" >> "$GITHUB_OUTPUT"
+          echo "Patch hash for ${{ matrix.core }}: ${PATCH_HASH}"
+
       - name: Cache toolchains
         uses: actions/cache@v4
         with:
@@ -102,7 +118,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: workspace/${{ env.PLATFORM }}/cores/output/${{ matrix.core }}_libretro.so
-          key: core-${{ env.PLATFORM }}-${{ matrix.core }}-${{ steps.core-hash.outputs.core-hash }}-${{ steps.toolchain-hash.outputs.toolchain-hash }}
+          key: core-${{ env.PLATFORM }}-${{ matrix.core }}-${{ steps.core-hash.outputs.core-hash }}-${{ steps.toolchain-hash.outputs.toolchain-hash }}-${{ steps.patch-hash.outputs.patch-hash }}
 
       - name: Restore toolchain from cache
         run: |
