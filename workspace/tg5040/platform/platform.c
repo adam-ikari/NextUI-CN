@@ -3411,6 +3411,25 @@ static void bt_test_status_cb(btmg_state_t status)
 		else
 			bt_manager_gap_set_io_capability(BTMG_IO_CAP_KEYBOARDDISPLAY);
 		bt_manager_set_discovery_mode(BTMG_SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+		// Auto-start discovery when Bluetooth is enabled
+		// Check if discovery is already running to avoid duplicate attempts
+		if(!bt_manager_is_discovering()) {
+			btlog("Starting auto-discovery\n");
+			btmg_scan_filter_t scan_filter = {0};
+			scan_filter.type = BTMG_SCAN_BR_EDR;
+			scan_filter.rssi = -90;
+			int ret = bt_manager_discovery_filter(&scan_filter);
+			if (ret) {
+				LOG_error("BT discovery filter failed: %d\n", ret);
+				return;
+			}
+			ret = bt_manager_start_discovery();
+			if (ret) {
+				LOG_error("BT start discovery failed: %d\n", ret);
+			}
+		} else {
+			btlog("Discovery already running, skipping auto-start\n");
+		}
 	} else if (status == BTMG_STATE_TURNING_ON) {
 		btlog("bt is turnning on.\n");
 	} else if (status == BTMG_STATE_TURNING_OFF) {
