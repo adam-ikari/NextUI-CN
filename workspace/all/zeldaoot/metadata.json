@@ -30,22 +30,22 @@
   "control_schemes": [
     {
       "name": "Default",
-      "description": "Standard N64 layout",
+      "description": "默认布局 (Z=L1, R=R1, L=L2, R2+ABXY=C键)",
       "dpad": "dpad",
       "a": "a_button",
       "b": "b_button",
-      "x": "x_button",
-      "y": "y_button",
+      "x": "c_left",
+      "y": "c_right",
       "start": "start",
       "select": "select",
-      "l": "l_button",
-      "r": "r_button",
+      "l": "l2",
+      "r": "r1",
       "l2": "l_trigger",
-      "r2": "r_trigger"
+      "r2": "c_modifier"
     },
     {
       "name": "Classic",
-      "description": "Classic controller layout",
+      "description": "经典布局",
       "dpad": "dpad",
       "a": "b_button",
       "b": "a_button",
@@ -60,7 +60,7 @@
     },
     {
       "name": "Arcade",
-      "description": "Arcade-style layout",
+      "description": "街机布局",
       "dpad": "dpad",
       "a": "a_button",
       "b": "b_button",
@@ -75,41 +75,47 @@
     }
   ],
   "combo_keys": {
-    "r2_a": {
-      "name": "R2 + A",
-      "description": "快速瞄准",
+    "c_up": {
+      "name": "C 上",
+      "description": "视角上/道具1",
       "combo": ["r2", "a"],
-      "action": "n64_z"
-    },
-    "r2_b": {
-      "name": "R2 + B",
-      "description": "快速攻击",
-      "combo": ["r2", "b"],
-      "action": "n64_b"
-    },
-    "r2_x": {
-      "name": "R2 + X",
-      "description": "C 上切换",
-      "combo": ["r2", "x"],
       "action": "n64_c_up"
     },
-    "r2_y": {
-      "name": "R2 + Y",
-      "description": "C 右切换",
+    "c_down": {
+      "name": "C 下",
+      "description": "视角下/道具2",
+      "combo": ["r2", "b"],
+      "action": "n64_c_down"
+    },
+    "c_left": {
+      "name": "C 左",
+      "description": "视角左/道具3",
+      "combo": ["r2", "x"],
+      "action": "n64_c_left"
+    },
+    "c_right": {
+      "name": "C 右",
+      "description": "视角右/道具4",
       "combo": ["r2", "y"],
       "action": "n64_c_right"
     },
-    "l2_a": {
-      "name": "L2 + A",
-      "description": "使用道具 A",
-      "combo": ["l2", "a"],
-      "action": "n64_a"
+    "z_trigger": {
+      "name": "Z 键",
+      "description": "瞄准/锁定",
+      "combo": ["l1"],
+      "action": "n64_z"
     },
-    "l2_b": {
-      "name": "L2 + B",
-      "description": "使用道具 B",
-      "combo": ["l2", "b"],
-      "action": "n64_b"
+    "r_trigger": {
+      "name": "R 键",
+      "description": "右侧视点",
+      "combo": ["r1"],
+      "action": "n64_r"
+    },
+    "l_trigger": {
+      "name": "L 键",
+      "description": "左侧视点",
+      "combo": ["l2"],
+      "action": "n64_l"
     },
     "r2_dpad": {
       "name": "R2 + 方向键",

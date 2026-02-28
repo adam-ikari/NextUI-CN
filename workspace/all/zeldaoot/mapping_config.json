@@ -11,15 +11,15 @@
       "dpad_right": ["dpad_right"],
       "a_button": ["button_a"],
       "b_button": ["button_b"],
-      "c_up": ["button_x"],
-      "c_down": ["left_shoulder"],
-      "c_left": ["right_shoulder"],
-      "c_right": ["button_y"],
+      "c_up": ["r2", "button_a"],
+      "c_down": ["r2", "button_b"],
+      "c_left": ["r2", "button_x"],
+      "c_right": ["r2", "button_y"],
       "start": ["start"],
       "select": ["select"],
-      "l_trigger": ["button_l", "l1", "l2"],
-      "r_trigger": ["button_r", "r1", "r2"],
-      "z_trigger": ["l2", "r2"]
+      "l_trigger": ["l2"],
+      "r_trigger": ["r1"],
+      "z_trigger": ["l1"]
     }
   },
   "action_mappings": {
@@ -42,56 +42,56 @@
     "n64_c_up": {
       "name": "C 上",
       "description": "视角上/道具",
-      "default": ["button_x"],
-      "current": ["button_x"],
+      "default": ["r2", "button_a"],
+      "current": ["r2", "button_a"],
       "allow_combo": true,
-      "max_combo": 3
+      "max_combo": 2
     },
     "n64_c_down": {
       "name": "C 下",
       "description": "视角下/道具",
-      "default": ["left_shoulder"],
-      "current": ["left_shoulder"],
+      "default": ["r2", "button_b"],
+      "current": ["r2", "button_b"],
       "allow_combo": true,
-      "max_combo": 3
+      "max_combo": 2
     },
     "n64_c_left": {
       "name": "C 左",
       "description": "视角左/道具",
-      "default": ["right_shoulder"],
-      "current": ["right_shoulder"],
+      "default": ["r2", "button_x"],
+      "current": ["r2", "button_x"],
       "allow_combo": true,
-      "max_combo": 3
+      "max_combo": 2
     },
     "n64_c_right": {
       "name": "C 右",
       "description": "视角右/道具",
-      "default": ["button_y"],
-      "current": ["button_y"],
+      "default": ["r2", "button_y"],
+      "current": ["r2", "button_y"],
       "allow_combo": true,
-      "max_combo": 3
+      "max_combo": 2
     },
     "n64_z": {
       "name": "Z 键",
       "description": "瞄准/锁定",
-      "default": ["l2", "r2"],
-      "current": ["l2", "r2"],
+      "default": ["l1"],
+      "current": ["l1"],
       "allow_combo": true,
       "max_combo": 1
     },
     "n64_l": {
       "name": "L 键",
       "description": "左侧视点",
-      "default": ["button_l", "l1"],
-      "current": ["button_l", "l1"],
+      "default": ["l2"],
+      "current": ["l2"],
       "allow_combo": true,
       "max_combo": 1
     },
     "n64_r": {
       "name": "R 键",
       "description": "右侧视点",
-      "default": ["button_r", "r1"],
-      "current": ["button_r", "r1"],
+      "default": ["r1"],
+      "current": ["r1"],
       "allow_combo": true,
       "max_combo": 1
     },
@@ -139,28 +139,48 @@
   "combo_presets": {
     "快速瞄准": {
       "name": "快速瞄准",
-      "combo": ["r2", "button_a"],
+      "combo": ["l1"],
       "action": "n64_z"
     },
-    "快速攻击": {
-      "name": "快速攻击",
-      "combo": ["r2", "button_b"],
-      "action": "n64_b"
+    "快速右侧视点": {
+      "name": "快速右侧视点",
+      "combo": ["r1"],
+      "action": "n64_r"
     },
-    "切换道具": {
-      "name": "切换道具",
-      "combo": ["l2", "button_x"],
+    "快速左侧视点": {
+      "name": "快速左侧视点",
+      "combo": ["l2"],
+      "action": "n64_l"
+    },
+    "C上道具": {
+      "name": "C 上道具",
+      "combo": ["r2", "button_a"],
       "action": "n64_c_up"
+    },
+    "C下道具": {
+      "name": "C 下道具",
+      "combo": ["r2", "button_b"],
+      "action": "n64_c_down"
+    },
+    "C左道具": {
+      "name": "C 左道具",
+      "combo": ["r2", "button_x"],
+      "action": "n64_c_left"
+    },
+    "C右道具": {
+      "name": "C 右道具",
+      "combo": ["r2", "button_y"],
+      "action": "n64_c_right"
     },
     "旋转视角": {
       "name": "旋转视角",
       "combo": ["r2", "dpad_up"],
-      "action": "n64_c_up"
+      "action": "n64_camera"
     }
   },
   "settings": {
     "allow_modifiers": true,
-    "modifier_keys": ["l2", "r2", "select"],
+    "modifier_keys": ["r2", "l2", "select"],
     "show_combo_hints": true,
     "combo_hint_duration": 2000,
     "debounce_time": 100,

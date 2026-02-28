@@ -1,1 +1,209 @@
-{"version": "2.0.0", "schemes": {"Default": {"name": "默认布局", "description": "标准 N64 手柄布局", "mappings": {"dpad_up": ["dpad_up"], "dpad_down": ["dpad_down"], "dpad_left": ["dpad_left"], "dpad_right": ["dpad_right"], "a_button": ["button_a"], "b_button": ["button_b"], "c_up": ["button_x"], "c_down": ["left_shoulder"], "c_left": ["right_shoulder"], "c_right": ["button_y"], "start": ["start"], "select": ["select"], "l_trigger": ["button_l", "l1"], "r_trigger": ["button_r", "r1"], "z_trigger": ["l2", "r2"]}, "Classic": {"name": "经典布局", "description": "经典手柄布局", "mappings": {"dpad_up": ["dpad_up"], "dpad_down": ["dpad_down"], "dpad_left": ["dpad_left"], "dpad_right": ["dpad_right"], "a_button": ["button_b"], "b_button": ["button_a"], "c_up": ["button_y"], "c_down": ["right_shoulder"], "c_left": ["button_x"], "c_right": ["left_shoulder"], "start": ["start"], "select": ["select"], "l_trigger": ["button_l", "l1"], "r_trigger": ["button_r", "r1"], "z_trigger": ["l2", "r2"]}, "Arcade": {"name": "街机布局", "description": "街机风格布局", "mappings": {"dpad_up": ["dpad_up"], "dpad_down": ["dpad_down"], "dpad_left": ["dpad_left"], "dpad_right": ["dpad_right"], "a_button": ["button_a"], "b_button": ["button_b"], "c_up": ["left_shoulder"], "c_down": ["right_shoulder"], "c_left": ["button_x"], "c_right": ["button_y"], "start": ["start"], "select": ["select"], "l_trigger": ["button_l", "l1"], "r_trigger": ["button_r", "r1"], "z_trigger": ["l2", "r2"]}}, "available_buttons": ["dpad_up", "dpad_down", "dpad_left", "dpad_right", "button_a", "button_b", "button_x", "button_y", "start", "select", "button_l", "button_r", "l1", "r1", "l2", "r2", "left_shoulder", "right_shoulder", "left_stick", "right_stick"], "combos": {"R2+A": ["r2", "button_a"], "R2+B": ["r2", "button_b"], "R2+X": ["r2", "button_x"], "R2+Y": ["r2", "button_y"], "L2+A": ["l2", "button_a"], "L2+B": ["l2", "button_b"], "L2+X": ["l2", "button_x"], "L2+Y": ["l2", "button_y"], "R2+Dpad": ["r2", "dpad_up", "dpad_down", "dpad_left", "dpad_right"], "L2+Dpad": ["l2", "dpad_up", "dpad_down", "dpad_left", "dpad_right"], "R2+Start": ["r2", "start"], "L2+Start": ["l2", "start"]}, "custom_mappings": {}, "mapping_editor": {"auto_detect": true, "allow_combos": true, "max_combo_length": 3, "conflict_detection": true, "show_hint": true}, "quick_actions": {"save_state": {"combo": ["select", "start"], "description": "快速存档", "category": "gameplay"}, "load_state": {"combo": ["select", "b"], "description": "快速读档", "category": "gameplay"}, "screenshot": {"combo": ["select", "x"], "description": "截图", "category": "system"}, "fast_forward": {"combo": ["select", "dpad_right"], "description": "加速", "category": "gameplay"}, "rewind": {"combo": ["select", "dpad_left"], "description": "倒带", "category": "gameplay"}, "toggle_menu": {"combo": ["start", "select"], "description": "切换菜单", "category": "system"}, "exit_game": {"combo": ["start", "b"], "description": "退出游戏", "category": "system"}, "save_slot_1": {"combo": ["r2", "dpad_up"], "description": "存档槽 1", "category": "save"}, "save_slot_2": {"combo": ["r2", "dpad_right"], "description": "存档槽 2", "category": "save"}, "save_slot_3": {"combo": ["r2", "dpad_down"], "description": "存档槽 3", "category": "save"}, "save_slot_4": {"combo": ["r2", "dpad_left"], "description": "存档槽 4", "category": "save"}, "load_slot_1": {"combo": ["l2", "dpad_up"], "description": "读档槽 1", "category": "save"}, "load_slot_2": {"combo": ["l2", "dpad_right"], "description": "读档槽 2", "category": "save"}, "load_slot_3": {"combo": ["l2", "dpad_down"], "description": "读档槽 3", "category": "save"}, "load_slot_4": {"combo": ["l2", "dpad_left"], "description": "读档槽 4", "category": "save"}}, "minui_theme": {"colors": {"background": "#000000", "text": "#FFFFFF", "accent": "#7A2155", "selected_bg": "#FFFFFF", "selected_text": "#000000", "list_bg": "#333333", "border": "#000000", "disabled": "#666666", "combo_hint": "#FFD700"}, "font": {"name": "DreamHanSansCN-W16", "size": 24}, "layout": {"corner_radius": 8, "item_height": 48, "item_spacing": 8, "padding": 16}}}
+{
+  "version": "2.0.0",
+  "schemes": {
+    "Default": {
+      "name": "默认布局",
+      "description": "标准 N64 手柄布局 (Z=L1, R=R1, L=L2, R2+ABXY=C键)",
+      "mappings": {
+        "dpad_up": ["dpad_up"],
+        "dpad_down": ["dpad_down"],
+        "dpad_left": ["dpad_left"],
+        "dpad_right": ["dpad_right"],
+        "a_button": ["button_a"],
+        "b_button": ["button_b"],
+        "c_up": ["r2", "button_a"],
+        "c_down": ["r2", "button_b"],
+        "c_left": ["r2", "button_x"],
+        "c_right": ["r2", "button_y"],
+        "start": ["start"],
+        "select": ["select"],
+        "l_trigger": ["l2"],
+        "r_trigger": ["r1"],
+        "z_trigger": ["l1"]
+      }
+    },
+    "Classic": {
+      "name": "经典布局",
+      "description": "经典手柄布局",
+      "mappings": {
+        "dpad_up": ["dpad_up"],
+        "dpad_down": ["dpad_down"],
+        "dpad_left": ["dpad_left"],
+        "dpad_right": ["dpad_right"],
+        "a_button": ["button_b"],
+        "b_button": ["button_a"],
+        "c_up": ["button_y"],
+        "c_down": ["right_shoulder"],
+        "c_left": ["button_x"],
+        "c_right": ["left_shoulder"],
+        "start": ["start"],
+        "select": ["select"],
+        "l_trigger": ["button_l", "l1"],
+        "r_trigger": ["button_r", "r1"],
+        "z_trigger": ["l2", "r2"]
+      }
+    },
+    "Arcade": {
+      "name": "街机布局",
+      "description": "街机风格布局",
+      "mappings": {
+        "dpad_up": ["dpad_up"],
+        "dpad_down": ["dpad_down"],
+        "dpad_left": ["dpad_left"],
+        "dpad_right": ["dpad_right"],
+        "a_button": ["button_a"],
+        "b_button": ["button_b"],
+        "c_up": ["left_shoulder"],
+        "c_down": ["right_shoulder"],
+        "c_left": ["button_x"],
+        "c_right": ["button_y"],
+        "start": ["start"],
+        "select": ["select"],
+        "l_trigger": ["button_l", "l1"],
+        "r_trigger": ["button_r", "r1"],
+        "z_trigger": ["l2", "r2"]
+      }
+    }
+  },
+  "available_buttons": ["dpad_up", "dpad_down", "dpad_left", "dpad_right", "button_a", "button_b", "button_x", "button_y", "start", "select", "button_l", "button_r", "l1", "r1", "l2", "r2", "left_shoulder", "right_shoulder", "left_stick", "right_stick"],
+  "combos": {
+    "C上": {
+      "name": "C 上",
+      "combo": ["r2", "button_a"],
+      "description": "视角上/道具1"
+    },
+    "C下": {
+      "name": "C 下",
+      "combo": ["r2", "button_b"],
+      "description": "视角下/道具2"
+    },
+    "C左": {
+      "name": "C 左",
+      "combo": ["r2", "button_x"],
+      "description": "视角左/道具3"
+    },
+    "C右": {
+      "name": "C 右",
+      "combo": ["r2", "button_y"],
+      "description": "视角右/道具4"
+    },
+    "L2+ABXY": {
+      "name": "L2 组合键",
+      "combo": ["l2", "button_a", "button_b", "button_x", "button_y"],
+      "description": "L2修饰键"
+    },
+    "R2+Start": {
+      "name": "R2 + Start",
+      "combo": ["r2", "start"],
+      "description": "菜单快捷键"
+    }
+  },
+  "custom_mappings": {},
+  "mapping_editor": {
+    "auto_detect": true,
+    "allow_combos": true,
+    "max_combo_length": 3,
+    "conflict_detection": true,
+    "show_hint": true
+  },
+  "quick_actions": {
+    "save_state": {
+      "combo": ["select", "start"],
+      "description": "快速存档",
+      "category": "gameplay"
+    },
+    "load_state": {
+      "combo": ["select", "b"],
+      "description": "快速读档",
+      "category": "gameplay"
+    },
+    "screenshot": {
+      "combo": ["select", "x"],
+      "description": "截图",
+      "category": "system"
+    },
+    "fast_forward": {
+      "combo": ["select", "dpad_right"],
+      "description": "加速",
+      "category": "gameplay"
+    },
+    "rewind": {
+      "combo": ["select", "dpad_left"],
+      "description": "倒带",
+      "category": "gameplay"
+    },
+    "toggle_menu": {
+      "combo": ["start", "select"],
+      "description": "切换菜单",
+      "category": "system"
+    },
+    "exit_game": {
+      "combo": ["start", "b"],
+      "description": "退出游戏",
+      "category": "system"
+    },
+    "save_slot_1": {
+      "combo": ["r2", "dpad_up"],
+      "description": "存档槽 1",
+      "category": "save"
+    },
+    "save_slot_2": {
+      "combo": ["r2", "dpad_right"],
+      "description": "存档槽 2",
+      "category": "save"
+    },
+    "save_slot_3": {
+      "combo": ["r2", "dpad_down"],
+      "description": "存档槽 3",
+      "category": "save"
+    },
+    "save_slot_4": {
+      "combo": ["r2", "dpad_left"],
+      "description": "存档槽 4",
+      "category": "save"
+    },
+    "load_slot_1": {
+      "combo": ["l2", "dpad_up"],
+      "description": "读档槽 1",
+      "category": "save"
+    },
+    "load_slot_2": {
+      "combo": ["l2", "dpad_right"],
+      "description": "读档槽 2",
+      "category": "save"
+    },
+    "load_slot_3": {
+      "combo": ["l2", "dpad_down"],
+      "description": "读档槽 3",
+      "category": "save"
+    },
+    "load_slot_4": {
+      "combo": ["l2", "dpad_left"],
+      "description": "读档槽 4",
+      "category": "save"
+    }
+  },
+  "minui_theme": {
+    "colors": {
+      "background": "#000000",
+      "text": "#FFFFFF",
+      "accent": "#7A2155",
+      "selected_bg": "#FFFFFF",
+      "selected_text": "#000000",
+      "list_bg": "#333333",
+      "border": "#000000",
+      "disabled": "#666666",
+      "combo_hint": "#FFD700"
+    },
+    "font": {
+      "name": "DreamHanSansCN-W16",
+      "size": 24
+    },
+    "layout": {
+      "corner_radius": 8,
+      "item_height": 48,
+      "item_spacing": 8,
+      "padding": 16
+    }
+  }
+}
