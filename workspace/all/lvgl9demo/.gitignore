@@ -1,0 +1,20 @@
+# Keep only essential files, ignore LVGL demos, docs, etc
+.demos/
+docs/
+examples/
+tests/
+scripts/
+.github/
+.devcontainer/
+.env_support/
+zephyr/
+*.md
+*.txt
+*.yml
+*.yaml
+*.json
+*.toml
+*.py
+*.sh
+*.pc.in
+*.mk

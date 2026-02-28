@@ -912,3 +912,46 @@ usbms.error_unmount=卸载SD卡失败
 usbms.error_mount=重新挂载SD卡失败
 usbms.error_unknown=未知错误
 usbms.please_wait=请稍候...
+
+# LVGL9 Demo translations
+lvgl9=LVGL9演示
+lvgl9.welcome.title=欢迎使用LVGL9
+lvgl9.welcome.subtitle=现代UI组件展示
+lvgl9.feature1.title=现代按钮
+lvgl9.feature1.desc=圆角边框和优雅样式
+lvgl9.feature2.title=卡片组件
+lvgl9.feature2.desc=信息展示与布局
+lvgl9.feature3.title=列表组件
+lvgl9.feature3.desc=可滚动的项目列表
+lvgl9.start=开始体验
+lvgl9.showcase.title=组件展示
+lvgl9.btn.primary=主要按钮
+lvgl9.btn.secondary=次要按钮
+lvgl9.btn.warning=警告按钮
+lvgl9.btn.icon=图标按钮
+lvgl9.btn.text=文本按钮
+lvgl9.btn.small=小按钮
+lvgl9.list.title=示例列表
+lvgl9.list.item1=项目一
+lvgl9.list.item2=项目二
+lvgl9.list.item3=项目三
+lvgl9.list.item4=项目四
+lvgl9.list.item5=项目五
+lvgl9.list.item6=项目六
+lvgl9.settings.title=设置
+lvgl9.settings.theme=主题
+lvgl9.settings.theme_value=暗色
+lvgl9.settings.animation=动画
+lvgl9.settings.animation_value=启用
+lvgl9.settings.language=语言
+lvgl9.settings.language_value=简体中文
+lvgl9.settings.sound=音效
+lvgl9.settings.sound_value=开
+lvgl9.settings.display=显示
+lvgl9.settings.display_value=默认
+lvgl9.select=选择
+
+# LVGL9 MinUI-style translations
+lvgl9.title=LVGL9 演示
+lvgl9.sleep=休眠
+lvgl9.open=打开
