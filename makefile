@@ -121,6 +121,13 @@ ifeq ($(PLATFORM), tg5040)
 	cp ./workspace/all/minarch/build/$(PLATFORM)/libzstd.* ./build/SYSTEM/$(PLATFORM)/lib/
 endif
 
+	# Zelda Ocarina of Time emulator
+	cp ./workspace/all/zeldaoot/build/$(PLATFORM)/zeldaoot ./build/EXTRAS/Emus/$(PLATFORM)/ZeldaOOT.pak/
+	cp ./workspace/all/zeldaoot/launch.sh ./build/EXTRAS/Emus/$(PLATFORM)/ZeldaOOT.pak/
+	cp ./workspace/all/zeldaoot/keymaps.json ./build/EXTRAS/Emus/$(PLATFORM)/ZeldaOOT.pak/
+	cp ./workspace/all/zeldaoot/mapping_config.json ./build/EXTRAS/Emus/$(PLATFORM)/ZeldaOOT.pak/
+	cp ./workspace/all/zeldaoot/metadata.json ./build/EXTRAS/Emus/$(PLATFORM)/ZeldaOOT.pak/
+
 
 ifeq ($(PLATFORM), desktop)
 cores:
