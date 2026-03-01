@@ -660,7 +660,8 @@ void CFG_setWifi(bool on)
 
 int CFG_getDefaultView(void)
 {
-    return settings.defaultView;
+    // Default view is always game list
+    return SCREEN_GAMELIST;
 }
 
 void CFG_setDefaultView(int view)

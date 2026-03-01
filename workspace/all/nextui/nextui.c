@@ -527,8 +527,6 @@ static void RecentArray_free(Array* self) {
 static Directory* top;
 static Array* stack; // DirectoryArray
 static Array* recents; // RecentArray
-static Array *quick; // EntryArray
-static Array *quickActions; // EntryArray
 
 static int quit = 0;
 static int can_resume = 0;
@@ -874,99 +872,6 @@ static Array* getCollections(void)
 		return collections;
 	}
 	return NULL;
-}
-
-static Array* getQuickEntries(void) {
-	Array* entries = Array_new();
-	I18N_init();
-
-	// We assume Menu_init was already called and populated this
-	if (recents && recents->count) {
-		Entry* e = Entry_new(FAUX_RECENT_PATH, ENTRY_DIR);
-		// Icon assets are keyed by Entry->name (e.g. /res/Recents@2x.png)
-		if (e->name) free(e->name);
-		e->name = strdup("Recents");
-		e->display = strdup(TR("recents"));
-		Array_push(entries, e);
-	}
-
-	if (hasCollections())
-		Array_push(entries, Entry_new(COLLECTIONS_PATH, ENTRY_DIR));
-
-	// Not sure we need this, its just a button press away (B)
-	{
-		Entry* e = Entry_new(ROMS_PATH, ENTRY_DIR);
-		// Icon assets are keyed by Entry->name (e.g. /res/Games@2x.png)
-		if (e->name) free(e->name);
-		e->name = strdup("Games");
-		e->display = strdup(TR("games"));
-		Array_push(entries, e);
-	}
-
-	// Add tools if applicable
-    if (hasTools() && !simple_mode) {
-		char tools_path[256];
-		snprintf(tools_path, sizeof(tools_path), "%s/Tools/%s", SDCARD_PATH, PLATFORM);
-        Array_push(entries, Entry_new(tools_path, ENTRY_DIR));
-    }
-
-	return entries;
-}
-
-static Array* getQuickToggles(void) {
-	Array *entries = Array_new();
-	I18N_init();
-
-	Entry *settings = entryFromPakName("settings");
-	if (settings) {
-		// NOTE: quick-menu icon/action mapping matches on Entry->name (case-sensitive).
-		// Keep the internal identifier as upstream expects ("Settings"), and translate only
-		// the visible label via Entry->display.
-		if (settings->name) free(settings->name);
-		settings->name = strdup("Settings");
-		if (settings->display) free(settings->display);
-		settings->display = strdup(TR("settings"));
-		Array_push(entries, settings);
-	}
-	
-	Entry *store = entryFromPakName("pak_store");
-	if (store) {
-		// Internal name must stay "Pak Store" so ASSET_STORE path/mapping works.
-		if (store->name) free(store->name);
-		store->name = strdup("Pak Store");
-		if (store->display) free(store->display);
-		store->display = strdup(TR("pak_store"));
-		Array_push(entries, store);
-	}
-
-	// quick actions
-	if(WIFI_supported()) {
-		Entry* e = Entry_new("Wifi", ENTRY_DIP);
-		e->display = strdup(TR("wifi"));
-		Array_push(entries, e);
-	}
-	if(BT_supported()) {
-		Entry* e = Entry_new("Bluetooth", ENTRY_DIP);
-		e->display = strdup(TR("bluetooth"));
-		Array_push(entries, e);
-	}
-	if(PLAT_supportsDeepSleep() && !simple_mode) {
-		Entry* e = Entry_new("Sleep", ENTRY_DIP);
-		e->display = strdup(TR("sleep"));
-		Array_push(entries, e);
-	}
-	{
-		Entry* e = Entry_new("Reboot", ENTRY_DIP);
-		e->display = strdup(TR("reboot"));
-		Array_push(entries, e);
-	}
-	{
-		Entry* e = Entry_new("Poweroff", ENTRY_DIP);
-		e->display = strdup(TR("poweroff"));
-		Array_push(entries, e);
-	}
-
-	return entries;
 }
 
 static Array* getRoot(void) {
@@ -1662,7 +1567,13 @@ static void Entry_open(Entry* self) {
 		openPak(self->path);
 	}
 	else if (self->type==ENTRY_DIR) {
-		openDirectory(self->path, 1);
+		if (exactMatch(self->path, FAUX_RECENT_PATH)) {
+			// Show game switcher instead of opening recents directory
+			currentScreen = SCREEN_GAMESWITCHER;
+			switcher_selected = 0;
+		} else {
+			openDirectory(self->path, 1);
+		}
 	}
 	else if (self->type==ENTRY_DIP) {
 		toggleQuick(self);
@@ -1756,29 +1667,16 @@ static void loadLast(void) { // call after loading root directory
 
 ///////////////////////////////////////
 
-static void QuickMenu_init(void) {
-	quick = getQuickEntries();
-	quickActions = getQuickToggles();
-}
-static void QuickMenu_quit(void) {
-	EntryArray_free(quick);
-	EntryArray_free(quickActions);
-}
-
 static void Menu_init(void) {
 	stack = Array_new(); // array of open Directories
 	recents = Array_new();
 
 	openDirectory(SDCARD_PATH, 0);
 	loadLast(); // restore state when available
-
-	QuickMenu_init(); // needs Menu_init
 }
 static void Menu_quit(void) {
 	RecentArray_free(recents);
 	DirectoryArray_free(stack);
-
-	QuickMenu_quit();
 }
 
 ///////////////////////////////////////
@@ -2285,11 +2183,6 @@ int main (int argc, char *argv[]) {
 	// start my threaded image loader :D
 	initImageLoaderPool();
 	Menu_init();
-	int qm_row = 0;
-	int qm_col = 0;
-	int qm_slot = 0;
-	int qm_shift = 0;
-	int qm_slots = QUICK_SWITCHER_COUNT > quick->count ? quick->count : QUICK_SWITCHER_COUNT;
 	// LOG_info("- menu init: %lu\n", SDL_GetTicks() - main_begin);
 
 	int lastScreen = SCREEN_OFF;
@@ -2373,102 +2266,7 @@ int main (int argc, char *argv[]) {
 
 		int gsanimdir = ANIM_NONE;
 
-		if (currentScreen == SCREEN_QUICKMENU) {
-			int qm_total = qm_row == 0 ? quick->count : quickActions->count;
-
-			if (PAD_justPressed(BTN_B) || PAD_tappedMenu(now)) {
-				currentScreen = SCREEN_GAMELIST;
-				dirty = 1;
-			}
-			else if (PAD_justReleased(BTN_A)) {
-				Entry *selected = qm_row == 0 ? quick->items[qm_col] : quickActions->items[qm_col];
-				if(selected->type != ENTRY_DIP) {
-					currentScreen = SCREEN_GAMELIST;
-					total = top->entries->count;
-					// prevent restoring list state, game list screen currently isnt our nav origin
-					top->selected = 0;
-					top->start = 0;
-					top->end = top->start + MAIN_ROW_COUNT;
-					restore_depth = -1;
-					restore_relative = -1;
-					restore_selected = 0;
-					restore_start = 0;
-					restore_end = 0;
-					// For Tools directory, use openDirectory without auto_launch to avoid auto-starting ROMs
-					if (selected->type == ENTRY_DIR && strstr(selected->path, "/Tools/") != NULL) {
-						openDirectory(selected->path, 0);
-					} else {
-						Entry_open(selected);
-					}
-				} else {
-					Entry_open(selected);
-				}
-				dirty = 1;
-			}
-			else if (PAD_justPressed(BTN_RIGHT)) {
-				if(qm_row == 0 && qm_total > qm_slots) {
-					qm_col++;
-					if(qm_col >= qm_total) {
-						qm_col = 0;
-						qm_shift = 0;
-						qm_slot = 0;
-					}
-					else {
-						qm_slot++;
-						if(qm_slot >= qm_slots) {
-							qm_slot = qm_slots - 1;
-							qm_shift++;
-						}
-					}
-				}
-				else {
-					qm_col += 1;
-					if(qm_col >= qm_total) {
-						qm_col = 0;
-					}
-				}
-				dirty = 1;
-			}
-			else if (PAD_justPressed(BTN_LEFT)) {
-				if(qm_row == 0  && qm_total > qm_slots) {
-					qm_col -= 1;
-					if(qm_col < 0) {
-						qm_col = qm_total - 1;
-						qm_shift = qm_total - qm_slots;
-						qm_slot = qm_slots - 1;
-					}
-					else {
-						qm_slot--;
-						if(qm_slot < 0) {
-							qm_slot = 0;
-							qm_shift--;
-						}
-					}
-				}
-				else {
-					qm_col -= 1;
-					if(qm_col < 0) {
-						qm_col = qm_total - 1;
-					}
-				}
-				dirty = 1;
-			}
-			else if(PAD_justPressed(BTN_DOWN)) {
-				if(qm_row == 0) {
-					qm_row = 1;
-					qm_col = 0;
-					dirty = 1;
-				}
-			}
-			else if(PAD_justPressed(BTN_UP)) {
-				if(qm_row == 1) {
-					qm_row = 0;
-					qm_col = qm_slot + qm_shift;
-					dirty = 1;
-				}
-			}
-		}
-		else if(currentScreen == SCREEN_GAMESWITCHER) {
+		if(currentScreen == SCREEN_GAMESWITCHER) {
 			if (PAD_justPressed(BTN_B) || PAD_tappedSelect(now)) {
 				currentScreen = SCREEN_GAMELIST;
 				switcher_selected = 0;
@@ -2511,22 +2309,7 @@ int main (int argc, char *argv[]) {
 			}
 		}
 		else {
-			if (PAD_tappedMenu(now)) {
-				currentScreen = SCREEN_QUICKMENU;
-				qm_col = 0;
-				qm_row = 0;
-				qm_shift = 0;
-				qm_slot = 0;
-				dirty = 1;
-				folderbgchanged = 1; // The background painting code is a clusterfuck, just force a repaint here
-				if (!HAS_POWER_BUTTON && !simple_mode) PWR_enableSleep();
-			}
-			else if (PAD_tappedSelect(now)) {
-				currentScreen = SCREEN_GAMESWITCHER;
-				switcher_selected = 0; 
-				dirty = 1;
-			}
-			else if (total>0) {
+			if (total>0) {
 				if (PAD_justRepeated(BTN_UP)) {
 					if (selected==0 && !PAD_justPressed(BTN_UP)) {
 						// stop at top
@@ -2676,7 +2459,7 @@ int main (int argc, char *argv[]) {
 				GFX_clearLayers(LAYER_TRANSITION);
 				// Don't clear LAYER_THUMBNAIL when returning from quick menu to game list
 				// to avoid visual flicker
-				if(lastScreen!=SCREEN_GAMELIST && lastScreen!=SCREEN_QUICKMENU)	
+				if(lastScreen!=SCREEN_GAMELIST)
 					GFX_clearLayers(LAYER_THUMBNAIL);
 				GFX_clearLayers(LAYER_SCROLLTEXT);
 				GFX_clearLayers(LAYER_IDK2);
@@ -2684,161 +2467,7 @@ int main (int argc, char *argv[]) {
 			GFX_clear(screen);
 
 			int ow = GFX_blitHardwareGroup(screen, show_setting);
-			if (currentScreen == SCREEN_QUICKMENU) {
-				if(lastScreen != SCREEN_QUICKMENU) {
-					GFX_clearLayers(LAYER_BACKGROUND);
-					GFX_clearLayers(LAYER_THUMBNAIL);
-				}
-
-				Entry *current = qm_row == 0 ? quick->items[qm_col] : quickActions->items[qm_col];
-				char newBgPath[MAX_PATH];
-				char fallbackBgPath[MAX_PATH];
-				sprintf(newBgPath, SDCARD_PATH "/.media/quick_%s%s.png", current->name, 
-					!strcmp(current->name,"Wifi") && CFG_getWifi() || 							// wifi or wifi_off, based on state
-					!strcmp(current->name,"Bluetooth") && CFG_getBluetooth() ? "_off" : "");	// bluetooth or bluetooth_off, based on state
-				sprintf(fallbackBgPath, SDCARD_PATH "/.media/quick.png");
-				
-				// background
-				if(!exists(newBgPath))
-					strncpy(newBgPath, fallbackBgPath, sizeof(newBgPath) - 1);
-
-				if(strcmp(newBgPath, folderBgPath) != 0) {
-					strncpy(folderBgPath, newBgPath, sizeof(folderBgPath) - 1);
-					startLoadFolderBackground(newBgPath, onBackgroundLoaded, NULL);
-				}
-				
-				// buttons (duped and trimmed from below)
-				if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
-				else GFX_blitButtonGroup((char*[]){ (char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")), (char*)TR("common.sleep"),  NULL }, 0, screen, 0);
-				
-				GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "A",(char*)TR("common.open"), NULL }, 1, screen, 1);
-
-				if(CFG_getShowQuickswitcherUI()) {
-					#define MENU_ITEM_SIZE 72 // item size, top line
-					#define MENU_MARGIN_Y 32 // space between main UI elements and quick menu
-					#define MENU_MARGIN_X 40 // space between main UI elements and quick menu
-					#define MENU_ITEM_MARGIN 18 // space between items, top line
-					#define MENU_TOGGLE_MARGIN 8 // space between items, bottom line
-					#define MENU_LINE_MARGIN 8 // space between top and bottom line
-
-					// this is flexible, not sure I like it at smaller scales than 3 though
-					//int item_size = screen->h - SCALE1(PADDING + PILL_SIZE + BUTTON_MARGIN + // top pill area
-					//	MENU_MARGIN_Y + MENU_LINE_MARGIN + PILL_SIZE + MENU_MARGIN_Y + // our own area
-					//	BUTTON_MARGIN + PILL_SIZE + PADDING); // bottom pill area
-
-					int item_space_y = screen->h - SCALE1(PADDING + PILL_SIZE + BUTTON_MARGIN + // top pill area
-						MENU_MARGIN_Y + MENU_LINE_MARGIN + PILL_SIZE + MENU_MARGIN_Y + // our own area
-						BUTTON_MARGIN + PILL_SIZE + PADDING);
-					int item_size = SCALE1(MENU_ITEM_SIZE);
-					int item_extra_y = item_space_y - item_size;
-					int item_space_x = screen->w - SCALE1(PADDING + MENU_MARGIN_X + MENU_MARGIN_X + PADDING);
-					// extra left margin for the first item in order to properly center all of them in the 
-					// available space
-					int item_inset_x = (item_space_x - SCALE1(qm_slots * MENU_ITEM_SIZE + (qm_slots - 1) * MENU_ITEM_MARGIN)) / 2;
-
-					// primary
-					ox = SCALE1(PADDING + MENU_MARGIN_X) + item_inset_x;
-					oy = SCALE1(PADDING + PILL_SIZE + BUTTON_MARGIN + MENU_MARGIN_Y) + item_extra_y / 2;
-					// just to keep selection visible.
-					// every display should be able to fit three items, we shift horizontally to accomodate.
-					ox -= qm_shift * (item_size + SCALE1(MENU_ITEM_MARGIN));
-					for (int c = 0; c < quick->count; c++)
-					{
-						SDL_Rect item_rect = {ox, oy, item_size, item_size};
-						Entry *item = quick->items[c];
-
-						SDL_Color text_color = uintToColour(THEME_COLOR4_255);
-						uint32_t item_color = THEME_COLOR3;
-						uint32_t icon_color = THEME_COLOR4;
-
-						if(qm_row == 0 && qm_col == c) {
-							text_color = uintToColour(THEME_COLOR5_255);
-							item_color = THEME_COLOR1;
-							icon_color = THEME_COLOR5;
-						}
-						
-						GFX_blitRectColor(ASSET_STATE_BG, screen, &item_rect, item_color);
-
-						char icon_path[MAX_PATH];
-						sprintf(icon_path, SDCARD_PATH "/.system/res/%s@%ix.png", item->name, FIXED_SCALE);
-						SDL_Surface* bmp = IMG_Load(icon_path);
-						if(bmp) {
-							SDL_Surface* converted = SDL_ConvertSurfaceFormat(bmp, SDL_PIXELFORMAT_RGBA8888, 0);
-							if (converted) {
-								SDL_FreeSurface(bmp); 
-								bmp = converted; 
-							}
-						}
-						if(bmp) {
-							// Calculate the position to center the source surface
-							int x = (item_rect.w - bmp->w) / 2;
-							int y = (item_rect.h - SCALE1(FONT_TINY + BUTTON_MARGIN) - bmp->h) / 2;
-							SDL_Rect destRect = { ox+x, oy+y, 0, 0 };  // width/height not required
-							//SDL_BlitSurface(bmp, NULL, screen, &destRect);
-
-							GFX_blitSurfaceColor(bmp, NULL, screen, &destRect, icon_color);
-						}
-
-						int w, h;
-						const char* label = Entry_label(item);
-						GFX_sizeText(font.tiny, label, SCALE1(FONT_TINY), &w, &h);
-						SDL_Rect text_rect = {item_rect.x + (item_size - w) / 2, item_rect.y + item_size - h - SCALE1(BUTTON_MARGIN), w, h};
-						GFX_blitText(font.tiny, label, SCALE1(FONT_TINY), text_color, screen, &text_rect);
-
-						ox += item_rect.w + SCALE1(MENU_ITEM_MARGIN);
-					}
-
-					// secondary
-					ox = SCALE1(PADDING + MENU_MARGIN_X);
-					ox += (screen->w - SCALE1(PADDING + MENU_MARGIN_X + MENU_MARGIN_X + PADDING) - SCALE1(quickActions->count * PILL_SIZE) - SCALE1((quickActions->count - 1) * MENU_TOGGLE_MARGIN))/2;
-					oy = SCALE1(PADDING + PILL_SIZE + BUTTON_MARGIN + MENU_MARGIN_Y + MENU_LINE_MARGIN) + item_size + item_extra_y / 2;
-					for (int c = 0; c < quickActions->count; c++) {
-						SDL_Rect item_rect = {ox, oy, SCALE1(PILL_SIZE), SCALE1(PILL_SIZE)};
-						Entry *item = quickActions->items[c];
-
-						SDL_Color text_color = uintToColour(THEME_COLOR4_255);
-						uint32_t item_color = THEME_COLOR3;
-						uint32_t icon_color = THEME_COLOR4;
-
-						if(qm_row == 1 && qm_col == c) {
-							text_color = uintToColour(THEME_COLOR5_255);
-							item_color = THEME_COLOR1;
-							icon_color = THEME_COLOR5;
-						}
-
-						GFX_blitPillColor(ASSET_WHITE_PILL, screen, &item_rect, item_color, RGB_WHITE);
-
-						int asset = ASSET_WIFI;
-						if (!strcmp(item->name,"Wifi"))
-							asset = CFG_getWifi() ? ASSET_WIFI_OFF : ASSET_WIFI;
-						else if (!strcmp(item->name,"Bluetooth"))
-							asset = CFG_getBluetooth() ? ASSET_BLUETOOTH_OFF : ASSET_BLUETOOTH;
-						else if (!strcmp(item->name,"Sleep"))
-							asset = ASSET_SUSPEND;
-						else if (!strcmp(item->name,"Reboot"))
-							asset = ASSET_RESTART;
-						else if (!strcmp(item->name,"Poweroff"))
-							asset = ASSET_POWEROFF;
-						else if (!strcmp(item->name,"Settings"))
-							asset = ASSET_SETTINGS;
-						else if (!strcmp(item->name,"Pak Store"))
-							asset = ASSET_STORE;
-
-						SDL_Rect rect;
-						GFX_assetRect(asset, &rect);
-						int x = item_rect.x;
-						int y = item_rect.y;
-						x += (SCALE1(PILL_SIZE) - rect.w) / 2;
-						y += (SCALE1(PILL_SIZE) - rect.h) / 2;
-						
-						GFX_blitAssetColor(asset, NULL, screen, &(SDL_Rect){x,y}, icon_color);
-						
-						ox += item_rect.w + SCALE1(MENU_TOGGLE_MARGIN);
-					}
-				}
-				lastScreen = SCREEN_QUICKMENU;
-			}
-			else if(startgame) {
+			if(startgame) {
 				//pilltargetY = +screen->w;
 				//animationdirection = ANIM_NONE;
 				GFX_clearLayers(LAYER_ALL);
@@ -2941,11 +2570,7 @@ int main (int argc, char *argv[]) {
 									GFX_animateSurface(bmp,ax+screen->w,ay,ax,ay,aw,ah,CFG_getMenuTransitions() ? 80:20,0,255,LAYER_ALL);
 								else if(gsanimdir == SLIDE_RIGHT)
 									GFX_animateSurface(bmp,ax-screen->w,ay,ax,ay,aw,ah,CFG_getMenuTransitions() ? 80:20,0,255,LAYER_ALL);
-								
-								GFX_drawOnLayer(bmp,ax,ay,aw,ah,1.0f,0,LAYER_BACKGROUND);
-							} else if(lastScreen == SCREEN_QUICKMENU) {
-								GFX_flipHidden();
-								GFX_drawOnLayer(blackBG,0,0,screen->w, screen->h,1.0f,0,LAYER_BACKGROUND);								
+
 								GFX_drawOnLayer(bmp,ax,ay,aw,ah,1.0f,0,LAYER_BACKGROUND);
 							}
 							SDL_FreeSurface(bmp);  // Free after rendering
@@ -3195,22 +2820,10 @@ int main (int argc, char *argv[]) {
 					SDL_FreeSurface(tmpNewScreen);
 				}
 				// animation done
-				animationdirection = ANIM_NONE;
-			}
-
-			if(lastScreen == SCREEN_QUICKMENU) {
-				SDL_LockMutex(bgMutex);
-				if(folderbgchanged) {
-					if(folderbgbmp)
-						GFX_drawOnLayer(folderbgbmp,0, 0, screen->w, screen->h,1.0f,0,LAYER_BACKGROUND);
-					else
-						GFX_clearLayers(LAYER_BACKGROUND);
-					folderbgchanged = 0;
-				}
-				SDL_UnlockMutex(bgMutex);
-			}
-			else if(lastScreen == SCREEN_GAMELIST) {
-				SDL_LockMutex(bgMutex);
+							animationdirection = ANIM_NONE;
+						}
+				
+						if(lastScreen == SCREEN_GAMELIST) {				SDL_LockMutex(bgMutex);
 				if(folderbgchanged) {
 					if(folderbgbmp)
 						GFX_drawOnLayer(folderbgbmp,0, 0, screen->w, screen->h,1.0f,0,LAYER_BACKGROUND);
@@ -3308,7 +2921,7 @@ int main (int argc, char *argv[]) {
 				animationDraw = 0;
 			}
 			SDL_UnlockMutex(animMutex);
-			if (currentScreen != SCREEN_GAMESWITCHER && currentScreen != SCREEN_QUICKMENU) {
+			if (currentScreen != SCREEN_GAMESWITCHER) {
 				if(is_scrolling && pillanimdone && currentAnimQueueSize < 1) {
 					int ow = GFX_blitHardwareGroup(screen, show_setting);
 					Entry* entry = top->entries->items[top->selected];
