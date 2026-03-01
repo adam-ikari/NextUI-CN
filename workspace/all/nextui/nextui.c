@@ -2679,7 +2679,9 @@ int main (int argc, char *argv[]) {
 			}
 			else {	
 				GFX_clearLayers(LAYER_TRANSITION);
-				if(lastScreen!=SCREEN_GAMELIST)	
+				// Don't clear LAYER_THUMBNAIL when returning from quick menu to game list
+				// to avoid visual flicker
+				if(lastScreen!=SCREEN_GAMELIST && lastScreen!=SCREEN_QUICKMENU)	
 					GFX_clearLayers(LAYER_THUMBNAIL);
 				GFX_clearLayers(LAYER_SCROLLTEXT);
 				GFX_clearLayers(LAYER_IDK2);
