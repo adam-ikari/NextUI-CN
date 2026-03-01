@@ -2652,11 +2652,15 @@ int main (int argc, char *argv[]) {
 				
 				if (total>0) readyResume(top->entries->items[top->selected]);
 			}
-			else if (PAD_justPressed(BTN_B) && stack->count<=1 && currentScreen != CFG_getDefaultView()) {
+			else if (PAD_justPressed(BTN_B) && stack->count<=1) {
 				// Stack is empty or at root - navigate to default view only if not already there
-				currentScreen = CFG_getDefaultView();
-				dirty = 1;
-				// B key is ignored when already at default view to avoid unnecessary operations
+				// But don't navigate to GAMESWITCHER as it should be accessed via Select key
+				int defaultView = CFG_getDefaultView();
+				if (currentScreen != defaultView && defaultView != SCREEN_GAMESWITCHER) {
+					currentScreen = defaultView;
+					dirty = 1;
+				}
+				// B key is ignored when already at default view or when default is GAMESWITCHER
 			}
 		}
 		
