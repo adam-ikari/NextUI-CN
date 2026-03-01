@@ -568,10 +568,10 @@ void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size
 	{
 		(lightsAmbient)[0].color1 = dominant_color;
 		(lightsAmbient)[0].effect = 4;
-		(lightsAmbient)[0].brightness = 100;
+		(lightsAmbient)[0].brightness = 20;
 		(lightsAmbient)[1].color1 = dominant_color;
 		(lightsAmbient)[1].effect = 4;
-		(lightsAmbient)[1].brightness = 100;
+		(lightsAmbient)[1].brightness = 20;
 	}
 	if (mode == 1 || mode == 4 || mode == 5)
 	{
