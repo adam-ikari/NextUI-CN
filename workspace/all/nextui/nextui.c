@@ -544,6 +544,7 @@ static int restore_selected = 0;
 static int restore_start = 0;
 static int restore_end = 0;
 static int startgame = 0;
+static int show_game_switcher = 0;
 ///////////////////////////////////////
 
 #define MAX_RECENTS 24 // a multiple of all menu rows
@@ -1569,7 +1570,7 @@ static void Entry_open(Entry* self) {
 	else if (self->type==ENTRY_DIR) {
 		if (exactMatch(self->path, FAUX_RECENT_PATH)) {
 			// Show game switcher instead of opening recents directory
-			currentScreen = SCREEN_GAMESWITCHER;
+			show_game_switcher = 1;
 			switcher_selected = 0;
 		} else {
 			openDirectory(self->path, 1);
@@ -2236,9 +2237,18 @@ int main (int argc, char *argv[]) {
 	while (!quit) {
 		GFX_startFrame();
 		unsigned long now = SDL_GetTicks();
-		
+
+		// Check if we need to show game switcher
+		if (show_game_switcher) {
+			currentScreen = SCREEN_GAMESWITCHER;
+			switcher_selected = 0;
+			show_game_switcher = 0;
+			dirty = 1;
+			folderbgchanged = 1;
+		}
+
 		PAD_poll();
-			
+
 		// Safety check: ensure stack and top are valid
 		if (!stack || stack->count == 0 || !top) {
 			// Stack is corrupted or empty - reinitialize
