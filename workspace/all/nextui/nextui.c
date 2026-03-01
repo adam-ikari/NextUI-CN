@@ -2964,6 +2964,7 @@ int main (int argc, char *argv[]) {
 				static int lastType = -1;
 
 				// this is only a choice on the root folder
+				// Default to showing entry names: always show in subdirectories, or in root if configured
 				list_show_entry_names = stack->count > 1 || CFG_getShowFolderNamesAtRoot();
 
 				// load folder background
@@ -2994,6 +2995,12 @@ int main (int argc, char *argv[]) {
 				}
 				else {
 					// Safeguard: If no background is available, still render the text to leave the user a way out
+					list_show_entry_names = true;
+				}
+				
+				// Final safeguard: Ensure text is always visible in root directory when no background images exist
+				// This prevents black screen issue when user is in root directory without background images
+				if (stack->count == 1 && !list_show_entry_names) {
 					list_show_entry_names = true;
 				}
 				// load game thumbnails
