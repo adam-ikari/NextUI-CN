@@ -2378,7 +2378,6 @@ int main (int argc, char *argv[]) {
 
 			if (PAD_justPressed(BTN_B) || PAD_tappedMenu(now)) {
 				currentScreen = SCREEN_GAMELIST;
-				folderbgchanged = 1; // The background painting code is a clusterfuck, just force a repaint here
 				dirty = 1;
 			}
 			else if (PAD_justReleased(BTN_A)) {
