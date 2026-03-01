@@ -91,7 +91,7 @@ typedef struct
 	int defaultView;
 
 	// Mute switch
-	bool muteLeds;
+	bool fnToggleLeds;
 
 	// Power
 	uint32_t screenTimeoutSecs;
@@ -145,7 +145,7 @@ typedef struct
 #define CFG_DEFAULT_SAVEFORMAT SAVE_FORMAT_SAV
 #define CFG_DEFAULT_STATEFORMAT STATE_FORMAT_SAV
 #define CFG_DEFAULT_EXTRACTEDFILENAME false
-#define CFG_DEFAULT_MUTELEDS false
+#define CFG_DEFAULT_FNTOGGLELEDS false
 #define CFG_DEFAULT_GAMEARTWIDTH 0.45
 #define CFG_DEFAULT_WIFI false
 #define CFG_DEFAULT_VIEW SCREEN_GAMELIST
