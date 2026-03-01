@@ -362,10 +362,6 @@ int main(int argc, char *argv[])
             []() -> std::any { return CFG_getPowerOffProtection(); },
             [](const std::any &value) { CFG_setPowerOffProtection(std::any_cast<bool>(value)); },
             []() { CFG_setPowerOffProtection(CFG_DEFAULT_POWEROFFPROTECTION); }},
-            new MenuItem{ListItemType::Generic, TR("settings.system.charging_breathing_led"), TR("settings.system.charging_breathing_led.desc"), {false, true}, on_off, 
-            []() -> std::any { return CFG_getChargingBreathingLed(); },
-            [](const std::any &value) { CFG_setChargingBreathingLed(std::any_cast<bool>(value)); },
-            []() { CFG_setChargingBreathingLed(CFG_DEFAULT_CHARGINGBREATHINGLED); }},
             new MenuItem{ListItemType::Button, tr_settings_reset_defaults.c_str(), tr_settings_reset_defaults_desc.c_str(), ResetCurrentMenu},
         });
 
@@ -380,7 +376,7 @@ int main(int argc, char *argv[])
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.disables_led"), TR("settings.fn_switch.disables_led.desc"), {false, true}, on_off, 
             []() -> std::any { return CFG_getFnToggleLEDs(); },
             [](const std::any &value) { CFG_setFnToggleLEDs(std::any_cast<bool>(value)); },
-            []() { CFG_setFnToggleLEDs(CFG_DEFAULT_FNTOGGLELEDS); }},
+            []() { CFG_setFnToggleLEDs(CFG_DEFAULT_MUTELEDS); }},
             new MenuItem{ListItemType::Generic, TR("settings.fn_switch.brightness_when_toggled"), TR("settings.fn_switch.brightness_when_toggled.desc"), 
             {(int)SETTINGS_DEFAULT_MUTE_NO_CHANGE, 0,1,2,3,4,5,6,7,8,9,10}, 
             {TR("common.unchanged"),"0","1","2","3","4","5","6","7","8","9","10"},
