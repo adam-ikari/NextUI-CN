@@ -7714,6 +7714,7 @@ int main(int argc , char* argv[]) {
 	LEDS_initLeds();
 	VIB_init();
 	NET_init(&netplay_ctx, "NextUI Device");
+	CFG_init(NULL, NULL);
 	PWR_init();
 	if (!HAS_POWER_BUTTON)
 		PWR_disableSleep();
