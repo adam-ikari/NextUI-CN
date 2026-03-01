@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <libgen.h>  // For dirname()
+#include <errno.h>
 #include "defines.h"
 #include "api.h"
 #include "utils.h"
