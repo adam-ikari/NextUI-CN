@@ -9,6 +9,7 @@ on:
       - develop
       - 'feature/**'
       - 'bugfix/**'
+      - 'refactor/**'
   pull_request: {}
 
 permissions:

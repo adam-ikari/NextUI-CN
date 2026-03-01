@@ -1585,18 +1585,36 @@ static void openDirectory(char* path, int auto_launch) {
 		DirectoryArray_free(stack);
 
 		stack = pathToStack(path);
-		top = stack->items[stack->count - 1];
+		if (stack && stack->count > 0) {
+			top = stack->items[stack->count - 1];
+		} else {
+			// Failed to create stack - create at least root directory
+			stack = Array_new();
+			top = Directory_new(SDCARD_PATH, 0);
+			Array_push(stack, top);
+		}
 	}
 }
 
 static void closeDirectory(void) {
+	if (stack->count <= 0) {
+		// Cannot close directory - stack is empty
+		return;
+	}
+	
 	restore_selected = top->selected;
 	restore_start = top->start;
 	restore_end = top->end;
 	DirectoryArray_pop(stack);
 	restore_depth = stack->count;
-	top = stack->items[stack->count-1];
-	restore_relative = top->selected;
+	
+	if (stack->count > 0) {
+		top = stack->items[stack->count-1];
+		restore_relative = top->selected;
+	} else {
+		// Stack is now empty - this shouldn't happen in normal flow
+		top = NULL;
+	}
 }
 
 static void toggleQuick(Entry* self)
@@ -1694,6 +1712,12 @@ static void loadLast(void) { // call after loading root directory
 				strcpy(collated_path, path);
 				tmp = strrchr(collated_path, '(');
 				if (tmp) tmp[1] = '\0'; // 1 because we want to keep the opening parenthesis to avoid collating "Game Boy Color" and "Game Boy Advance" into "Game Boy"
+			}
+			
+			// Safety check: ensure top and its entries are valid
+			if (!top || !top->entries || top->entries->count == 0) {
+				free(path);
+				continue;
 			}
 			
 			for (int i=0; i<top->entries->count; i++) {
@@ -2322,6 +2346,16 @@ int main (int argc, char *argv[]) {
 		
 		PAD_poll();
 			
+		// Safety check: ensure stack and top are valid
+		if (!stack || stack->count == 0 || !top) {
+			// Stack is corrupted or empty - reinitialize
+			if (stack) DirectoryArray_free(stack);
+			stack = Array_new();
+			top = Directory_new(SDCARD_PATH, 0);
+			Array_push(stack, top);
+			dirty = 1;
+		}
+		
 		int selected = top->selected;
 		int total = top->entries->count;
 		
@@ -2344,7 +2378,6 @@ int main (int argc, char *argv[]) {
 
 			if (PAD_justPressed(BTN_B) || PAD_tappedMenu(now)) {
 				currentScreen = SCREEN_GAMELIST;
-				folderbgchanged = 1; // The background painting code is a clusterfuck, just force a repaint here
 				dirty = 1;
 			}
 			else if (PAD_justReleased(BTN_A)) {
@@ -2361,8 +2394,15 @@ int main (int argc, char *argv[]) {
 					restore_selected = 0;
 					restore_start = 0;
 					restore_end = 0;
+					// For Tools directory, use openDirectory without auto_launch to avoid auto-starting ROMs
+					if (selected->type == ENTRY_DIR && strstr(selected->path, "/Tools/") != NULL) {
+						openDirectory(selected->path, 0);
+					} else {
+						Entry_open(selected);
+					}
+				} else {
+					Entry_open(selected);
 				}
-				Entry_open(selected);
 				dirty = 1;
 			}
 			else if (PAD_justPressed(BTN_RIGHT)) {
@@ -2612,6 +2652,10 @@ int main (int argc, char *argv[]) {
 				
 				if (total>0) readyResume(top->entries->items[top->selected]);
 			}
+			else if (PAD_justPressed(BTN_B) && stack->count<=1) {
+				// Stack is empty or at root - B key is ignored to prevent unwanted navigation
+				// User can navigate via Menu key (quick menu) or Select key (game switcher)
+			}
 		}
 		
 		if(dirty) {
@@ -2630,7 +2674,9 @@ int main (int argc, char *argv[]) {
 			}
 			else {	
 				GFX_clearLayers(LAYER_TRANSITION);
-				if(lastScreen!=SCREEN_GAMELIST)	
+				// Don't clear LAYER_THUMBNAIL when returning from quick menu to game list
+				// to avoid visual flicker
+				if(lastScreen!=SCREEN_GAMELIST && lastScreen!=SCREEN_QUICKMENU)	
 					GFX_clearLayers(LAYER_THUMBNAIL);
 				GFX_clearLayers(LAYER_SCROLLTEXT);
 				GFX_clearLayers(LAYER_IDK2);
@@ -3347,9 +3393,13 @@ int main (int argc, char *argv[]) {
 		if (has_hdmi!=had_hdmi) {
 			had_hdmi = has_hdmi;
 
-			Entry* entry = top->entries->items[top->selected];
-			LOG_info("restarting after HDMI change... (%s)\n", entry->path);
-			saveLast(entry->path); // NOTE: doesn't work in Recents (by design)
+			if (top && top->entries && top->selected >= 0 && top->selected < top->entries->count) {
+				Entry* entry = top->entries->items[top->selected];
+				LOG_info("restarting after HDMI change... (%s)\n", entry->path);
+				saveLast(entry->path); // NOTE: doesn't work in Recents (by design)
+			} else {
+				LOG_info("restarting after HDMI change... (no valid selection)\n");
+			}
 			sleep(4);
 			quit = 1;
 		}
