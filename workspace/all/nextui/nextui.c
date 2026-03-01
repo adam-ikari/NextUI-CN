@@ -144,8 +144,26 @@ static Entry* Entry_new(const char* path, int type) {
 	char display_name[256];
 	getDisplayName((char*)path, display_name);
 	Entry* self = malloc(sizeof(Entry));
+	if (!self) {
+		LOG_error("Failed to allocate memory for Entry: %s\n", path);
+		return NULL;
+	}
+	
 	self->path = strdup(path);
+	if (!self->path) {
+		LOG_error("Failed to allocate memory for path: %s\n", path);
+		free(self);
+		return NULL;
+	}
+	
 	self->name = strdup(display_name);
+	if (!self->name) {
+		LOG_error("Failed to allocate memory for name: %s\n", display_name);
+		free(self->path);
+		free(self);
+		return NULL;
+	}
+	
 	self->display = NULL;
 	// Translate display label for known virtual/special entries,
 	// but keep internal names stable for asset/icon mapping.
@@ -1109,6 +1127,7 @@ static void addEntries(Array* entries, char* path) {
 		char full_path[256];
 		sprintf(full_path, "%s/", path);
 		tmp = full_path + strlen(full_path);
+		int entry_count = 0;
 		while((dp = readdir(dh)) != NULL) {
 			if (hide(dp->d_name)) continue;
 			strcpy(tmp, dp->d_name);
@@ -1131,9 +1150,18 @@ static void addEntries(Array* entries, char* path) {
 					type = ENTRY_ROM;
 				}
 			}
-			Array_push(entries, Entry_new(full_path, type));
+			Entry* entry = Entry_new(full_path, type);
+			if (entry) {
+				Array_push(entries, entry);
+				entry_count++;
+			} else {
+				LOG_error("Failed to create entry for: %s\n", full_path);
+			}
 		}
 		closedir(dh);
+		LOG_info("Added %d entries from path: %s\n", entry_count, path);
+	} else {
+		LOG_error("Failed to open directory: %s (errno: %d)\n", path, errno);
 	}
 }
 
