@@ -2646,6 +2646,14 @@ int main (int argc, char *argv[]) {
 				
 				if (total>0) readyResume(top->entries->items[top->selected]);
 			}
+			else if (PAD_justPressed(BTN_B) && stack->count<=1) {
+				// Stack is empty or at root - navigate to default view
+				int defaultView = CFG_getDefaultView();
+				if (currentScreen != defaultView) {
+					currentScreen = defaultView;
+					dirty = 1;
+				}
+			}
 		}
 		
 		if(dirty) {
