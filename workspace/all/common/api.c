@@ -3540,9 +3540,9 @@ void PWR_init(void)
 	pwr.poll_network_status = 1;
 	pwr.initialized = 1;
 
-	if (CFG_getHaptics())
-		VIB_singlePulse(VIB_bootStrength, VIB_bootDuration_ms);
-
+	// Skip startup haptic feedback here to prevent crash when InitSettings() hasn't been called yet
+	// Vibration functions depend on settings being initialized. Startup feedback is now handled elsewhere.
+	
 	PWR_initOverlay();
 	PWR_updateBatteryStatus();
 
@@ -4034,11 +4034,17 @@ void LEDS_applyRules()
 	// e.g.
 	// - if charging and low battery, charging takes priority
 	if (pwr.initialized && pwr.is_charging) {
-		//LOG_info("LEDS_applyRules: charging\n");
-		LEDS_setProfile(LIGHT_PROFILE_CHARGING);
+		// Check if charging breathing LED is enabled
+		if (InitializedSettings() && CFG_getChargingBreathingLed()) {
+			// Use hardcoded breathing profile
+			LEDS_setProfile(LIGHT_PROFILE_CHARGING);
+		} else {
+			// Use default profile (user can configure via LedControl tool)
+			LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
+		}
 	}
 	// - if critical battery, critical battery takes priority over everything
-	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE) {
+	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE && !pwr.is_charging) {
 		//LOG_info("LEDS_applyRules: critical battery\n");
 		LEDS_setProfile(LIGHT_PROFILE_CRITICAL_BATTERY);
 	}
@@ -4048,7 +4054,7 @@ void LEDS_applyRules()
 		LEDS_setProfile(LIGHT_PROFILE_OFF);
 	}
 	// other rules
-	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE + 10 && pwr.charge >= PWR_LOW_CHARGE) {
+	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE + 10 && pwr.charge >= PWR_LOW_CHARGE && !pwr.is_charging) {
 		//LOG_info("LEDS_applyRules: low battery\n");
 		LEDS_setProfile(LIGHT_PROFILE_LOW_BATTERY);
 	}
@@ -4123,10 +4129,13 @@ void LEDS_initLeds()
 		lightsCriticalBattery[i].cycles = -1; // infinite
 
 		// LIGHT_PROFILE_CHARGING
+		// Hardcoded breathing effect for charging LED
 		lightsCharging[i] = lightsDefault[i];
 		lightsCharging[i].effect = 2; // breathe
-		lightsCharging[i].color1 = 0x00FF00;
-		lightsCharging[i].cycles = -1; // infinite	
+		lightsCharging[i].color1 = 0x00FF00; // green
+		lightsCharging[i].brightness = 100; // hardcoded brightness
+		lightsCharging[i].inbrightness = 0; // min brightness
+		lightsCharging[i].cycles = -1; // infinite
 
 		// LIGHT_PROFILE_SLEEP
 		lightsSleep[i] = lightsDefault[i];

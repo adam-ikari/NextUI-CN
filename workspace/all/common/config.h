@@ -91,7 +91,10 @@ typedef struct
 	int defaultView;
 
 	// Mute switch
-	bool muteLeds;
+	bool fnToggleLeds;
+
+	// LED
+	bool chargingBreathingLed;
 
 	// Power
 	uint32_t screenTimeoutSecs;
@@ -145,7 +148,8 @@ typedef struct
 #define CFG_DEFAULT_SAVEFORMAT SAVE_FORMAT_SAV
 #define CFG_DEFAULT_STATEFORMAT STATE_FORMAT_SAV
 #define CFG_DEFAULT_EXTRACTEDFILENAME false
-#define CFG_DEFAULT_MUTELEDS false
+#define CFG_DEFAULT_FNTOGGLELEDS false
+#define CFG_DEFAULT_CHARGINGBREATHINGLED false
 #define CFG_DEFAULT_GAMEARTWIDTH 0.45
 #define CFG_DEFAULT_WIFI false
 #define CFG_DEFAULT_VIEW SCREEN_GAMELIST
@@ -236,6 +240,9 @@ void CFG_setUseExtractedFileName(bool);
 // Enable/disable mute also shutting off LEDs.
 bool CFG_getFnToggleLEDs(void);
 void CFG_setFnToggleLEDs(bool);
+// Enable/disable breathing LED effect when charging.
+bool CFG_getChargingBreathingLed(void);
+void CFG_setChargingBreathingLed(bool);
 // Set game art width percentage.
 double CFG_getGameArtWidth(void);
 void CFG_setGameArtWidth(double zeroToOne);

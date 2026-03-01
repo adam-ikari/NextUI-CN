@@ -689,6 +689,8 @@ settings.use_extracted_name=使用解压后的文件名
 settings.use_extracted_name.desc=使用解压后的文件名而不是压缩包名。\n仅适用于不原生支持压缩包的核心。
 settings.safe_poweroff=安全关机
 settings.safe_poweroff.desc=绕过原厂关机流程以避免“limbo bug”。\n直接指示 PMIC 软断开电池。
+settings.system.charging_breathing_led=充电呼吸灯
+settings.system.charging_breathing_led.desc=充电时启用绿色呼吸灯效果
 
 settings.main=主菜单
 settings.fn_switch=FN 开关功能设置
