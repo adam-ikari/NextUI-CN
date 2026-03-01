@@ -2395,8 +2395,15 @@ int main (int argc, char *argv[]) {
 					restore_selected = 0;
 					restore_start = 0;
 					restore_end = 0;
+					// For Tools directory, use openDirectory without auto_launch to avoid auto-starting ROMs
+					if (selected->type == ENTRY_DIR && strstr(selected->path, "/Tools/") != NULL) {
+						openDirectory(selected->path, 0);
+					} else {
+						Entry_open(selected);
+					}
+				} else {
+					Entry_open(selected);
 				}
-				Entry_open(selected);
 				dirty = 1;
 			}
 			else if (PAD_justPressed(BTN_RIGHT)) {
@@ -2647,12 +2654,13 @@ int main (int argc, char *argv[]) {
 				if (total>0) readyResume(top->entries->items[top->selected]);
 			}
 			else if (PAD_justPressed(BTN_B) && stack->count<=1) {
-				// Stack is empty or at root - navigate to default view
+				// Stack is empty or at root - check if current view is already default
 				int defaultView = CFG_getDefaultView();
 				if (currentScreen != defaultView) {
 					currentScreen = defaultView;
 					dirty = 1;
 				}
+				// Don't clear the stack when we're at the default view
 			}
 		}
 		
