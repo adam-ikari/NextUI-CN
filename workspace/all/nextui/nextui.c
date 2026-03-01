@@ -2652,14 +2652,11 @@ int main (int argc, char *argv[]) {
 				
 				if (total>0) readyResume(top->entries->items[top->selected]);
 			}
-			else if (PAD_justPressed(BTN_B) && stack->count<=1) {
-				// Stack is empty or at root - check if current view is already default
-				int defaultView = CFG_getDefaultView();
-				if (currentScreen != defaultView) {
-					currentScreen = defaultView;
-					dirty = 1;
-				}
-				// Don't clear the stack when we're at the default view
+			else if (PAD_justPressed(BTN_B) && stack->count<=1 && currentScreen != CFG_getDefaultView()) {
+				// Stack is empty or at root - navigate to default view only if not already there
+				currentScreen = CFG_getDefaultView();
+				dirty = 1;
+				// B key is ignored when already at default view to avoid unnecessary operations
 			}
 		}
 		
