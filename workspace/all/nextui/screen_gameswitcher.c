@@ -34,8 +34,12 @@ void game_switcher_screen_on_enter(screen* scr) {
     
     screen_clear_hints(scr);
     
+    // Note: Combined hints (brightness, volume) are registered separately
+    // They only show when menu key is held
+    // Default hints will be shown normally
+    
+    // Screen-specific hints
     // Primary hints (top position)
-    // Sleep or Info (will be merged with default brightness/volume hints)
     screen_register_hint(scr, HINT_POSITION_PRIMARY, 
         (BTN_SLEEP==BTN_POWER)?TR("common.power"):TR("common.menu"),
         (BTN_SLEEP==BTN_POWER||simple_mode)?TR("common.sleep"):TR("common.info"),

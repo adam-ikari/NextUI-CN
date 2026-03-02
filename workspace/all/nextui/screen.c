@@ -138,22 +138,36 @@ void screen_manager_render(screen_manager* mgr, SDL_Surface* surface) {
         GFX_blitHardwareGroup(surface, 0);
     }
 
-    // Merge default hints with screen hints for rendering
+    // Merge hints for rendering
     screen* scr = mgr->current_screen;
-    for (int pos = 0; pos < HINT_POSITION_COUNT; pos++) {
-        // Check if screen has hints for this position
-        if (scr->hint_counts[pos] == 0) {
-            // No screen hints, use default hints
-            for (int i = 0; i < mgr->default_hint_counts[pos]; i++) {
+    
+    // If combined hints should be shown (menu key is held), add them first
+    if (mgr->show_combined_hints) {
+        for (int pos = 0; pos < HINT_POSITION_COUNT; pos++) {
+            for (int i = 0; i < mgr->combined_hint_counts[pos]; i++) {
                 screen_register_hint(scr, pos, 
-                    mgr->default_hints[pos][i].button,
-                    mgr->default_hints[pos][i].text,
-                    HINT_MODE_APPEND);
+                    mgr->combined_hints[pos][i].button,
+                    mgr->combined_hints[pos][i].text,
+                    HINT_MODE_APPEND_TOP);
+            }
+        }
+    } else {
+        // Otherwise, add default hints
+        for (int pos = 0; pos < HINT_POSITION_COUNT; pos++) {
+            // Check if screen has hints for this position
+            if (scr->hint_counts[pos] == 0) {
+                // No screen hints, use default hints
+                for (int i = 0; i < mgr->default_hint_counts[pos]; i++) {
+                    screen_register_hint(scr, pos, 
+                        mgr->default_hints[pos][i].button,
+                        mgr->default_hints[pos][i].text,
+                        HINT_MODE_APPEND);
+                }
             }
         }
     }
 
-    // Render button hints (merged default + screen)
+    // Render button hints (combined/default + screen)
     screen_render_hints(scr, surface);
     
     // Clear screen hints to avoid accumulation on next frame
@@ -318,6 +332,49 @@ void screen_manager_register_default_hint(screen_manager* mgr, int position, con
 void screen_manager_clear_default_hints(screen_manager* mgr) {
     if (!mgr) return;
     memset(mgr->default_hint_counts, 0, sizeof(mgr->default_hint_counts));
+}
+
+// Combined key hints API
+
+void screen_manager_register_combined_hint(screen_manager* mgr, int position, const char* button, const char* text) {
+    if (!mgr || !button || !text) return;
+    
+    if (position < 0 || position >= HINT_POSITION_COUNT) {
+        LOG_error("screen_manager_register_combined_hint: invalid position %d\n", position);
+        return;
+    }
+    
+    int count = mgr->combined_hint_counts[position];
+    if (count >= MAX_HINTS_PER_POSITION) {
+        LOG_error("screen_manager_register_combined_hint: too many combined hints at position %d\n", position);
+        return;
+    }
+    
+    strncpy(mgr->combined_hints[position][count].button, button, sizeof(mgr->combined_hints[position][count].button) - 1);
+    strncpy(mgr->combined_hints[position][count].text, text, sizeof(mgr->combined_hints[position][count].text) - 1);
+    mgr->combined_hints[position][count].button[sizeof(mgr->combined_hints[position][count].button) - 1] = '\0';
+    mgr->combined_hints[position][count].text[sizeof(mgr->combined_hints[position][count].text) - 1] = '\0';
+    mgr->combined_hints[position][count].is_default = 0;
+    
+    mgr->combined_hint_counts[position]++;
+}
+
+void screen_manager_clear_combined_hints(screen_manager* mgr) {
+    if (!mgr) return;
+    memset(mgr->combined_hint_counts, 0, sizeof(mgr->combined_hint_counts));
+}
+
+void screen_manager_set_show_combined_hints(screen_manager* mgr, int show) {
+    if (mgr) {
+        if (mgr->show_combined_hints != show) {
+            mgr->show_combined_hints = show;
+            mgr->dirty = 1;  // Trigger re-render
+        }
+    }
+}
+
+int screen_manager_get_show_combined_hints(screen_manager* mgr) {
+    return mgr ? mgr->show_combined_hints : 0;
 }
 
 // Screen Manager additional API

@@ -71,6 +71,11 @@ struct screen_manager {
     // Default hints (shared across all screens)
     button_hint default_hints[HINT_POSITION_COUNT][MAX_HINTS_PER_POSITION];
     int default_hint_counts[HINT_POSITION_COUNT];
+    
+    // Combined key hints (brightness, volume) - shown only when menu is held
+    button_hint combined_hints[HINT_POSITION_COUNT][MAX_HINTS_PER_POSITION];
+    int combined_hint_counts[HINT_POSITION_COUNT];
+    int show_combined_hints;  // Flag to control visibility
 };
 
 // Screen Manager API
@@ -92,6 +97,12 @@ int screen_manager_get_show_setting(screen_manager* mgr);
 // Default hint API (set once at startup)
 void screen_manager_register_default_hint(screen_manager* mgr, int position, const char* button, const char* text);
 void screen_manager_clear_default_hints(screen_manager* mgr);
+
+// Combined key hints API (brightness, volume - shown when menu is held)
+void screen_manager_register_combined_hint(screen_manager* mgr, int position, const char* button, const char* text);
+void screen_manager_clear_combined_hints(screen_manager* mgr);
+void screen_manager_set_show_combined_hints(screen_manager* mgr, int show);
+int screen_manager_get_show_combined_hints(screen_manager* mgr);
 
 // Screen base API
 screen* screen_new(ScreenType type, screen_vtable* vtable, void* data);
