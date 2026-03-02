@@ -54,7 +54,8 @@ $(info SDL2_ttf support: $(HAS_SDL2_TTF))
 TARGET = nextui_simulator
 
 # Source files - using real NextUI framework code
-SOURCE = screen.c \
+SOURCE = simulator.c \
+	screen.c \
 	component.c \
 	state.c \
 	../common/scaler.c \
@@ -63,7 +64,7 @@ SOURCE = screen.c \
 	../common/api.c \
 	../../i18n/i18n.c \
 	../../desktop/platform/platform.c \
-	simulator_main.c \
+	simulator_backend.c \
 	simulator_platform.c
 
 # msettings source

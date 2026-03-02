@@ -238,14 +238,24 @@ int init_sdl(simulator_state* sim) {
         fprintf(stderr, "Warning: Font initialization failed. Text may not display.\n");
     }
     
-    // Create window
+    // Check if running in CI environment (no display)
+    const char* display = getenv("DISPLAY");
+    int headless = (display == NULL || strlen(display) == 0);
+    
+    // Create window (use hidden flag for CI/headless mode)
+    Uint32 window_flags = SDL_WINDOW_SHOWN;
+    if (headless) {
+        window_flags = SDL_WINDOW_HIDDEN;
+        printf("Running in headless mode (no display device)\n");
+    }
+    
     sim->window = SDL_CreateWindow(
         "NextUI Simulator",
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
         SCREEN_WIDTH,
         SCREEN_HEIGHT,
-        SDL_WINDOW_SHOWN
+        window_flags
     );
     
     if (!sim->window) {
@@ -752,7 +762,7 @@ int main(int argc, char* argv[]) {
     if (sim.auto_traverse) {
         printf("Mode: Auto-traversal with screenshots\n");
         printf("Output directory: %s\n", sim.screenshot_dir);
-        printf("Delay: %d ms\n\n");
+        printf("Delay: %d ms\n\n", sim.traverse_delay);
     } else if (sim.screenshot_mode) {
         printf("Mode: Manual screenshots\n");
         printf("Output directory: %s\n", sim.screenshot_dir);

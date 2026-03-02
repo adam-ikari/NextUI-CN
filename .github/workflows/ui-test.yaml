@@ -48,6 +48,9 @@ jobs:
       - name: Run auto-traversal screenshot tests
         run: |
           cd workspace/all/nextui
+          # Set headless mode for CI
+          export SDL_VIDEODRIVER=dummy
+          export DISPLAY=
           ./build/desktop/nextui_simulator --auto --delay 100
 
       - name: Create baseline (main branch only)
