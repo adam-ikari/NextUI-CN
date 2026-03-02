@@ -553,6 +553,7 @@ static int restore_start = 0;
 static int restore_end = 0;
 static int startgame = 0;
 static int show_game_switcher = 0;
+static int show_quickmenu = 0;
 static int menu_key_held = 0;  // Track if menu key is being held
 ///////////////////////////////////////
 
@@ -2284,15 +2285,49 @@ int main (int argc, char *argv[]) {
 			if (current_time - auto_last_action >= auto_delay) {
 				auto_last_action = current_time;
 				
-				// Simple auto-traversal: navigate down, take screenshots
+				// Enhanced auto-traversal: simulate key presses and take screenshots
+				// Total 18 screenshots: gamelist(8) + quickmenu(4) + gameswitcher(3) + settings(3)
 				switch (auto_step) {
-					case 0: // Initial screenshot
+					// Game List screenshots (8 items)
+					case 0: case 1: case 2: case 3: case 4: case 5: case 6: case 7:
 						{
 							if (!screen) {
 								LOG_info("Screen is NULL, cannot save screenshot\n");
 							} else {
 								char filename[512];
-								sprintf(filename, "%s/%03d_gamelist_item%i.png", auto_screenshot_dir, auto_screenshot_count, top->selected);
+								sprintf(filename, "%s/%03d_gamelist_item%i.png", auto_screenshot_dir, auto_screenshot_count, auto_step);
+								if (SDL_SaveBMP(screen, filename) == 0) {
+									LOG_info("Screenshot saved: %s\n", filename);
+									auto_screenshot_count++;
+								} else {
+									LOG_info("Failed to save screenshot: %s\n", SDL_GetError());
+								}
+							}
+							// Navigate to next item (or just increment for empty lists)
+							if (top && top->entries->count > 0 && auto_step < top->entries->count - 1) {
+								top->selected++;
+								dirty = 1;
+							}
+						}
+						auto_step++;
+						break;
+						
+					// Transition to Quick Menu
+					case 8:
+						currentScreen = SCREEN_QUICKMENU;
+						show_quickmenu = 1;
+						dirty = 1;
+						auto_step++;
+						break;
+						
+					// Quick Menu screenshots (4 items)
+					case 9: case 10: case 11: case 12:
+						{
+							if (!screen) {
+								LOG_info("Screen is NULL, cannot save screenshot\n");
+							} else {
+								char filename[512];
+								sprintf(filename, "%s/%03d_quickmenu_item%i.png", auto_screenshot_dir, auto_screenshot_count, auto_step - 9);
 								if (SDL_SaveBMP(screen, filename) == 0) {
 									LOG_info("Screenshot saved: %s\n", filename);
 									auto_screenshot_count++;
@@ -2303,25 +2338,25 @@ int main (int argc, char *argv[]) {
 						}
 						auto_step++;
 						break;
-					case 1: // Navigate down
-						if (top->selected < top->entries->count - 1) {
-							top->selected++;
-							dirty = 1;
-							auto_step = 0; // Go back to screenshot
-							if (top->selected >= 8) { // After 8 items, move to next screen
-								auto_step = 10;
-							}
-						} else {
-							auto_step = 10; // Move to next screen
-						}
+						
+					// Transition to Game Switcher
+					case 13:
+						currentScreen = SCREEN_GAMESWITCHER;
+						show_quickmenu = 0;
+						show_game_switcher = 1;
+						switcher_selected = 0;
+						dirty = 1;
+						auto_step++;
 						break;
-					case 10: // Press menu to go to quick menu
+						
+					// Game Switcher screenshots (3 items)
+					case 14: case 15: case 16:
 						{
 							if (!screen) {
 								LOG_info("Screen is NULL, cannot save screenshot\n");
 							} else {
 								char filename[512];
-								sprintf(filename, "%s/%03d_quickmenu_item0.png", auto_screenshot_dir, auto_screenshot_count);
+								sprintf(filename, "%s/%03d_gameswitcher_item%i.png", auto_screenshot_dir, auto_screenshot_count, auto_step - 14);
 								if (SDL_SaveBMP(screen, filename) == 0) {
 									LOG_info("Screenshot saved: %s\n", filename);
 									auto_screenshot_count++;
@@ -2329,10 +2364,52 @@ int main (int argc, char *argv[]) {
 									LOG_info("Failed to save screenshot: %s\n", SDL_GetError());
 								}
 							}
+							// Navigate to next item
+							if (recents && recents->count > 0 && auto_step < 16) {
+								switcher_selected++;
+								if (switcher_selected >= recents->count) switcher_selected = 0;
+								dirty = 1;
+							}
 						}
-						auto_step = 20;
+						auto_step++;
 						break;
-					case 20: // Exit auto mode
+						
+					// Transition to Settings
+					case 17:
+						currentScreen = SCREEN_SETTINGS;
+						show_game_switcher = 0;
+						show_setting = 1;
+						dirty = 1;
+						auto_step++;
+						break;
+						
+					// Settings screenshots (3 items)
+					case 18: case 19: case 20:
+						{
+							if (!screen) {
+								LOG_info("Screen is NULL, cannot save screenshot\n");
+							} else {
+								char filename[512];
+								sprintf(filename, "%s/%03d_settings_item%i.png", auto_screenshot_dir, auto_screenshot_count, auto_step - 18);
+								if (SDL_SaveBMP(screen, filename) == 0) {
+									LOG_info("Screenshot saved: %s\n", filename);
+									auto_screenshot_count++;
+								} else {
+									LOG_info("Failed to save screenshot: %s\n", SDL_GetError());
+								}
+							}
+							// Navigate to next setting
+							if (auto_step < 20) {
+								show_setting++;
+								if (show_setting > SETTINGS_SIZE) show_setting = 1;
+								dirty = 1;
+							}
+						}
+						auto_step++;
+						break;
+						
+					// Exit auto mode
+					case 21:
 						LOG_info("Auto-traversal complete. Total screenshots: %d\n", auto_screenshot_count);
 						quit = 1;
 						break;
