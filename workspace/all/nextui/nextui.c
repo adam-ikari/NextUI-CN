@@ -545,6 +545,7 @@ static int restore_start = 0;
 static int restore_end = 0;
 static int startgame = 0;
 static int show_game_switcher = 0;
+static int menu_key_held = 0;  // Track if menu key is being held
 ///////////////////////////////////////
 
 #define MAX_RECENTS 24 // a multiple of all menu rows
@@ -2249,6 +2250,19 @@ int main (int argc, char *argv[]) {
 
 		PAD_poll();
 
+		// Check if menu key is held to switch hint display
+		if (PAD_isPressed(BTN_MENU)) {
+			if (!menu_key_held) {
+				menu_key_held = 1;
+				dirty = 1;  // Trigger re-render
+			}
+		} else {
+			if (menu_key_held) {
+				menu_key_held = 0;
+				dirty = 1;  // Trigger re-render
+			}
+		}
+
 		// Safety check: ensure stack and top are valid
 		if (!stack || stack->count == 0 || !top) {
 			// Stack is corrupted or empty - reinitialize
@@ -2476,7 +2490,19 @@ int main (int argc, char *argv[]) {
 			}
 			GFX_clear(screen);
 
+			// Render status pill
 			int ow = GFX_blitHardwareGroup(screen, show_setting);
+			
+			// Render button hints based on menu key state
+			if (menu_key_held) {
+				// Show combined key hints (brightness, volume) when menu is held
+				if (show_setting == 1) {
+					GFX_blitButtonGroup((char*[]){"START", "亮度", "SELECT", "色温", NULL}, 0, screen, 0);
+				} else {
+					GFX_blitButtonGroup((char*[]){"MNU", "亮度", "SEL", "色温", NULL}, 0, screen, 0);
+				}
+			}
+			
 			if(startgame) {
 				//pilltargetY = +screen->w;
 				//animationdirection = ANIM_NONE;
@@ -2527,7 +2553,13 @@ int main (int argc, char *argv[]) {
 					if(can_resume) GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"),  NULL }, 0, screen, 0);
 					else GFX_blitButtonGroup((char*[]){ (char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")), (char*)TR("common.sleep"),  NULL }, 0, screen, 0);
 
-					GFX_blitButtonGroup((char*[]){ "Y", (char*)TR("common.remove"), "A",(char*)TR("common.resume"), NULL }, 1, screen, 1);
+					// Button hints for game switcher
+					if (menu_key_held) {
+						// Show combined key hints when menu is held
+						GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "START", "亮度", "SELECT", "色温", NULL }, 1, screen, 1);
+					} else {
+						GFX_blitButtonGroup((char*[]){ "Y", (char*)TR("common.remove"), "A",(char*)TR("common.resume"), NULL }, 1, screen, 1);
+					}
 
 					if(has_preview) {
 						// lotta memory churn here
@@ -2630,7 +2662,14 @@ int main (int argc, char *argv[]) {
 					
 					// buttons
 					if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
-					else GFX_blitButtonGroup((char*[]){ 
+					else if (menu_key_held) {
+						// Show combined key hints when menu is held
+						GFX_blitButtonGroup((char*[]){
+							"START", "亮度",
+							"SELECT", "色温",
+							NULL
+						}, 0, screen, 0);
+					} else GFX_blitButtonGroup((char*[]){ 
 						(char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")),
 						(char*)(BTN_SLEEP==BTN_POWER||simple_mode?TR("common.sleep"):TR("common.info")),  
 						NULL }, 0, screen, 0);
@@ -2728,17 +2767,34 @@ int main (int argc, char *argv[]) {
 
 					// buttons
 					if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
-					else if (can_resume) GFX_blitButtonGroup((char*[]){ "X",(char*)TR("common.resume"),  NULL }, 0, screen, 0);
+					else if (menu_key_held) {
+						// Show combined key hints when menu is held
+						GFX_blitButtonGroup((char*[]){
+							"START", "亮度",
+							"SELECT", "色温",
+							NULL
+						}, 0, screen, 0);
+					} else if (can_resume) GFX_blitButtonGroup((char*[]){ "X",(char*)TR("common.resume"),  NULL }, 0, screen, 0);
 					else GFX_blitButtonGroup((char*[]){ 
 						(char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")),
 						(char*)(BTN_SLEEP==BTN_POWER||simple_mode?TR("common.sleep"):TR("common.info")),  
 						NULL }, 0, screen, 0);
 				
 					if (stack->count>1) {
-						GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "A",(char*)TR("common.open"), NULL }, 1, screen, 1);
+						if (menu_key_held) {
+							// Show combined key hints when menu is held
+							GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), NULL }, 0, screen, 1);
+						} else {
+							GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "A",(char*)TR("common.open"), NULL }, 1, screen, 1);
+						}
 					}
 					else {
-						GFX_blitButtonGroup((char*[]){ "A",(char*)TR("common.open"), NULL }, 0, screen, 1);
+						if (menu_key_held) {
+							// Show combined key hints when menu is held
+							GFX_blitButtonGroup((char*[]){ "A",(char*)TR("common.open"), NULL }, 0, screen, 1);
+						} else {
+							GFX_blitButtonGroup((char*[]){ "A",(char*)TR("common.open"), NULL }, 0, screen, 1);
+						}
 					}
 
 					// list
