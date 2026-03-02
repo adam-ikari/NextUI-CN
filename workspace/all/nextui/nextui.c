@@ -2621,73 +2621,92 @@ int main (int argc, char *argv[]) {
 			}
 			else { // if currentscreen == SCREEN_GAMELIST
 				// background and game art file path stuff
-				Entry* entry = top->entries->items[top->selected];
-				assert(entry);
-				char tmp_path[MAX_PATH];
-				strncpy(tmp_path, entry->path, sizeof(tmp_path) - 1);
-				tmp_path[sizeof(tmp_path) - 1] = '\0';
-			
-				char* res_name = strrchr(tmp_path, '/');
-				if (res_name) res_name++;
-
-				char path_copy[1024];
-				strncpy(path_copy, entry->path, sizeof(path_copy) - 1);
-				path_copy[sizeof(path_copy) - 1] = '\0';
-		
-				char* rompath = dirname(path_copy);
-			
-				char res_copy[1024];
-				strncpy(res_copy, res_name, sizeof(res_copy) - 1);
-				res_copy[sizeof(res_copy) - 1] = '\0';
-		
-				char* dot = strrchr(res_copy, '.');
-				if (dot) *dot = '\0'; 
-
-				static int lastType = -1;
-
-				// this is only a choice on the root folder
-				// Default to showing entry names: always show in subdirectories, or in root if configured
-				list_show_entry_names = stack->count > 1 || CFG_getShowFolderNamesAtRoot();
-
-				// load folder background
-				char defaultBgPath[512];
-				snprintf(defaultBgPath, sizeof(defaultBgPath), SDCARD_PATH "/bg.png");
-
-				if(((entry->type == ENTRY_DIR || entry->type == ENTRY_ROM) && CFG_getRomsUseFolderBackground())) {
-					char *newBg = entry->type == ENTRY_DIR ? entry->path:rompath;
-					if((strcmp(newBg, folderBgPath) != 0 || lastType != entry->type) && sizeof(folderBgPath) != 1) {
-						lastType = entry->type;
-						char tmppath[512];
-						strncpy(folderBgPath, newBg, sizeof(folderBgPath) - 1);
-						if (entry->type == ENTRY_DIR)
-							snprintf(tmppath, sizeof(tmppath), "%s/.media/bg.png", folderBgPath);
-						else if (entry->type == ENTRY_ROM)
-							snprintf(tmppath, sizeof(tmppath), "%s/.media/bglist.png", folderBgPath);
-						if(!exists(tmppath)) {
-							// Safeguard: If no background is available, still render the text to leave the user a way out
-							list_show_entry_names = true;
-							snprintf(tmppath, sizeof(tmppath), defaultBgPath, folderBgPath);
-						}
-						startLoadFolderBackground(tmppath, onBackgroundLoaded, NULL);
+				if (total == 0) {
+					// Handle empty directory case
+					GFX_blitMessage(font.large, (char*)TR("common.empty_folder"), screen, &(SDL_Rect){0,0,screen->w,screen->h});
+					
+					// buttons
+					if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
+					else GFX_blitButtonGroup((char*[]){ 
+						(char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")),
+						(char*)(BTN_SLEEP==BTN_POWER||simple_mode?TR("common.sleep"):TR("common.info")),  
+						NULL }, 0, screen, 0);
+					
+					if (stack->count>1) {
+						GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"),  NULL }, 0, screen, 1);
 					}
-				} 
-				else if(strcmp(defaultBgPath, folderBgPath) != 0 && exists(defaultBgPath)) {
-					strncpy(folderBgPath, defaultBgPath, sizeof(folderBgPath) - 1);
-					startLoadFolderBackground(defaultBgPath, onBackgroundLoaded, NULL);
+					
+					if(lastScreen==SCREEN_OFF) {
+						GFX_animateSurfaceOpacity(blackBG,0,0,screen->w,screen->h,255,0,CFG_getMenuTransitions() ? 200:20,LAYER_THUMBNAIL);
+					}
 				}
 				else {
-					// Safeguard: If no background is available, still render the text to leave the user a way out
-					list_show_entry_names = true;
-				}
+					Entry* entry = top->entries->items[top->selected];
+					assert(entry);
+					char tmp_path[MAX_PATH];
+					strncpy(tmp_path, entry->path, sizeof(tmp_path) - 1);
+					tmp_path[sizeof(tmp_path) - 1] = '\0';
 				
-				// Final safeguard: Ensure text is always visible in root directory when no background images exist
-				// This prevents black screen issue when user is in root directory without background images
-				if (stack->count == 1 && !list_show_entry_names) {
-					list_show_entry_names = true;
-				}
-				// load game thumbnails
-				if (total > 0) {
-					if(CFG_getShowGameArt()) {
+					char* res_name = strrchr(tmp_path, '/');
+					if (res_name) res_name++;
+
+					char path_copy[1024];
+					strncpy(path_copy, entry->path, sizeof(path_copy) - 1);
+					path_copy[sizeof(path_copy) - 1] = '\0';
+			
+					char* rompath = dirname(path_copy);
+				
+					char res_copy[1024];
+					strncpy(res_copy, res_name, sizeof(res_copy) - 1);
+					res_copy[sizeof(res_copy) - 1] = '\0';
+				
+					char* dot = strrchr(res_copy, '.');
+					if (dot) *dot = '\0'; 
+
+					static int lastType = -1;
+
+					// this is only a choice on the root folder
+					// Default to showing entry names: always show in subdirectories, or in root if configured
+					list_show_entry_names = stack->count > 1 || CFG_getShowFolderNamesAtRoot();
+
+					// load folder background
+					char defaultBgPath[512];
+					snprintf(defaultBgPath, sizeof(defaultBgPath), SDCARD_PATH "/bg.png");
+
+					if(((entry->type == ENTRY_DIR || entry->type == ENTRY_ROM) && CFG_getRomsUseFolderBackground())) {
+						char *newBg = entry->type == ENTRY_DIR ? entry->path:rompath;
+						if((strcmp(newBg, folderBgPath) != 0 || lastType != entry->type) && sizeof(folderBgPath) != 1) {
+							lastType = entry->type;
+							char tmppath[512];
+							strncpy(folderBgPath, newBg, sizeof(folderBgPath) - 1);
+							if (entry->type == ENTRY_DIR)
+								snprintf(tmppath, sizeof(tmppath), "%s/.media/bg.png", folderBgPath);
+							else if (entry->type == ENTRY_ROM)
+								snprintf(tmppath, sizeof(tmppath), "%s/.media/bglist.png", folderBgPath);
+							if(!exists(tmppath)) {
+								// Safeguard: If no background is available, still render the text to leave the user a way out
+								list_show_entry_names = true;
+								snprintf(tmppath, sizeof(tmppath), defaultBgPath, folderBgPath);
+							}
+							startLoadFolderBackground(tmppath, onBackgroundLoaded, NULL);
+						}
+					} 
+					else if(strcmp(defaultBgPath, folderBgPath) != 0 && exists(defaultBgPath)) {
+						strncpy(folderBgPath, defaultBgPath, sizeof(folderBgPath) - 1);
+						startLoadFolderBackground(defaultBgPath, onBackgroundLoaded, NULL);
+					}
+					else {
+						// Safeguard: If no background is available, still render the text to leave the user a way out
+						list_show_entry_names = true;
+					}
+					
+					// Final safeguard: Ensure text is always visible in root directory when no background images exist
+					// This prevents black screen issue when user is in root directory without background images
+					if (stack->count == 1 && !list_show_entry_names) {
+						list_show_entry_names = true;
+					}
+					// load game thumbnails
+					if (CFG_getShowGameArt()) {
 						char thumbpath[1024];
 						snprintf(thumbpath, sizeof(thumbpath), "%s/.media/%s.png", rompath, res_copy);
 						had_thumb = 0;
@@ -2703,32 +2722,23 @@ int main (int argc, char *argv[]) {
 						else
 							ox = screen->w;
 					}
-				}
 
-				// buttons
-				if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
-				else if (can_resume) GFX_blitButtonGroup((char*[]){ "X",(char*)TR("common.resume"),  NULL }, 0, screen, 0);
-				else GFX_blitButtonGroup((char*[]){ 
-					(char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")),
-					(char*)(BTN_SLEEP==BTN_POWER||simple_mode?TR("common.sleep"):TR("common.info")),  
-					NULL }, 0, screen, 0);
-			
-				if (total==0) {
-					if (stack->count>1) {
-						GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"),  NULL }, 0, screen, 1);
-					}
-				}
-				else {
+					// buttons
+					if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
+					else if (can_resume) GFX_blitButtonGroup((char*[]){ "X",(char*)TR("common.resume"),  NULL }, 0, screen, 0);
+					else GFX_blitButtonGroup((char*[]){ 
+						(char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")),
+						(char*)(BTN_SLEEP==BTN_POWER||simple_mode?TR("common.sleep"):TR("common.info")),  
+						NULL }, 0, screen, 0);
+				
 					if (stack->count>1) {
 						GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "A",(char*)TR("common.open"), NULL }, 1, screen, 1);
 					}
 					else {
 						GFX_blitButtonGroup((char*[]){ "A",(char*)TR("common.open"), NULL }, 0, screen, 1);
 					}
-				}
 
-				// list
-				if (total > 0) {
+					// list
 					selected_row = top->selected - top->start;
 					previousY = remember_row * PILL_SIZE;
 					targetY = selected_row * PILL_SIZE;
@@ -2806,10 +2816,6 @@ int main (int argc, char *argv[]) {
 		
 					remember_row = selected_row;
 					remember_depth = stack->count;
-				}
-				else {
-					// TODO: for some reason screen's dimensions end up being 0x0 in GFX_blitMessage...
-					GFX_blitMessage(font.large, (char*)TR("common.empty_folder"), screen, &(SDL_Rect){0,0,screen->w,screen->h}); //, NULL);
 				}
 				
 				lastScreen = SCREEN_GAMELIST;
