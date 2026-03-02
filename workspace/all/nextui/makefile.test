@@ -1,118 +1,63 @@
-# Test Makefile for NextUI
+# Test Makefile for NextUI UI Simulator
 
-# Platform configuration
-ifeq (,$(PLATFORM))
-PLATFORM=$(UNION_PLATFORM)
-endif
+# Platform configuration - use desktop platform for CI
+PLATFORM ?= desktop
+
+# Compiler settings
+CC ?= gcc
+CFLAGS += -Wall -Wextra -O2
+CFLAGS += -DPLATFORM="$(PLATFORM)"
 
 # SDL configuration
 SDL_CONFIG ?= sdl2-config
 SDL_CFLAGS = $(shell $(SDL_CONFIG) --cflags)
 SDL_LIBS = $(shell $(SDL_CONFIG) --libs)
 
-# SDL_image configuration
-SDL_IMAGE_CFLAGS = $(shell pkg-config --cflags SDL2_image 2>/dev/null)
-SDL_IMAGE_LIBS = $(shell pkg-config --libs SDL2_image 2>/dev/null)
+# Include paths
+INCDIR = -I. -I../common/ -I../../$(PLATFORM)/platform/ -I../../i18n/
+CFLAGS += $(SDL_CFLAGS)
+CFLAGS += $(INCDIR)
 
-# Fallback if pkg-config fails
-ifeq ($(SDL_IMAGE_CFLAGS),)
-SDL_IMAGE_CFLAGS = -I/usr/include/SDL2
-SDL_IMAGE_LIBS = -lSDL2_image
-endif
+# Linker settings
+LDFLAGS += $(SDL_LIBS)
+LDFLAGS += -lpthread -ldl -lm -lz
 
-# Compiler settings
-CC ?= gcc
-CFLAGS += -Wall -Wextra -O2 $(SDL_CFLAGS) $(SDL_IMAGE_CFLAGS)
-LDFLAGS += $(SDL_LIBS) $(SDL_IMAGE_LIBS)
-
-# Source files
-TEST_BASIC_SOURCES = test_nextui.c
-TEST_BASIC_TARGET = test_nextui
-
-TEST_PAGES_SOURCES = test_pages.c
-TEST_PAGES_TARGET = test_pages
+# Simulator source files
+SIMULATOR_SOURCES = simulator.c
+SIMULATOR_TARGET = nextui_simulator
 
 # Output directory
 TEST_OUTPUT_DIR = test_output
 
-# CI environment variables
-export TEST_BASIC_TARGET
-export TEST_PAGES_TARGET
+.PHONY: all clean run help
 
-.PHONY: all clean test create-baseline test-pages create-baseline-pages help
+all: $(SIMULATOR_TARGET)
+	@echo "NextUI UI Simulator built successfully"
+	@echo "Run: ./$(SIMULATOR_TARGET)"
 
-all: $(TEST_BASIC_TARGET) $(TEST_PAGES_TARGET)
-	@echo "All test binaries built"
+$(SIMULATOR_TARGET): $(SIMULATOR_SOURCES)
+	$(CC) $(CFLAGS) $(SIMULATOR_SOURCES) -o $(SIMULATOR_TARGET) $(LDFLAGS)
+	@echo "Built: $(SIMULATOR_TARGET)"
 
-$(TEST_BASIC_TARGET): $(TEST_BASIC_SOURCES)
-	$(CC) $(CFLAGS) $(TEST_BASIC_SOURCES) -o $(TEST_BASIC_TARGET) $(LDFLAGS)
-	@echo "Built: $(TEST_BASIC_TARGET)"
-
-$(TEST_PAGES_TARGET): $(TEST_PAGES_SOURCES)
-	$(CC) $(CFLAGS) $(TEST_PAGES_SOURCES) -o $(TEST_PAGES_TARGET) $(LDFLAGS)
-	@echo "Built: $(TEST_PAGES_TARGET)"
-
-test: $(TEST_BASIC_TARGET)
+run: $(SIMULATOR_TARGET)
 	@mkdir -p $(TEST_OUTPUT_DIR)
-	@echo "Running basic tests..."
-	./$(TEST_BASIC_TARGET)
-
-test-pages: $(TEST_PAGES_TARGET)
-	@mkdir -p $(TEST_OUTPUT_DIR)
-	@echo "Running page tests..."
-	./$(TEST_PAGES_TARGET)
-
-create-baseline: $(TEST_BASIC_TARGET)
-	@mkdir -p $(TEST_OUTPUT_DIR)
-	@echo "Creating baseline images..."
-	./$(TEST_BASIC_TARGET) --create-baseline
-
-create-baseline-pages: $(TEST_PAGES_TARGET)
-	@mkdir -p $(TEST_OUTPUT_DIR)
-	@echo "Creating page baseline images..."
-	./$(TEST_PAGES_TARGET) --create-baseline
+	./$(SIMULATOR_TARGET)
 
 clean:
-	rm -f $(TEST_BASIC_TARGET) $(TEST_PAGES_TARGET)
+	rm -f $(SIMULATOR_TARGET)
 	rm -rf $(TEST_OUTPUT_DIR)
 
 help:
-	@echo "NextUI Test Suite"
+	@echo "NextUI UI Simulator"
 	@echo ""
 	@echo "Targets:"
-	@echo "  all                    Build all test binaries"
-	@echo "  test                   Run basic regression tests"
-	@echo "  test-pages             Run page regression tests"
-	@echo "  create-baseline        Create baseline images (basic)"
-	@echo "  create-baseline-pages  Create baseline images (pages)"
-	@echo "  clean                  Clean build artifacts"
-	@echo "  help                   Show this help message"
+	@echo "  all    Build the UI simulator"
+	@echo "  run    Run the UI simulator"
+	@echo "  clean  Clean build artifacts"
+	@echo "  help   Show this help message"
 	@echo ""
 	@echo "Usage:"
 	@echo "  make -f makefile.test [target]"
 	@echo ""
-	@echo "Environment Variables:"
-	@echo "  TEST_BASIC_TARGET      Basic test binary name"
-	@echo "  TEST_PAGES_TARGET      Page test binary name"
-	@echo ""
-	@echo "Test Coverage:"
-	@echo "  Basic Tests:"
-	@echo "    - Empty screen rendering"
-	@echo "    - Solid color patterns"
-	@echo "    - Gradient rendering"
-	@echo "    - Checkerboard patterns"
-	@echo "    - Text rendering"
-	@echo "    - Button rendering"
-	@echo "    - List rendering"
-	@echo "    - Status pill rendering"
-	@echo ""
-	@echo "  Page Tests:"
-	@echo "    - Empty directory screen"
-	@echo "    - Game list screen"
-	@echo "    - Game list with thumbnail"
-	@echo "    - Game switcher screen"
-	@echo "    - Game switcher empty state"
-	@echo "    - Default button hints"
-	@echo "    - Combined key hints (menu held)"
-	@echo "    - Status pill only"
-	@echo "    - Status pill with hints"
+	@echo "The simulator allows you to test NextUI UI components"
+	@echo "on desktop without needing actual hardware."
