@@ -1,4 +1,5 @@
 #include "component.h"
+#include "state.h"
 #include "nextui.h"
 #include <stdlib.h>
 #include <string.h>
@@ -667,4 +668,145 @@ component* list_component_get_item(component* list, int index) {
         return data->items[index];
     }
     return NULL;
+}
+
+// Data-driven update API implementation
+
+void component_set_props(component* comp, state* props) {
+    if (!comp) return;
+    
+    // Free old props if exists
+    if (comp->props) {
+        state_free(comp->props);
+    }
+    
+    comp->props = props;
+    
+    // Mark component for update
+    comp->should_update = 1;
+}
+
+void component_set_state(component* comp, state* state) {
+    if (!comp) return;
+    
+    // Free old state if exists
+    if (comp->comp_state) {
+        state_free(comp->comp_state);
+    }
+    
+    comp->comp_state = state;
+    
+    // Mark component for update
+    comp->should_update = 1;
+}
+
+void component_force_update(component* comp) {
+    if (comp) {
+        comp->should_update = 1;
+    }
+}
+
+int component_needs_update(component* comp) {
+    return comp ? comp->should_update : 0;
+}
+
+void component_set_key(component* comp, int key) {
+    if (comp) {
+        comp->key = key;
+    }
+}
+
+int component_get_key(component* comp) {
+    return comp ? comp->key : 0;
+}
+
+// Virtual DOM rendering
+
+component* component_render_virtual(component* parent, component* old_child, component* new_child) {
+    if (!new_child) {
+        // Remove old child
+        if (old_child) {
+            component_free(old_child);
+        }
+        return NULL;
+    }
+    
+    if (!old_child) {
+        // Create new child
+        return new_child;
+    }
+    
+    // Check if keys match
+    if (old_child->key != new_child->key) {
+        // Keys don't match, replace old child with new one
+        component_free(old_child);
+        return new_child;
+    }
+    
+    // Keys match, check if types match
+    if (old_child->type != new_child->type) {
+        // Types don't match, replace old child with new one
+        component_free(old_child);
+        return new_child;
+    }
+    
+    // Types and keys match, reuse old component and update it
+    component_diff_and_update(old_child, new_child);
+    
+    // Free new_child as we're using old_child
+    if (new_child->vtable && new_child->vtable->cleanup) {
+        new_child->vtable->cleanup(new_child);
+    }
+    free(new_child);
+    
+    return old_child;
+}
+
+void component_diff_and_update(component* old_comp, component* new_comp) {
+    if (!old_comp || !new_comp) return;
+    
+    // Check if component should update
+    int should_update = 1;
+    
+    if (old_comp->vtable && old_comp->vtable->should_component_update) {
+        should_update = old_comp->vtable->should_component_update(old_comp, old_comp->comp_state, new_comp->comp_state);
+    }
+    
+    if (!should_update) {
+        return;
+    }
+    
+    // Update props
+    if (new_comp->props) {
+        if (old_comp->props) {
+            state_free(old_comp->props);
+        }
+        old_comp->props = new_comp->props;
+        new_comp->props = NULL;  // Transfer ownership
+    }
+    
+    // Update state
+    if (new_comp->comp_state) {
+        if (old_comp->comp_state) {
+            state_free(old_comp->comp_state);
+        }
+        old_comp->comp_state = new_comp->comp_state;
+        new_comp->comp_state = NULL;  // Transfer ownership
+    }
+    
+    // Update style
+    memcpy(&old_comp->style, &new_comp->style, sizeof(component_style));
+    
+    // Update position
+    old_comp->state.rect = new_comp->state.rect;
+    
+    // Update visibility and enabled state
+    old_comp->state.visible = new_comp->state.visible;
+    old_comp->state.enabled = new_comp->state.enabled;
+    
+    // Mark for update
+    old_comp->should_update = 1;
+    
+    // Update component-specific data
+    // (This is component-specific, each component type should handle its own data update)
 }

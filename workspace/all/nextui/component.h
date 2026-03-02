@@ -5,6 +5,9 @@
 #include "common/config.h"
 #include "common/api.h"
 
+// Forward declarations
+typedef struct state state;
+
 // Component types
 typedef enum {
     COMPONENT_TYPE_BUTTON,
@@ -51,6 +54,7 @@ typedef struct component_vtable {
     void (*render)(component* comp, SDL_Surface* surface);
     void (*handle_event)(component* comp, int button, int pressed);
     void (*set_enabled)(component* comp, int enabled);
+    int (*should_component_update)(component* comp, state* old_state, state* new_state);
 } component_vtable;
 
 // Button component
@@ -84,6 +88,12 @@ struct component {
     component_state state;
     void* data;  // Component-specific data
     void* user_data;  // User-defined data
+    
+    // Data-driven update support
+    state* props;  // Component properties (immutable)
+    state* comp_state;  // Component internal state
+    int should_update;  // Flag indicating if component needs re-render
+    int key;  // Unique key for component identification (for virtual DOM)
 };
 
 // Component Factory
@@ -169,5 +179,17 @@ component* grid_component_new(int columns, int item_width, int item_height, int 
 void grid_component_add_item(component* grid, component* item);
 void grid_component_set_selected(component* grid, int index);
 void grid_component_navigate(component* grid, int direction);
+
+// Data-driven update API
+void component_set_props(component* comp, state* props);
+void component_set_state(component* comp, state* state);
+void component_force_update(component* comp);
+int component_needs_update(component* comp);
+void component_set_key(component* comp, int key);
+int component_get_key(component* comp);
+
+// Virtual DOM component rendering
+component* component_render_virtual(component* parent, component* old_child, component* new_child);
+void component_diff_and_update(component* old_comp, component* new_comp);
 
 #endif // NEXTUI_COMPONENT_H__

@@ -5,6 +5,9 @@
 #include "common/config.h"
 #include "common/api.h"
 
+// Forward declarations
+typedef struct state state;
+
 // Screen types
 typedef enum {
     SCREEN_TYPE_GAMELIST,
@@ -55,6 +58,12 @@ struct screen {
     // Button hints (managed by screen framework)
     button_hint hints[HINT_POSITION_COUNT][MAX_HINTS_PER_POSITION];
     int hint_counts[HINT_POSITION_COUNT];
+    
+    // State management (React-like data-driven updates)
+    state* state;  // Screen state
+    effect_hooks* effects;  // Side effects
+    memo_caches* memo;  // Memoized computations
+    int needs_update;  // Flag indicating if screen needs re-render
 };
 
 // Screen Manager
@@ -136,5 +145,41 @@ void game_switcher_screen_set_anim_direction(screen* scr, int direction);
 int game_switcher_screen_get_selected(screen* scr);
 int game_switcher_screen_get_total(screen* scr);
 int game_switcher_screen_get_anim_direction(screen* scr);
+
+// State management API (React-like data-driven updates)
+
+// Initialize state for a screen
+void screen_init_state(screen* scr);
+
+// Set screen state (triggers re-render)
+void screen_set_state(screen* scr, state* state);
+
+// Get screen state
+state* screen_get_state(screen* scr);
+
+// Set state value (convenience function)
+void screen_set_state_value(screen* scr, const char* key, state_value value);
+
+// Get state value (convenience function)
+state_value screen_get_state_value(screen* scr, const char* key);
+
+// Check if screen needs update
+int screen_needs_update(screen* scr);
+
+// Force screen update
+void screen_force_update(screen* scr);
+
+// Clear update flag
+void screen_clear_update_flag(screen* scr);
+
+// Effect management
+void screen_use_effect(screen* scr, effect_function func, effect_cleanup cleanup, void* user_data, char** deps, int dep_count);
+
+// Memo management
+void* screen_use_memo(screen* scr, const char* key, void* (*compute_func)(void*), void* user_data, char** deps, int dep_count, void (*free_func)(void*));
+
+// Clear all effects and memo
+void screen_clear_effects(screen* scr);
+void screen_clear_memo(screen* scr);
 
 #endif // NEXTUI_SCREEN_H__
