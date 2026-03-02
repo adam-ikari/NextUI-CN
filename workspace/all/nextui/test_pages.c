@@ -297,7 +297,7 @@ int save_screenshot(test_context* ctx, const char* filename) {
     char path[512];
     snprintf(path, sizeof(path), "%s/%s.png", TEST_OUTPUT_DIR, filename);
     
-    int result = SDL_SavePNG(ctx->screen, path);
+    int result = IMG_SavePNG(ctx->screen, path);
     if (result != 0) {
         fprintf(stderr, "Failed to save screenshot %s: %s\n", path, SDL_GetError());
         return 0;
@@ -357,7 +357,7 @@ int compare_screenshots(const char* file1, const char* file2, const char* diff_o
     SDL_UnlockSurface(diff_surf);
     
     if (diff_output) {
-        SDL_SavePNG(diff_surf, diff_output);
+        IMG_SavePNG(diff_surf, diff_output);
         printf("  Diff saved: %s\n", diff_output);
     }
     
