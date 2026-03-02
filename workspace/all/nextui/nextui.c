@@ -2314,8 +2314,9 @@ int main (int argc, char *argv[]) {
 						
 					// Transition to Quick Menu
 					case 8:
-						currentScreen = SCREEN_QUICKMENU;
-						show_quickmenu = 1;
+						// Quick menu is an overlay, not a separate screen
+						// It's triggered by menu_key_held state
+						menu_key_held = 1;
 						dirty = 1;
 						auto_step++;
 						break;
@@ -2341,8 +2342,7 @@ int main (int argc, char *argv[]) {
 						
 					// Transition to Game Switcher
 					case 13:
-						currentScreen = SCREEN_GAMESWITCHER;
-						show_quickmenu = 0;
+						menu_key_held = 0;
 						show_game_switcher = 1;
 						switcher_selected = 0;
 						dirty = 1;
@@ -2376,7 +2376,6 @@ int main (int argc, char *argv[]) {
 						
 					// Transition to Settings
 					case 17:
-						currentScreen = SCREEN_SETTINGS;
 						show_game_switcher = 0;
 						show_setting = 1;
 						dirty = 1;
