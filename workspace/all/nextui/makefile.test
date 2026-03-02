@@ -1,63 +1,66 @@
-# Test Makefile for NextUI UI Simulator
+# Makefile for NextUI UI Simulator (Simplified Version)
+# This version uses only the simulator code without full NextUI integration
 
-# Platform configuration - use desktop platform for CI
-PLATFORM ?= desktop
-
-# Compiler settings
-CC ?= gcc
-CFLAGS += -Wall -Wextra -O2
-CFLAGS += -DPLATFORM="$(PLATFORM)"
+# Platform configuration
+PLATFORM = desktop
 
 # SDL configuration
 SDL_CONFIG ?= sdl2-config
 SDL_CFLAGS = $(shell $(SDL_CONFIG) --cflags)
 SDL_LIBS = $(shell $(SDL_CONFIG) --libs)
 
-# Include paths
-INCDIR = -I. -I../common/ -I../../$(PLATFORM)/platform/ -I../../i18n/
+# Compiler settings
+CC ?= gcc
+CFLAGS += -Wall -Wextra -Wno-unused-parameter -O2
 CFLAGS += $(SDL_CFLAGS)
-CFLAGS += $(INCDIR)
+CFLAGS += -DPLATFORM="$(PLATFORM)"
 
-# Linker settings
+# Linker flags
 LDFLAGS += $(SDL_LIBS)
 LDFLAGS += -lpthread -ldl -lm -lz
 
-# Simulator source files
-SIMULATOR_SOURCES = simulator.c
-SIMULATOR_TARGET = nextui_simulator
+# Target
+TARGET = nextui_simulator
+
+# Source files - only simulator code
+SOURCE = simulator.c
 
 # Output directory
-TEST_OUTPUT_DIR = test_output
+BUILD_DIR = build/desktop
+
+# CI environment variables
+export TARGET
 
 .PHONY: all clean run help
 
-all: $(SIMULATOR_TARGET)
-	@echo "NextUI UI Simulator built successfully"
-	@echo "Run: ./$(SIMULATOR_TARGET)"
+all: $(BUILD_DIR)/$(TARGET)
+	@echo "Simulator built successfully"
+	@echo "Run: make -f makefile.test run"
 
-$(SIMULATOR_TARGET): $(SIMULATOR_SOURCES)
-	$(CC) $(CFLAGS) $(SIMULATOR_SOURCES) -o $(SIMULATOR_TARGET) $(LDFLAGS)
-	@echo "Built: $(SIMULATOR_TARGET)"
+$(BUILD_DIR)/$(TARGET): $(SOURCE)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(SOURCE) -o $(BUILD_DIR)/$(TARGET) $(CFLAGS) $(LDFLAGS)
+	@echo "Built: $(BUILD_DIR)/$(TARGET)"
 
-run: $(SIMULATOR_TARGET)
-	@mkdir -p $(TEST_OUTPUT_DIR)
-	./$(SIMULATOR_TARGET)
+run: $(BUILD_DIR)/$(TARGET)
+	@echo "Starting NextUI Simulator..."
+	./$(BUILD_DIR)/$(TARGET)
 
 clean:
-	rm -f $(SIMULATOR_TARGET)
-	rm -rf $(TEST_OUTPUT_DIR)
+	rm -f $(BUILD_DIR)/$(TARGET)
+	@echo "Cleaned build artifacts"
 
 help:
-	@echo "NextUI UI Simulator"
+	@echo "NextUI UI Simulator (Simplified Version)"
+	@echo ""
+	@echo "This is a simplified simulator that demonstrates the UI structure."
+	@echo "For full NextUI integration, more complex setup is required."
 	@echo ""
 	@echo "Targets:"
-	@echo "  all    Build the UI simulator"
-	@echo "  run    Run the UI simulator"
-	@echo "  clean  Clean build artifacts"
-	@echo "  help   Show this help message"
+	@echo "  all   Build simulator"
+	@echo "  run   Build and run simulator"
+	@echo "  clean Clean build artifacts"
+	@echo "  help  Show this help message"
 	@echo ""
 	@echo "Usage:"
 	@echo "  make -f makefile.test [target]"
-	@echo ""
-	@echo "The simulator allows you to test NextUI UI components"
-	@echo "on desktop without needing actual hardware."
