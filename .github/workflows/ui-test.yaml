@@ -39,11 +39,30 @@ jobs:
             libjpeg-dev \
             zlib1g-dev
 
+      - name: Verify SDL2 libraries
+        run: |
+          echo "Checking SDL2 libraries..."
+          pkg-config --exists SDL2 && echo "✓ SDL2 found"
+          pkg-config --exists SDL2_image && echo "✓ SDL2_image found" || echo "✗ SDL2_image not found"
+          pkg-config --exists SDL2_ttf && echo "✓ SDL2_ttf found" || echo "✗ SDL2_ttf not found"
+          
+          # Display library versions
+          echo ""
+          echo "Library versions:"
+          pkg-config --modversion SDL2 2>/dev/null || echo "SDL2: not found"
+          pkg-config --modversion SDL2_image 2>/dev/null || echo "SDL2_image: not found"
+          pkg-config --modversion SDL2_ttf 2>/dev/null || echo "SDL2_ttf: not found"
+
       - name: Build UI simulator
         run: |
           cd workspace/all/nextui
           make -f makefile.test clean
-          make -f makefile.test all
+          make -f makefile.test all 2>&1 | tee build.log
+          
+          # Display SDL2_ttf support status from build output
+          echo ""
+          echo "SDL2_ttf support status:"
+          grep "SDL2_ttf support" build.log || echo "SDL2_ttf support: not detected"
 
       - name: Setup environment
         run: |
