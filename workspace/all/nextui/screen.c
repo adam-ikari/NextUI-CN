@@ -124,9 +124,22 @@ void screen_manager_update(screen_manager* mgr, unsigned long now) {
 void screen_manager_render(screen_manager* mgr, SDL_Surface* surface) {
     if (!mgr || !mgr->current_screen || !mgr->current_screen->vtable) return;
 
+    // Render screen content
     if (mgr->current_screen->vtable->render) {
         mgr->current_screen->vtable->render(mgr->current_screen, surface);
     }
+
+    // Render status pill (battery, wifi, bluetooth, clock)
+    if (mgr->show_setting) {
+        if (!GetHDMI()) {
+            GFX_blitHardwareHints(surface, mgr->show_setting);
+        }
+    } else {
+        GFX_blitHardwareGroup(surface, 0);
+    }
+
+    // Render button hints registered by the screen
+    screen_render_hints(mgr->current_screen, surface);
 
     mgr->dirty = 0;
 }
@@ -172,6 +185,11 @@ screen* screen_new(ScreenType type, screen_vtable* vtable, void* data) {
     scr->type = type;
     scr->vtable = vtable;
     scr->data = data;
+    
+    // Initialize hints
+    memset(scr->hints, 0, sizeof(scr->hints));
+    memset(scr->hint_counts, 0, sizeof(scr->hint_counts));
+    
     return scr;
 }
 
@@ -184,4 +202,68 @@ void screen_free(screen* scr) {
     }
 
     free(scr);
+}
+
+// Button hint API
+
+void screen_clear_hints(screen* scr) {
+    if (!scr) return;
+    memset(scr->hint_counts, 0, sizeof(scr->hint_counts));
+}
+
+void screen_register_hint(screen* scr, int position, const char* button, const char* text) {
+    if (!scr || !button || !text) return;
+    
+    if (position < 0 || position >= HINT_POSITION_COUNT) {
+        LOG_error("screen_register_hint: invalid position %d\n", position);
+        return;
+    }
+    
+    int count = scr->hint_counts[position];
+    if (count >= MAX_HINTS_PER_POSITION) {
+        LOG_error("screen_register_hint: too many hints at position %d\n", position);
+        return;
+    }
+    
+    strncpy(scr->hints[position][count].button, button, sizeof(scr->hints[position][count].button) - 1);
+    strncpy(scr->hints[position][count].text, text, sizeof(scr->hints[position][count].text) - 1);
+    scr->hints[position][count].button[sizeof(scr->hints[position][count].button) - 1] = '\0';
+    scr->hints[position][count].text[sizeof(scr->hints[position][count].text) - 1] = '\0';
+    
+    scr->hint_counts[position]++;
+}
+
+void screen_render_hints(screen* scr, SDL_Surface* surface) {
+    if (!scr || !surface) return;
+    
+    for (int pos = 0; pos < HINT_POSITION_COUNT; pos++) {
+        int count = scr->hint_counts[pos];
+        if (count == 0) continue;
+        
+        // Build hint arrays for GFX_blitButtonGroup
+        char* hint_pairs[(MAX_HINTS_PER_POSITION * 2) + 1];
+        int hint_idx = 0;
+        
+        for (int i = 0; i < count; i++) {
+            hint_pairs[hint_idx++] = scr->hints[pos][i].button;
+            hint_pairs[hint_idx++] = scr->hints[pos][i].text;
+        }
+        hint_pairs[hint_idx] = NULL;
+        
+        // Render hints (position 0 = top/primary, position 1 = bottom/secondary)
+        int align_right = (pos == HINT_POSITION_PRIMARY) ? 0 : 1;
+        GFX_blitButtonGroup(hint_pairs, align_right, surface, pos);
+    }
+}
+
+// Screen Manager additional API
+
+void screen_manager_set_show_setting(screen_manager* mgr, int show_setting) {
+    if (mgr) {
+        mgr->show_setting = show_setting;
+    }
+}
+
+int screen_manager_get_show_setting(screen_manager* mgr) {
+    return mgr ? mgr->show_setting : 0;
 }

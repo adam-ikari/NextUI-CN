@@ -12,9 +12,23 @@ typedef enum {
     SCREEN_TYPE_COUNT
 } ScreenType;
 
+// Button hint positions
+#define HINT_POSITION_PRIMARY 0
+#define HINT_POSITION_SECONDARY 1
+#define HINT_POSITION_COUNT 2
+
+// Maximum hints per position
+#define MAX_HINTS_PER_POSITION 4
+
 // Forward declarations
 typedef struct screen_manager screen_manager;
 typedef struct screen screen;
+
+// Button hint structure
+typedef struct {
+    char button[16];   // e.g., "A", "B", "X", "Y"
+    char text[128];    // Localized text
+} button_hint;
 
 // Screen interface
 typedef struct screen_vtable {
@@ -31,6 +45,10 @@ struct screen {
     ScreenType type;
     screen_vtable* vtable;
     void* data;  // Screen-specific data
+    
+    // Button hints (managed by screen framework)
+    button_hint hints[HINT_POSITION_COUNT][MAX_HINTS_PER_POSITION];
+    int hint_counts[HINT_POSITION_COUNT];
 };
 
 // Screen Manager
@@ -40,6 +58,9 @@ struct screen_manager {
     SDL_Surface* last_screen_surface;
     int dirty;
     int animation_direction;
+    
+    // Status pill rendering (battery, wifi, clock)
+    int show_setting;
 };
 
 // Screen Manager API
@@ -55,10 +76,17 @@ void screen_manager_set_dirty(screen_manager* mgr, int dirty);
 void screen_manager_set_animation_direction(screen_manager* mgr, int direction);
 screen* screen_manager_get_current(screen_manager* mgr);
 screen* screen_manager_get_last(screen_manager* mgr);
+void screen_manager_set_show_setting(screen_manager* mgr, int show_setting);
+int screen_manager_get_show_setting(screen_manager* mgr);
 
 // Screen base API
 screen* screen_new(ScreenType type, screen_vtable* vtable, void* data);
 void screen_free(screen* screen);
+
+// Button hint API (called by screens)
+void screen_clear_hints(screen* scr);
+void screen_register_hint(screen* scr, int position, const char* button, const char* text);
+void screen_render_hints(screen* scr, SDL_Surface* surface);
 
 // Specific screen constructors
 screen* game_list_screen_new(void);

@@ -1,6 +1,12 @@
 #include "screen.h"
 #include "nextui.h"
+#include "common/config.h"
 #include <string.h>
+
+// External variables from nextui.c
+extern int simple_mode;
+extern int BTN_SLEEP;
+extern int BTN_POWER;
 
 // Game Switcher Screen Data
 typedef struct {
@@ -22,12 +28,33 @@ static void game_switcher_screen_cleanup(screen* scr) {
     }
 }
 
+// On enter - register button hints
+void game_switcher_screen_on_enter(screen* scr) {
+    if (!scr) return;
+    
+    screen_clear_hints(scr);
+    
+    // Primary hints (top position)
+    // Sleep or Info
+    screen_register_hint(scr, HINT_POSITION_PRIMARY, 
+        (BTN_SLEEP==BTN_POWER)?TR("common.power"):TR("common.menu"),
+        (BTN_SLEEP==BTN_POWER||simple_mode)?TR("common.sleep"):TR("common.info"));
+    
+    // Secondary hints (bottom position)
+    screen_register_hint(scr, HINT_POSITION_SECONDARY, "B", TR("common.back"));
+    screen_register_hint(scr, HINT_POSITION_SECONDARY, "Y", TR("common.remove"));
+}
+
+// On exit - clear button hints
+void game_switcher_screen_on_exit(screen* scr) {
+    if (!scr) return;
+    screen_clear_hints(scr);
+}
+
 // Forward declarations (these will be implemented in screen_gameswitcher_impl.c)
 extern void game_switcher_screen_update(screen* scr, unsigned long now);
 extern void game_switcher_screen_render(screen* scr, SDL_Surface* surface);
 extern void game_switcher_screen_handle_event(screen* scr, unsigned long now);
-extern void game_switcher_screen_on_enter(screen* scr);
-extern void game_switcher_screen_on_exit(screen* scr);
 
 // Screen VTable
 static screen_vtable gameswitcher_vtable = {

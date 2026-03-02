@@ -1,6 +1,14 @@
 #include "screen.h"
 #include "nextui.h"
+#include "common/config.h"
 #include <string.h>
+
+// External variables from nextui.c
+extern int can_resume;
+extern int simple_mode;
+extern int BTN_SLEEP;
+extern int BTN_POWER;
+extern int GetHDMI(void);
 
 // Game List Screen Data
 typedef struct {
@@ -17,12 +25,32 @@ static void game_list_screen_cleanup(screen* scr) {
     }
 }
 
+// On enter - register button hints
+void game_list_screen_on_enter(screen* scr) {
+    if (!scr) return;
+    
+    screen_clear_hints(scr);
+    
+    // Primary hints (top position)
+    if (can_resume) {
+        screen_register_hint(scr, HINT_POSITION_PRIMARY, "X", TR("common.resume"));
+    }
+    
+    // Secondary hints (bottom position)
+    // Note: The actual button hints depend on stack depth and other conditions
+    // These will be updated dynamically in the render function
+}
+
+// On exit - clear button hints
+void game_list_screen_on_exit(screen* scr) {
+    if (!scr) return;
+    screen_clear_hints(scr);
+}
+
 // Forward declarations (these will be implemented in screen_gamelist_impl.c)
 extern void game_list_screen_update(screen* scr, unsigned long now);
 extern void game_list_screen_render(screen* scr, SDL_Surface* surface);
 extern void game_list_screen_handle_event(screen* scr, unsigned long now);
-extern void game_list_screen_on_enter(screen* scr);
-extern void game_list_screen_on_exit(screen* scr);
 
 // Screen VTable
 static screen_vtable gamelist_vtable = {
