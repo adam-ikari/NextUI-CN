@@ -2263,8 +2263,14 @@ int main (int argc, char *argv[]) {
 	static int globallpillW = 0;
 	SDL_UnlockMutex(animMutex);
 
+	static int frame_count = 0;
 	//LOG_info("Start time time %ims\n",SDL_GetTicks());
+	LOG_info("Starting main loop, auto_mode=%d, auto_delay=%d\n", auto_mode, auto_delay);
 	while (!quit) {
+		frame_count++;
+		if (frame_count % 120 == 0) {
+			LOG_info("Main loop frame: %d, auto_mode=%d, auto_step=%d\n", frame_count, auto_mode, auto_step);
+		}
 		GFX_startFrame();
 		unsigned long now = SDL_GetTicks();
 
@@ -2443,6 +2449,10 @@ int main (int argc, char *argv[]) {
 		int total = top->entries->count;
 		
 		PWR_update(&dirty, &show_setting, NULL, NULL);
+		
+		if (auto_mode && frame_count == 1) {
+			LOG_info("Frame 1: auto_mode=%d, checking auto-traversal\n", auto_mode);
+		}
 		
 		int is_online = PLAT_isOnline();
 		if (was_online!=is_online) 
