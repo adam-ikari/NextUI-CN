@@ -35,14 +35,15 @@ void game_switcher_screen_on_enter(screen* scr) {
     screen_clear_hints(scr);
     
     // Primary hints (top position)
-    // Sleep or Info
+    // Sleep or Info (will be merged with default brightness/volume hints)
     screen_register_hint(scr, HINT_POSITION_PRIMARY, 
         (BTN_SLEEP==BTN_POWER)?TR("common.power"):TR("common.menu"),
-        (BTN_SLEEP==BTN_POWER||simple_mode)?TR("common.sleep"):TR("common.info"));
+        (BTN_SLEEP==BTN_POWER||simple_mode)?TR("common.sleep"):TR("common.info"),
+        HINT_MODE_APPEND);
     
     // Secondary hints (bottom position)
-    screen_register_hint(scr, HINT_POSITION_SECONDARY, "B", TR("common.back"));
-    screen_register_hint(scr, HINT_POSITION_SECONDARY, "Y", TR("common.remove"));
+    screen_register_hint(scr, HINT_POSITION_SECONDARY, "B", TR("common.back"), HINT_MODE_APPEND);
+    screen_register_hint(scr, HINT_POSITION_SECONDARY, "Y", TR("common.remove"), HINT_MODE_APPEND);
 }
 
 // On exit - clear button hints

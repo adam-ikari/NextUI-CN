@@ -138,8 +138,26 @@ void screen_manager_render(screen_manager* mgr, SDL_Surface* surface) {
         GFX_blitHardwareGroup(surface, 0);
     }
 
-    // Render button hints registered by the screen
-    screen_render_hints(mgr->current_screen, surface);
+    // Merge default hints with screen hints for rendering
+    screen* scr = mgr->current_screen;
+    for (int pos = 0; pos < HINT_POSITION_COUNT; pos++) {
+        // Check if screen has hints for this position
+        if (scr->hint_counts[pos] == 0) {
+            // No screen hints, use default hints
+            for (int i = 0; i < mgr->default_hint_counts[pos]; i++) {
+                screen_register_hint(scr, pos, 
+                    mgr->default_hints[pos][i].button,
+                    mgr->default_hints[pos][i].text,
+                    HINT_MODE_APPEND);
+            }
+        }
+    }
+
+    // Render button hints (merged default + screen)
+    screen_render_hints(scr, surface);
+    
+    // Clear screen hints to avoid accumulation on next frame
+    screen_clear_hints(scr);
 
     mgr->dirty = 0;
 }
@@ -211,7 +229,7 @@ void screen_clear_hints(screen* scr) {
     memset(scr->hint_counts, 0, sizeof(scr->hint_counts));
 }
 
-void screen_register_hint(screen* scr, int position, const char* button, const char* text) {
+void screen_register_hint(screen* scr, int position, const char* button, const char* text, int mode) {
     if (!scr || !button || !text) return;
     
     if (position < 0 || position >= HINT_POSITION_COUNT) {
@@ -225,12 +243,28 @@ void screen_register_hint(screen* scr, int position, const char* button, const c
         return;
     }
     
-    strncpy(scr->hints[position][count].button, button, sizeof(scr->hints[position][count].button) - 1);
-    strncpy(scr->hints[position][count].text, text, sizeof(scr->hints[position][count].text) - 1);
-    scr->hints[position][count].button[sizeof(scr->hints[position][count].button) - 1] = '\0';
-    scr->hints[position][count].text[sizeof(scr->hints[position][count].text) - 1] = '\0';
+    int insert_pos = count;
     
-    scr->hint_counts[position]++;
+    // Handle different modes
+    if (mode == HINT_MODE_APPEND_TOP) {
+        // Shift existing hints down
+        if (count >= MAX_HINTS_PER_POSITION) {
+            count = MAX_HINTS_PER_POSITION - 1;
+        }
+        for (int i = count; i > 0; i--) {
+            memcpy(&scr->hints[position][i], &scr->hints[position][i-1], sizeof(button_hint));
+        }
+        insert_pos = 0;
+        scr->hint_counts[position]++;
+    } else {
+        scr->hint_counts[position]++;
+    }
+    
+    strncpy(scr->hints[position][insert_pos].button, button, sizeof(scr->hints[position][insert_pos].button) - 1);
+    strncpy(scr->hints[position][insert_pos].text, text, sizeof(scr->hints[position][insert_pos].text) - 1);
+    scr->hints[position][insert_pos].button[sizeof(scr->hints[position][insert_pos].button) - 1] = '\0';
+    scr->hints[position][insert_pos].text[sizeof(scr->hints[position][insert_pos].text) - 1] = '\0';
+    scr->hints[position][insert_pos].is_default = 0;
 }
 
 void screen_render_hints(screen* scr, SDL_Surface* surface) {
@@ -254,6 +288,36 @@ void screen_render_hints(screen* scr, SDL_Surface* surface) {
         int align_right = (pos == HINT_POSITION_PRIMARY) ? 0 : 1;
         GFX_blitButtonGroup(hint_pairs, align_right, surface, pos);
     }
+}
+
+// Default hint API
+
+void screen_manager_register_default_hint(screen_manager* mgr, int position, const char* button, const char* text) {
+    if (!mgr || !button || !text) return;
+    
+    if (position < 0 || position >= HINT_POSITION_COUNT) {
+        LOG_error("screen_manager_register_default_hint: invalid position %d\n", position);
+        return;
+    }
+    
+    int count = mgr->default_hint_counts[position];
+    if (count >= MAX_HINTS_PER_POSITION) {
+        LOG_error("screen_manager_register_default_hint: too many default hints at position %d\n", position);
+        return;
+    }
+    
+    strncpy(mgr->default_hints[position][count].button, button, sizeof(mgr->default_hints[position][count].button) - 1);
+    strncpy(mgr->default_hints[position][count].text, text, sizeof(mgr->default_hints[position][count].text) - 1);
+    mgr->default_hints[position][count].button[sizeof(mgr->default_hints[position][count].button) - 1] = '\0';
+    mgr->default_hints[position][count].text[sizeof(mgr->default_hints[position][count].text) - 1] = '\0';
+    mgr->default_hints[position][count].is_default = 1;
+    
+    mgr->default_hint_counts[position]++;
+}
+
+void screen_manager_clear_default_hints(screen_manager* mgr) {
+    if (!mgr) return;
+    memset(mgr->default_hint_counts, 0, sizeof(mgr->default_hint_counts));
 }
 
 // Screen Manager additional API

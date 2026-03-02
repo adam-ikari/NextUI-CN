@@ -18,7 +18,12 @@ typedef enum {
 #define HINT_POSITION_COUNT 2
 
 // Maximum hints per position
-#define MAX_HINTS_PER_POSITION 4
+#define MAX_HINTS_PER_POSITION 8
+
+// Hint registration modes
+#define HINT_MODE_APPEND 0  // Append to default hints
+#define HINT_MODE_REPLACE 1 // Replace default hints
+#define HINT_MODE_APPEND_TOP 2 // Add to top of list
 
 // Forward declarations
 typedef struct screen_manager screen_manager;
@@ -26,8 +31,9 @@ typedef struct screen screen;
 
 // Button hint structure
 typedef struct {
-    char button[16];   // e.g., "A", "B", "X", "Y"
+    char button[32];   // e.g., "A", "B", "X", "Y", "START+VOL+"
     char text[128];    // Localized text
+    int is_default;    // Is this a default hint (can be overridden)
 } button_hint;
 
 // Screen interface
@@ -61,6 +67,10 @@ struct screen_manager {
     
     // Status pill rendering (battery, wifi, clock)
     int show_setting;
+    
+    // Default hints (shared across all screens)
+    button_hint default_hints[HINT_POSITION_COUNT][MAX_HINTS_PER_POSITION];
+    int default_hint_counts[HINT_POSITION_COUNT];
 };
 
 // Screen Manager API
@@ -79,13 +89,17 @@ screen* screen_manager_get_last(screen_manager* mgr);
 void screen_manager_set_show_setting(screen_manager* mgr, int show_setting);
 int screen_manager_get_show_setting(screen_manager* mgr);
 
+// Default hint API (set once at startup)
+void screen_manager_register_default_hint(screen_manager* mgr, int position, const char* button, const char* text);
+void screen_manager_clear_default_hints(screen_manager* mgr);
+
 // Screen base API
 screen* screen_new(ScreenType type, screen_vtable* vtable, void* data);
 void screen_free(screen* screen);
 
 // Button hint API (called by screens)
 void screen_clear_hints(screen* scr);
-void screen_register_hint(screen* scr, int position, const char* button, const char* text);
+void screen_register_hint(screen* scr, int position, const char* button, const char* text, int mode);
 void screen_render_hints(screen* scr, SDL_Surface* surface);
 
 // Specific screen constructors

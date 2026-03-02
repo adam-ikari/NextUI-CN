@@ -32,13 +32,15 @@ void game_list_screen_on_enter(screen* scr) {
     screen_clear_hints(scr);
     
     // Primary hints (top position)
+    // Note: Default hints (brightness, volume) are registered in screen_manager
+    // This screen only adds screen-specific hints
     if (can_resume) {
-        screen_register_hint(scr, HINT_POSITION_PRIMARY, "X", TR("common.resume"));
+        screen_register_hint(scr, HINT_POSITION_PRIMARY, "X", TR("common.resume"), HINT_MODE_APPEND);
     }
     
     // Secondary hints (bottom position)
-    // Note: The actual button hints depend on stack depth and other conditions
-    // These will be updated dynamically in the render function
+    // Note: Default hints will be merged with screen hints
+    // Specific hints will be registered dynamically based on context
 }
 
 // On exit - clear button hints
