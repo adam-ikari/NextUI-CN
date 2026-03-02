@@ -1,4 +1,4 @@
-name: UI Tests
+name: UI Tests with Simulator
 
 on:
   push:
@@ -19,7 +19,7 @@ permissions:
   pull-requests: read
 
 jobs:
-  ui-tests:
+  ui-simulator-tests:
     runs-on: ubuntu-latest
     
     steps:
@@ -39,90 +39,136 @@ jobs:
             libjpeg-dev \
             zlib1g-dev
 
-      - name: Build basic tests
+      - name: Build UI simulator
         run: |
           cd workspace/all/nextui
+          make -f makefile.test clean
           make -f makefile.test all
 
-      - name: Build page tests
+      - name: Run auto-traversal screenshot tests
         run: |
           cd workspace/all/nextui
-          make -f makefile.test all
+          ./build/desktop/nextui_simulator --auto --delay 100
 
       - name: Create baseline (main branch only)
         if: github.ref == 'refs/heads/main'
         run: |
           cd workspace/all/nextui
-          make -f makefile.test create-baseline
-          make -f makefile.test create-baseline-pages
+          mkdir -p baseline
+          cp screenshots/*.bmp baseline/
+          echo "Baseline images created at $(date)"
 
-      - name: Run basic tests
+      - name: Compare screenshots with baseline
+        if: github.ref != 'refs/heads/main'
         run: |
           cd workspace/all/nextui
-          make -f makefile.test test
-
-      - name: Run page tests
-        run: |
-          cd workspace/all/nextui
-          make -f makefile.test test-pages
-
-      - name: Generate test report
-        run: |
-          cd workspace/all/nextui
-          echo "# UI Test Results" > test_report.md
-          echo "" >> test_report.md
-          echo "## Build Information" >> test_report.md
-          echo "- Branch: \`${GITHUB_REF}\`" >> test_report.md
-          echo "- Commit: \`${GITHUB_SHA}\`" >> test_report.md
-          echo "- Run ID: \`${GITHUB_RUN_ID}\`" >> test_report.md
-          echo "- Run Number: \`${GITHUB_RUN_NUMBER}\`" >> test_report.md
-          echo "" >> test_report.md
-          echo "## Test Summary" >> test_report.md
-          echo "" >> test_report.md
-          echo "### Basic Tests" >> test_report.md
-          ls -1 test_output/test_*.png | wc -l >> test_report.md
-          echo " tests executed" >> test_report.md
-          echo "" >> test_report.md
-          echo "### Page Tests" >> test_report.md
-          ls -1 test_output/baseline_*.png | wc -l >> test_report.md
-          echo " baselines created" >> test_report.md
-          echo "" >> test_report.md
-          echo "## Artifacts" >> test_report.md
-          echo "- Test outputs: \`test_output/*.png\`" >> test_report.md
-          echo "- Baseline images: \`test_output/baseline_*.png\`" >> test_report.md
-          echo "- Diff images: \`test_output/*_diff.png\`" >> test_report.md
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: ui-test-results-${{ github.run_id }}
-          path: |
-            workspace/all/nextui/test_output/
-            workspace/all/nextui/test_report.md
-          retention-days: 30
-
-      - name: Upload test report
-        if: always()
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: ui-test-report-${{ github.run_id }}
-          path: workspace/all/nextui/test_report.md
-          retention-days: 30
-
-      - name: Check for test failures
-        if: always()
-        run: |
-          cd workspace/all/nextui
-          if ls test_output/*_diff.png 1> /dev/null 2>&1; then
-            echo "::warning::Some tests failed - diff images found"
-            echo "Failed tests:"
-            ls test_output/*_diff.png | sed 's/test_output\//g' | sed 's/_diff.png//g'
-            exit 1
+          
+          if [ -d "baseline" ]; then
+            echo "Comparing screenshots with baseline..."
+            
+            # Count total screenshots
+            TOTAL=$(ls screenshots/*.bmp 2>/dev/null | wc -l)
+            MATCHED=0
+            DIFFERENT=0
+            
+            echo "# Screenshot Comparison Report" > comparison_report.md
+            echo "" >> comparison_report.md
+            echo "## Build Information" >> comparison_report.md
+            echo "- Branch: \`${GITHUB_REF}\`" >> comparison_report.md
+            echo "- Commit: \`${GITHUB_SHA}\`" >> comparison_report.md
+            echo "- Run ID: \`${GITHUB_RUN_ID}\`" >> comparison_report.md
+            echo "- Run Number: \`${GITHUB_RUN_NUMBER}\`" >> comparison_report.md
+            echo "" >> comparison_report.md
+            echo "## Comparison Results" >> comparison_report.md
+            echo "" >> comparison_report.md
+            echo "| File | Status | Diff Size |" >> comparison_report.md
+            echo "|------|--------|-----------|" >> comparison_report.md
+            
+            # Compare each screenshot with baseline
+            for file in screenshots/*.bmp; do
+              filename=$(basename "$file")
+              baseline="baseline/$filename"
+              
+              if [ -f "$baseline" ]; then
+                # Calculate difference
+                diff_size=$(diff "$file" "$baseline" | wc -c)
+                
+                if [ "$diff_size" -eq 0 ]; then
+                  MATCHED=$((MATCHED + 1))
+                  echo "| $filename | ✅ Match | 0 bytes |" >> comparison_report.md
+                else
+                  DIFFERENT=$((DIFFERENT + 1))
+                  echo "| $filename | ❌ Different | $diff_size bytes |" >> comparison_report.md
+                  
+                  # Create visual diff
+                  diff -u "$baseline" "$file" > "${file%.bmp}_diff.txt" 2>/dev/null || true
+                fi
+              else
+                echo "| $filename | ⚠️ No baseline | - |" >> comparison_report.md
+              fi
+            done
+            
+            echo "" >> comparison_report.md
+            echo "## Summary" >> comparison_report.md
+            echo "- Total screenshots: $TOTAL" >> comparison_report.md
+            echo "- Matched: $MATCHED" >> comparison_report.md
+            echo "- Different: $DIFFERENT" >> comparison_report.md
+            echo "- No baseline: $((TOTAL - MATCHED - DIFFERENT))" >> comparison_report.md
+            
+            echo "" >> comparison_report.md
+            echo "## Success Rate" >> comparison_report.md
+            if [ "$TOTAL" -gt 0 ]; then
+              RATE=$((MATCHED * 100 / TOTAL))
+              echo "- $RATE% ($MATCHED/$TOTAL)" >> comparison_report.md
+            fi
+            
+            # Exit with error if any differences found
+            if [ "$DIFFERENT" -gt 0 ]; then
+              echo "::warning::$DIFFERENT screenshots differ from baseline"
+              exit 1
+            else
+              echo "All screenshots match baseline!"
+            fi
           else
-            echo "All tests passed!"
-            exit 0
+            echo "No baseline found - creating comparison report without comparison"
+            echo "# Screenshot Comparison Report" > comparison_report.md
+            echo "" >> comparison_report.md
+            echo "## Build Information" >> comparison_report.md
+            echo "- Branch: \`${GITHUB_REF}\`" >> comparison_report.md
+            echo "- Commit: \`${GITHUB_SHA}\`" >> comparison_report.md
+            echo "- Run ID: \`${GITHUB_RUN_ID}\`" >> comparison_report.md
+            echo "- Run Number: \`${GITHUB_RUN_NUMBER}\`" >> comparison_report.md
+            echo "" >> comparison_report.md
+            echo "## Screenshots Captured" >> comparison_report.md
+            echo "" >> comparison_report.md
+            ls screenshots/*.bmp | while read file; do
+              echo "- $(basename "$file")" >> comparison_report.md
+            done
           fi
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: ui-screenshots-${{ github.run_id }}
+          path: workspace/all/nextui/screenshots/
+          retention-days: 30
+
+      - name: Upload baseline (main branch)
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: ui-baseline-${{ github.run_id }}
+          path: workspace/all/nextui/baseline/
+          retention-days: 90
+
+      - name: Upload comparison report
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: ui-comparison-report-${{ github.run_id }}
+          path: workspace/all/nextui/comparison_report.md
+          retention-days: 30
 
       - name: Comment test results on PR
         if: github.event_name == 'pull_request'
@@ -132,38 +178,47 @@ jobs:
             const fs = require('fs');
             const path = require('path');
             
-            // Read test report
-            const reportPath = 'workspace/all/nextui/test_report.md';
-            let report = 'Test results not available';
+            // Read comparison report
+            const reportPath = 'workspace/all/nextui/comparison_report.md';
+            let report = 'Comparison report not available';
             
             if (fs.existsSync(reportPath)) {
               report = fs.readFileSync(reportPath, 'utf8');
             }
             
-            // Check for failures
-            const diffDir = 'workspace/all/nextui/test_output';
-            let hasFailures = false;
-            let failureList = [];
+            // Check for differences
+            const diffDir = 'workspace/all/nextui/screenshots';
+            let hasDifferences = false;
+            let diffCount = 0;
             
-            if (fs.existsSync(diffDir)) {
+            if (fs.existsSync(diffDir) && fs.existsSync('workspace/all/nextui/baseline')) {
               const files = fs.readdirSync(diffDir);
-              hasFailures = files.some(f => f.endsWith('_diff.png'));
-              failureList = files.filter(f => f.endsWith('_diff.png'))
-                                 .map(f => f.replace('_diff.png', ''));
+              const baselineFiles = fs.readdirSync('workspace/all/nextui/baseline');
+              
+              files.forEach(file => {
+                if (baselineFiles.includes(file)) {
+                  const diff = require('child_process').execSync(
+                    `diff workspace/all/nextui/baseline/${file} workspace/all/nextui/screenshots/${file}`,
+                    { encoding: 'utf8' }
+                  );
+                  if (diff.trim()) {
+                    diffCount++;
+                  }
+                }
+              });
+              
+              hasDifferences = diffCount > 0;
             }
             
             // Create comment
-            let comment = '## 🎨 UI Test Results\n\n';
+            let comment = '## 🎨 UI Screenshot Test Results\n\n';
             
-            if (hasFailures) {
-              comment += '❌ **Some tests failed**\n\n';
-              comment += '### Failed Tests:\n';
-              failureList.forEach(test => {
-                comment += `- \`${test}\`\n`;
-              });
-              comment += '\nPlease review the diff images in the artifacts.';
+            if (hasDifferences) {
+              comment += '❌ **Some screenshots differ from baseline**\n\n';
+              comment += `${diffCount} screenshots have visual differences.\n\n`;
+              comment += 'Please review the screenshots in the artifacts.\n';
             } else {
-              comment += '✅ **All tests passed**\n\n';
+              comment += '✅ **All screenshots match baseline**\n\n';
             }
             
             comment += '\n' + report;

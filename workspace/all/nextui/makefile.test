@@ -32,11 +32,12 @@ BUILD_DIR = build/desktop
 # CI environment variables
 export TARGET
 
-.PHONY: all clean run help
+.PHONY: all clean run test help
 
 all: $(BUILD_DIR)/$(TARGET)
 	@echo "Simulator built successfully"
 	@echo "Run: make -f makefile.test run"
+	@echo "Test: make -f makefile.test test"
 
 $(BUILD_DIR)/$(TARGET): $(SOURCE)
 	@mkdir -p $(BUILD_DIR)
@@ -47,21 +48,34 @@ run: $(BUILD_DIR)/$(TARGET)
 	@echo "Starting NextUI Simulator..."
 	./$(BUILD_DIR)/$(TARGET)
 
+test: $(BUILD_DIR)/$(TARGET)
+	@echo "Running UI screenshot tests..."
+	@mkdir -p screenshots
+	./$(BUILD_DIR)/$(TARGET) --auto --delay 100
+	@echo "Screenshots saved to screenshots/"
+	@echo "Total screenshots: $$(ls screenshots/*.bmp 2>/dev/null | wc -l)"
+
 clean:
 	rm -f $(BUILD_DIR)/$(TARGET)
-	@echo "Cleaned build artifacts"
+	rm -rf screenshots baseline comparison_report.md
+	@echo "Cleaned build artifacts and test outputs"
 
 help:
-	@echo "NextUI UI Simulator (Simplified Version)"
+	@echo "NextUI UI Simulator"
 	@echo ""
-	@echo "This is a simplified simulator that demonstrates the UI structure."
-	@echo "For full NextUI integration, more complex setup is required."
+	@echo "A desktop simulator for testing NextUI UI components without hardware."
 	@echo ""
 	@echo "Targets:"
 	@echo "  all   Build simulator"
-	@echo "  run   Build and run simulator"
-	@echo "  clean Clean build artifacts"
+	@echo "  run   Build and run simulator (interactive mode)"
+	@echo "  test  Build and run auto-traversal screenshot tests"
+	@echo "  clean Clean build artifacts and test outputs"
 	@echo "  help  Show this help message"
 	@echo ""
 	@echo "Usage:"
 	@echo "  make -f makefile.test [target]"
+	@echo ""
+	@echo "Test Output:"
+	@echo "  Screenshots are saved to screenshots/ directory"
+	@echo "  Baseline images are stored in baseline/ directory"
+	@echo "  Comparison report is saved to comparison_report.md"
