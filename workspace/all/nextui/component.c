@@ -581,6 +581,8 @@ component* list_component_new(int item_height) {
     data->item_height = item_height;
     data->visible_count = MAIN_ROW_COUNT;
     
+    // Note: Using COMPONENT_TYPE_PILL as base type for list
+    // List is a container component that renders multiple items
     component* comp = component_new(COMPONENT_TYPE_PILL, &list_vtable, data);
     if (!comp) {
         free(data);
@@ -754,8 +756,13 @@ component* component_render_virtual(component* parent, component* old_child, com
     component_diff_and_update(old_child, new_child);
     
     // Free new_child as we're using old_child
-    if (new_child->vtable && new_child->vtable->cleanup) {
-        new_child->vtable->cleanup(new_child);
+    // Note: new_child's data is already transferred in component_diff_and_update
+    // Just free the structure itself
+    if (new_child->data) {
+        // Free data if it wasn't transferred
+        if (new_child->vtable && new_child->vtable->cleanup) {
+            new_child->vtable->cleanup(new_child);
+        }
     }
     free(new_child);
     

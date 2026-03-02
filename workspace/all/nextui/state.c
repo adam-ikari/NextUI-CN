@@ -559,40 +559,61 @@ void* memo_caches_get(memo_caches* caches, const char* key, void* (*compute_func
     // Check if key already exists
     for (int i = 0; i < caches->count; i++) {
         if (strcmp(caches->caches[i].key, key) == 0) {
-            // Free old value
-            if (caches->caches[i].value && caches->caches[i].free_func) {
-                caches->caches[i].free_func(caches->caches[i].value);
+            // Store old value and deps for cleanup if needed
+            void* old_value = caches->caches[i].value;
+            void (*old_free_func)(void*) = caches->caches[i].free_func;
+            char** old_deps = caches->caches[i].deps;
+            int old_dep_count = caches->caches[i].dep_count;
+            
+            // Prepare new dependencies first
+            char** new_deps = NULL;
+            int new_dep_count = 0;
+            
+            if (deps && dep_count > 0) {
+                new_deps = (char**)malloc(dep_count * sizeof(char*));
+                if (!new_deps) {
+                    // Allocation failed, free new value and return NULL
+                    if (value && free_func) {
+                        free_func(value);
+                    }
+                    return NULL;
+                }
+                
+                for (int j = 0; j < dep_count; j++) {
+                    new_deps[j] = deps[j] ? strdup(deps[j]) : NULL;
+                    if (deps[j] && !new_deps[j]) {
+                        // strdup failed, clean up and return NULL
+                        for (int k = 0; k < j; k++) {
+                            if (new_deps[k]) free(new_deps[k]);
+                        }
+                        free(new_deps);
+                        if (value && free_func) {
+                            free_func(value);
+                        }
+                        return NULL;
+                    }
+                }
+                new_dep_count = dep_count;
             }
             
-            // Update cache
+            // All allocations succeeded, now update cache
             caches->caches[i].value = value;
             caches->caches[i].free_func = free_func;
             caches->caches[i].dep_hash = dep_hash;
+            caches->caches[i].deps = new_deps;
+            caches->caches[i].dep_count = new_dep_count;
             
-            // Update dependencies
-            if (caches->caches[i].deps) {
-                for (int j = 0; j < caches->caches[i].dep_count; j++) {
-                    if (caches->caches[i].deps[j]) {
-                        free(caches->caches[i].deps[j]);
-                    }
-                }
-                free(caches->caches[i].deps);
+            // Free old value and deps
+            if (old_value && old_free_func) {
+                old_free_func(old_value);
             }
-            
-            if (deps && dep_count > 0) {
-                caches->caches[i].deps = (char**)malloc(dep_count * sizeof(char*));
-                if (caches->caches[i].deps) {
-                    for (int j = 0; j < dep_count; j++) {
-                        caches->caches[i].deps[j] = deps[j] ? strdup(deps[j]) : NULL;
+            if (old_deps) {
+                for (int j = 0; j < old_dep_count; j++) {
+                    if (old_deps[j]) {
+                        free(old_deps[j]);
                     }
-                    caches->caches[i].dep_count = dep_count;
-                } else {
-                    caches->caches[i].deps = NULL;
-                    caches->caches[i].dep_count = 0;
                 }
-            } else {
-                caches->caches[i].deps = NULL;
-                caches->caches[i].dep_count = 0;
+                free(old_deps);
             }
             
             return value;

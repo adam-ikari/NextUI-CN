@@ -171,7 +171,7 @@ screen* game_switcher_screen_new(void) {
 // API for nextui.c to interact with the game switcher screen
 
 // Set title pill
-void game_switcher_screen_set_title(screen* scr, const char* title, int status_pill_width) {
+void game_switcher_screen_set_title(screen* scr, const char* title, int screen_width, int status_pill_width) {
     if (!scr || !scr->data || !title) return;
     
     game_switcher_screen_data* data = (game_switcher_screen_data*)scr->data;
@@ -182,7 +182,7 @@ void game_switcher_screen_set_title(screen* scr, const char* title, int status_p
     }
     
     // Calculate max width
-    int max_width = screen->w - SCALE1(PADDING * 2) - status_pill_width;
+    int max_width = screen_width - SCALE1(PADDING * 2) - status_pill_width;
     
     // Truncate text if needed
     char display_name[256];

@@ -288,11 +288,20 @@ void screen_render_hints(screen* scr, SDL_Surface* surface) {
         int count = scr->hint_counts[pos];
         if (count == 0) continue;
         
+        // Ensure count doesn't exceed maximum
+        if (count > MAX_HINTS_PER_POSITION) {
+            count = MAX_HINTS_PER_POSITION;
+        }
+        
         // Build hint arrays for GFX_blitButtonGroup
         char* hint_pairs[(MAX_HINTS_PER_POSITION * 2) + 1];
         int hint_idx = 0;
         
         for (int i = 0; i < count; i++) {
+            // Ensure we don't overflow hint_pairs
+            if (hint_idx >= (MAX_HINTS_PER_POSITION * 2)) {
+                break;
+            }
             hint_pairs[hint_idx++] = scr->hints[pos][i].button;
             hint_pairs[hint_idx++] = scr->hints[pos][i].text;
         }

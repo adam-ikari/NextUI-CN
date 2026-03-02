@@ -136,7 +136,7 @@ int game_list_screen_get_selected(screen* scr);
 int game_list_screen_get_total(screen* scr);
 
 // Game Switcher Screen API
-void game_switcher_screen_set_title(screen* scr, const char* title, int status_pill_width);
+void game_switcher_screen_set_title(screen* scr, const char* title, int screen_width, int status_pill_width);
 void game_switcher_screen_set_carousel(screen* scr, component* carousel);
 component_factory* game_switcher_screen_get_factory(screen* scr);
 void game_switcher_screen_set_selected(screen* scr, int selected);
