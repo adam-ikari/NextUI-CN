@@ -45,12 +45,23 @@ jobs:
           make -f makefile.test clean
           make -f makefile.test all
 
+      - name: Setup environment
+        run: |
+          cd workspace/all/nextui
+          mkdir -p .userdata/shared
+          export SHARED_USERDATA_PATH=$(pwd)/.userdata/shared
+          export SDCARD_PATH=$(pwd)/.userdata/shared
+          echo "SHARED_USERDATA_PATH=$SHARED_USERDATA_PATH" >> $GITHUB_ENV
+          echo "SDCARD_PATH=$SDCARD_PATH" >> $GITHUB_ENV
+
       - name: Run auto-traversal screenshot tests
         run: |
           cd workspace/all/nextui
           # Set headless mode for CI
           export SDL_VIDEODRIVER=dummy
           export DISPLAY=
+          export SHARED_USERDATA_PATH=$(pwd)/.userdata/shared
+          export SDCARD_PATH=$(pwd)/.userdata/shared
           ./build/desktop/nextui_simulator --auto --delay 100
 
       - name: Create baseline (main branch only)

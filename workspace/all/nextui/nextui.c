@@ -534,6 +534,14 @@ static int should_resume = 0; // set to 1 on BTN_RESUME but only if can_resume==
 static int has_preview = 0;
 static int simple_mode = 0;
 static int switcher_selected = 0;
+
+// Auto-traversal mode for screenshot testing
+static int auto_mode = 0;
+static int auto_delay = 100;
+static int auto_step = 0;
+static Uint32 auto_last_action = 0;
+static int auto_screenshot_count = 0;
+static char auto_screenshot_dir[512] = "";
 static char slot_path[256];
 static char preview_path[256];
 static int animationdirection = 0;
@@ -2154,6 +2162,26 @@ void initImageLoaderPool() {
 ///////////////////////////////////////
 
 int main (int argc, char *argv[]) {
+	// Parse command line arguments for auto-traversal mode
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "--auto") == 0) {
+			auto_mode = 1;
+			LOG_info("Auto-traversal mode enabled\n");
+		} else if (strcmp(argv[i], "--delay") == 0 && i + 1 < argc) {
+			auto_delay = atoi(argv[i + 1]);
+			i++;
+			LOG_info("Auto-traversal delay: %dms\n", auto_delay);
+		}
+	}
+	
+	// Set screenshot directory
+	if (auto_mode) {
+		getcwd(auto_screenshot_dir, sizeof(auto_screenshot_dir));
+		strcat(auto_screenshot_dir, "/screenshots");
+		mkdir(auto_screenshot_dir, 0755);
+		LOG_info("Screenshot directory: %s\n", auto_screenshot_dir);
+	}
+	
 	// LOG_info("time from launch to:\n");
 	// unsigned long main_begin = SDL_GetTicks();
 	// unsigned long first_draw = 0;
@@ -2249,6 +2277,68 @@ int main (int argc, char *argv[]) {
 		}
 
 		PAD_poll();
+
+		// Auto-traversal mode for screenshot testing
+		if (auto_mode) {
+			Uint32 current_time = SDL_GetTicks();
+			if (current_time - auto_last_action >= auto_delay) {
+				auto_last_action = current_time;
+				
+				// Simple auto-traversal: navigate down, take screenshots
+				switch (auto_step) {
+					case 0: // Initial screenshot
+						{
+							if (!screen) {
+								LOG_info("Screen is NULL, cannot save screenshot\n");
+							} else {
+								char filename[512];
+								sprintf(filename, "%s/%03d_gamelist_item%i.png", auto_screenshot_dir, auto_screenshot_count, top->selected);
+								if (SDL_SaveBMP(screen, filename) == 0) {
+									LOG_info("Screenshot saved: %s\n", filename);
+									auto_screenshot_count++;
+								} else {
+									LOG_info("Failed to save screenshot: %s\n", SDL_GetError());
+								}
+							}
+						}
+						auto_step++;
+						break;
+					case 1: // Navigate down
+						if (top->selected < top->entries->count - 1) {
+							top->selected++;
+							dirty = 1;
+							auto_step = 0; // Go back to screenshot
+							if (top->selected >= 8) { // After 8 items, move to next screen
+								auto_step = 10;
+							}
+						} else {
+							auto_step = 10; // Move to next screen
+						}
+						break;
+					case 10: // Press menu to go to quick menu
+						{
+							if (!screen) {
+								LOG_info("Screen is NULL, cannot save screenshot\n");
+							} else {
+								char filename[512];
+								sprintf(filename, "%s/%03d_quickmenu_item0.png", auto_screenshot_dir, auto_screenshot_count);
+								if (SDL_SaveBMP(screen, filename) == 0) {
+									LOG_info("Screenshot saved: %s\n", filename);
+									auto_screenshot_count++;
+								} else {
+									LOG_info("Failed to save screenshot: %s\n", SDL_GetError());
+								}
+							}
+						}
+						auto_step = 20;
+						break;
+					case 20: // Exit auto mode
+						LOG_info("Auto-traversal complete. Total screenshots: %d\n", auto_screenshot_count);
+						quit = 1;
+						break;
+				}
+			}
+		}
 
 		// Check if menu key is held to switch hint display
 		if (PAD_isPressed(BTN_MENU)) {

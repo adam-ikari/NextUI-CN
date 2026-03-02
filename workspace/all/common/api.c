@@ -373,7 +373,17 @@ SDL_Surface *GFX_init(int mode)
 	sprintf(asset_path, RES_PATH "/assets@%ix.png", FIXED_SCALE);
 	if (!exists(asset_path))
 		LOG_info("missing assets, you're about to segfault dummy!\n");
+	LOG_info("Asset path: %s\n", asset_path);
 	gfx.assets = IMG_Load(asset_path);
+	if (!gfx.assets) {
+		LOG_info("Failed to load assets: %s\n", IMG_GetError());
+		// Create a placeholder surface
+		gfx.assets = SDL_CreateRGBSurfaceWithFormat(0, 100, 100, 32, SDL_PIXELFORMAT_RGBA8888);
+		if (gfx.assets) {
+			SDL_FillRect(gfx.assets, NULL, 0xFF0000FF); // Blue placeholder
+			LOG_info("Created placeholder assets surface\n");
+		}
+	}
 
 	PLAT_clearAll();
 
@@ -1668,6 +1678,11 @@ int GFX_getButtonWidth(char *hint, char *button)
 }
 void GFX_blitButton(char *hint, char *button, SDL_Surface *dst, SDL_Rect *dst_rect)
 {
+	if (!font.medium || !font.tiny || !font.small || !font.large) {
+		LOG_info("GFX_blitButton: font is NULL, skipping\n");
+		return;
+	}
+
 	SDL_Surface *text;
 	int ox = 0;
 
@@ -1680,6 +1695,10 @@ void GFX_blitButton(char *hint, char *button, SDL_Surface *dst, SDL_Rect *dst_re
 
 		// label
 		text = TTF_RenderUTF8_Blended(font.medium, button, ALT_BUTTON_TEXT_COLOR);
+		if (!text) {
+			LOG_info("GFX_blitButton: TTF_RenderUTF8_Blended failed for button '%s'\n", button);
+			return;
+		}
 		SDL_BlitSurface(text, NULL, dst, &(SDL_Rect){dst_rect->x + (SCALE1(BUTTON_SIZE) - text->w) / 2, dst_rect->y + (SCALE1(BUTTON_SIZE) - text->h) / 2});
 		ox += SCALE1(BUTTON_SIZE);
 		SDL_FreeSurface(text);
@@ -1687,6 +1706,10 @@ void GFX_blitButton(char *hint, char *button, SDL_Surface *dst, SDL_Rect *dst_re
 	else
 	{
 		text = TTF_RenderUTF8_Blended(special_case ? font.large : font.tiny, button, ALT_BUTTON_TEXT_COLOR);
+		if (!text) {
+			LOG_info("GFX_blitButton: TTF_RenderUTF8_Blended failed for button '%s'\n", button);
+			return;
+		}
 		GFX_blitPillDark(ASSET_BUTTON, dst, &(SDL_Rect){dst_rect->x, dst_rect->y, SCALE1(BUTTON_SIZE) / 2 + text->w, SCALE1(BUTTON_SIZE)});
 		ox += SCALE1(BUTTON_SIZE) / 4;
 
@@ -1702,11 +1725,19 @@ void GFX_blitButton(char *hint, char *button, SDL_Surface *dst, SDL_Rect *dst_re
 	// hint text
 	SDL_Color text_color = uintToColour(THEME_COLOR6_255);
 	text = TTF_RenderUTF8_Blended(font.small, hint, text_color);
+	if (!text) {
+		LOG_info("GFX_blitButton: TTF_RenderUTF8_Blended failed for hint '%s'\n", hint);
+		return;
+	}
 	SDL_BlitSurface(text, NULL, dst, &(SDL_Rect){ox + dst_rect->x, dst_rect->y + (SCALE1(BUTTON_SIZE) - text->h) / 2, text->w, text->h});
 	SDL_FreeSurface(text);
 }
 void GFX_blitMessage(TTF_Font *font, char *msg, SDL_Surface *dst, SDL_Rect *dst_rect)
 {
+	if (!font) {
+		LOG_info("GFX_blitMessage: font is NULL, skipping\n");
+		return;
+	}
 	if (!dst_rect)
 		dst_rect = &(SDL_Rect){0, 0, dst->w, dst->h};
 
@@ -1751,6 +1782,10 @@ void GFX_blitMessage(TTF_Font *font, char *msg, SDL_Surface *dst, SDL_Rect *dst_
 		if (len)
 		{
 			text = TTF_RenderUTF8_Blended(font, line, COLOR_WHITE);
+			if (!text) {
+				LOG_info("GFX_blitMessage: TTF_RenderUTF8_Blended failed for '%s'\n", line);
+				continue;
+			}
 			int x = dst_rect->x;
 			x += (dst_rect->w - text->w) / 2;
 			SDL_BlitSurface(text, NULL, dst, &(SDL_Rect){x, y});

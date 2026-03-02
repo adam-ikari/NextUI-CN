@@ -412,11 +412,17 @@ void PLAT_initShaders() {
 }
 
 SDL_Surface* PLAT_initVideo(void) {
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+	// Check if running in headless/CI environment before setting OpenGL attributes
+	const char* headless = getenv("SDL_VIDEODRIVER");
+	int is_headless = (headless && strcmp(headless, "dummy") == 0);
+	
+	if (!is_headless) {
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+		//SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	}
 
 	if(SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		LOG_info("Error intializing SDL: %s\n", SDL_GetError());
@@ -455,26 +461,47 @@ SDL_Surface* PLAT_initVideo(void) {
 	int h = FIXED_HEIGHT;
 	int p = FIXED_PITCH;
 
-	vid.window   = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w,h, SDL_WINDOW_OPENGL|SDL_WINDOW_SHOWN);
+	Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN;
+	const char* render_driver = "opengl";
+	const char* scale_quality = "0";
+	const char* fb_accel = "1";
+	int renderer_flags = SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC;
+	
+	// In headless mode, use software rendering instead of OpenGL
+	if (is_headless) {
+		window_flags = SDL_WINDOW_SHOWN;
+		render_driver = "software";
+		scale_quality = "nearest";
+		fb_accel = "0";
+		renderer_flags = SDL_RENDERER_SOFTWARE;
+		LOG_info("Running in headless mode, using software rendering\n");
+	}
+
+	vid.window   = SDL_CreateWindow("", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, w,h, window_flags);
 	if(!vid.window)
 		LOG_info("Error creating SDL window: %s\n", SDL_GetError());
 	
-	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,"0");
-	SDL_SetHint(SDL_HINT_RENDER_DRIVER,"opengl");
-	SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION,"1");
+	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,scale_quality);
+	SDL_SetHint(SDL_HINT_RENDER_DRIVER,render_driver);
+	SDL_SetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION,fb_accel);
 
-	vid.renderer = SDL_CreateRenderer(vid.window,-1,SDL_RENDERER_ACCELERATED|SDL_RENDERER_PRESENTVSYNC);
+	vid.renderer = SDL_CreateRenderer(vid.window,-1,renderer_flags);
 	SDL_SetRenderDrawBlendMode(vid.renderer, SDL_BLENDMODE_BLEND);
 	
 	SDL_RendererInfo info;
 	SDL_GetRendererInfo(vid.renderer, &info);
 	LOG_info("Current render driver: %s\n", info.name);
 
-	vid.gl_context = SDL_GL_CreateContext(vid.window);
-	SDL_GL_MakeCurrent(vid.window, vid.gl_context);
-	glViewport(0, 0, w, h);
+	// Only create OpenGL context if not in headless mode
+	if (!is_headless) {
+		vid.gl_context = SDL_GL_CreateContext(vid.window);
+		SDL_GL_MakeCurrent(vid.window, vid.gl_context);
+		glViewport(0, 0, w, h);
 
-	LOG_info("OpenGL version: %s\n", (char *)glGetString(GL_VERSION));
+		LOG_info("OpenGL version: %s\n", (char *)glGetString(GL_VERSION));
+	} else {
+		vid.gl_context = NULL;
+	}
 
 	vid.stream_layer1 = SDL_CreateTexture(vid.renderer,SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, w,h);
 	vid.target_layer1 = SDL_CreateTexture(vid.renderer,SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET , w,h);

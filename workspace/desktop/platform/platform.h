@@ -146,7 +146,13 @@
 
 ///////////////////////////////
 
-#define SDCARD_PATH "/Library/Developer/Projects/private/MinUI_FAKESD"
+// Use environment variable SDCARD_PATH if set, otherwise use default path
+#define SDCARD_PATH_DEFAULT "/Library/Developer/Projects/private/MinUI_FAKESD"
+// Note: SDCARD_PATH is expected to be defined as an environment variable or macro before including this header
+#ifndef SDCARD_PATH
+#define SDCARD_PATH SDCARD_PATH_DEFAULT
+#endif
+
 #define MUTE_VOLUME_RAW 63 // 0 unintuitively is 100% volume
 
 #define MAX_LIGHTS 4
