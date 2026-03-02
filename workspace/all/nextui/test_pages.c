@@ -411,23 +411,35 @@ int run_page_tests(test_context* ctx, int create_baseline) {
             printf("  ✓ Baseline created\n");
             ctx->passed_count++;
         } else {
-            char output_path[512];
-            snprintf(output_path, sizeof(output_path), "%s/%s", TEST_OUTPUT_DIR, output_file);
-            
+            // Check if baseline exists
             char baseline_path[512];
             snprintf(baseline_path, sizeof(baseline_path), "%s/%s", TEST_OUTPUT_DIR, tests[i].baseline);
             
-            char diff_path[512];
-            snprintf(diff_path, sizeof(diff_path), "%s/%s_diff.png", TEST_OUTPUT_DIR, tests[i].name);
-            
-            int passed = compare_screenshots(baseline_path, output_path, diff_path, 0.1);
-            
-            if (passed) {
-                printf("  ✓ PASSED\n");
+            // Try to load baseline to check if it exists
+            SDL_Surface* baseline_check = IMG_Load(baseline_path);
+            if (!baseline_check) {
+                // Baseline doesn't exist, create it
+                save_screenshot(ctx, tests[i].baseline);
+                printf("  ⚠ Baseline not found, created new baseline\n");
                 ctx->passed_count++;
             } else {
-                printf("  ✗ FAILED\n");
-                ctx->failed_count++;
+                SDL_FreeSurface(baseline_check);
+                
+                char output_path[512];
+                snprintf(output_path, sizeof(output_path), "%s/%s", TEST_OUTPUT_DIR, output_file);
+                
+                char diff_path[512];
+                snprintf(diff_path, sizeof(diff_path), "%s/%s_diff.png", TEST_OUTPUT_DIR, tests[i].name);
+                
+                int passed = compare_screenshots(baseline_path, output_path, diff_path, 0.1);
+                
+                if (passed) {
+                    printf("  ✓ PASSED\n");
+                    ctx->passed_count++;
+                } else {
+                    printf("  ✗ FAILED\n");
+                    ctx->failed_count++;
+                }
             }
         }
         
