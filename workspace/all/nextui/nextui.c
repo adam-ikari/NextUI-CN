@@ -2625,6 +2625,9 @@ int main (int argc, char *argv[]) {
 					// Handle empty directory case
 					GFX_blitMessage(font.large, (char*)TR("common.empty_folder"), screen, &(SDL_Rect){0,0,screen->w,screen->h});
 					
+					// status pill (battery, wifi, bluetooth, clock)
+					int ow = GFX_blitHardwareGroup(screen, show_setting);
+					
 					// buttons
 					if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
 					else GFX_blitButtonGroup((char*[]){ 
