@@ -295,7 +295,7 @@ int save_screenshot(test_context* ctx, const char* filename) {
     if (!ctx || !ctx->screen) return 0;
     
     char path[512];
-    snprintf(path, sizeof(path), "%s/%s.png", TEST_OUTPUT_DIR, filename);
+    snprintf(path, sizeof(path), "%s/%s", TEST_OUTPUT_DIR, filename);
     
     int result = IMG_SavePNG(ctx->screen, path);
     if (result != 0) {
