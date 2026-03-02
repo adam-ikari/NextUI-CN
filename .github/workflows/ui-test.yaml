@@ -1,0 +1,177 @@
+name: UI Tests
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/**'
+      - 'bugfix/**'
+      - 'refactor/**'
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  ui-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Install SDL2 dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-ttf-dev \
+            libpng-dev \
+            libjpeg-dev \
+            zlib1g-dev
+
+      - name: Build basic tests
+        run: |
+          cd workspace/all/nextui
+          make -f makefile.test all
+
+      - name: Build page tests
+        run: |
+          cd workspace/all/nextui
+          make -f makefile.test all
+
+      - name: Create baseline (main branch only)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          cd workspace/all/nextui
+          make -f makefile.test create-baseline
+          make -f makefile.test create-baseline-pages
+
+      - name: Run basic tests
+        run: |
+          cd workspace/all/nextui
+          make -f makefile.test test
+
+      - name: Run page tests
+        run: |
+          cd workspace/all/nextui
+          make -f makefile.test test-pages
+
+      - name: Generate test report
+        run: |
+          cd workspace/all/nextui
+          echo "# UI Test Results" > test_report.md
+          echo "" >> test_report.md
+          echo "## Build Information" >> test_report.md
+          echo "- Branch: \`${GITHUB_REF}\`" >> test_report.md
+          echo "- Commit: \`${GITHUB_SHA}\`" >> test_report.md
+          echo "- Run ID: \`${GITHUB_RUN_ID}\`" >> test_report.md
+          echo "- Run Number: \`${GITHUB_RUN_NUMBER}\`" >> test_report.md
+          echo "" >> test_report.md
+          echo "## Test Summary" >> test_report.md
+          echo "" >> test_report.md
+          echo "### Basic Tests" >> test_report.md
+          ls -1 test_output/test_*.png | wc -l >> test_report.md
+          echo " tests executed" >> test_report.md
+          echo "" >> test_report.md
+          echo "### Page Tests" >> test_report.md
+          ls -1 test_output/baseline_*.png | wc -l >> test_report.md
+          echo " baselines created" >> test_report.md
+          echo "" >> test_report.md
+          echo "## Artifacts" >> test_report.md
+          echo "- Test outputs: \`test_output/*.png\`" >> test_report.md
+          echo "- Baseline images: \`test_output/baseline_*.png\`" >> test_report.md
+          echo "- Diff images: \`test_output/*_diff.png\`" >> test_report.md
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: ui-test-results-${{ github.run_id }}
+          path: |
+            workspace/all/nextui/test_output/
+            workspace/all/nextui/test_report.md
+          retention-days: 30
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: ui-test-report-${{ github.run_id }}
+          path: workspace/all/nextui/test_report.md
+          retention-days: 30
+
+      - name: Check for test failures
+        if: always()
+        run: |
+          cd workspace/all/nextui
+          if ls test_output/*_diff.png 1> /dev/null 2>&1; then
+            echo "::warning::Some tests failed - diff images found"
+            echo "Failed tests:"
+            ls test_output/*_diff.png | sed 's/test_output\//g' | sed 's/_diff.png//g'
+            exit 1
+          else
+            echo "All tests passed!"
+            exit 0
+          fi
+
+      - name: Comment test results on PR
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+            
+            // Read test report
+            const reportPath = 'workspace/all/nextui/test_report.md';
+            let report = 'Test results not available';
+            
+            if (fs.existsSync(reportPath)) {
+              report = fs.readFileSync(reportPath, 'utf8');
+            }
+            
+            // Check for failures
+            const diffDir = 'workspace/all/nextui/test_output';
+            let hasFailures = false;
+            let failureList = [];
+            
+            if (fs.existsSync(diffDir)) {
+              const files = fs.readdirSync(diffDir);
+              hasFailures = files.some(f => f.endsWith('_diff.png'));
+              failureList = files.filter(f => f.endsWith('_diff.png'))
+                                 .map(f => f.replace('_diff.png', ''));
+            }
+            
+            // Create comment
+            let comment = '## 🎨 UI Test Results\n\n';
+            
+            if (hasFailures) {
+              comment += '❌ **Some tests failed**\n\n';
+              comment += '### Failed Tests:\n';
+              failureList.forEach(test => {
+                comment += `- \`${test}\`\n`;
+              });
+              comment += '\nPlease review the diff images in the artifacts.';
+            } else {
+              comment += '✅ **All tests passed**\n\n';
+            }
+            
+            comment += '\n' + report;
+            
+            // Post comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });

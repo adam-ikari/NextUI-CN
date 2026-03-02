@@ -35,6 +35,10 @@ TEST_PAGES_TARGET = test_pages
 # Output directory
 TEST_OUTPUT_DIR = test_output
 
+# CI environment variables
+export TEST_BASIC_TARGET
+export TEST_PAGES_TARGET
+
 .PHONY: all clean test create-baseline test-pages create-baseline-pages help
 
 all: $(TEST_BASIC_TARGET) $(TEST_PAGES_TARGET)
@@ -86,6 +90,10 @@ help:
 	@echo ""
 	@echo "Usage:"
 	@echo "  make -f makefile.test [target]"
+	@echo ""
+	@echo "Environment Variables:"
+	@echo "  TEST_BASIC_TARGET      Basic test binary name"
+	@echo "  TEST_PAGES_TARGET      Page test binary name"
 	@echo ""
 	@echo "Test Coverage:"
 	@echo "  Basic Tests:"
