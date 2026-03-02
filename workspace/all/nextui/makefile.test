@@ -14,6 +14,7 @@ CC ?= gcc
 CFLAGS += -Wall -Wextra -Wno-unused-parameter -O2
 CFLAGS += $(SDL_CFLAGS)
 CFLAGS += -DPLATFORM="$(PLATFORM)"
+CFLAGS += -DSTUB_SDL_IMAGE  # Use stub for SDL2_image
 
 # Linker flags
 LDFLAGS += $(SDL_LIBS)

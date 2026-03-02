@@ -1,8 +1,8 @@
 /**
- * NextUI UI Simulator
+ * NextUI UI Simulator with Screenshot Mode
  * 
  * A desktop simulator for testing NextUI UI components without hardware.
- * This allows for faster development and testing of UI changes.
+ * Supports automatic page traversal and screenshot capture for visual regression testing.
  */
 
 #include <SDL2/SDL.h>
@@ -10,6 +10,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <time.h>
+
+// SDL_image stub for systems without SDL2_image installed
+#ifdef STUB_SDL_IMAGE
+#define IMG_SavePNG(surface, file) save_png_stub(surface, file)
+#define IMG_Init(flags) 0
+#define IMG_Quit()
+#define IMG_INIT_PNG 0x00000001
+static inline const char* IMG_GetError(void) { return "SDL_image not available"; }
+#else
+#include <SDL2/SDL_image.h>
+#endif
 
 // Simulator configuration
 #define SCREEN_WIDTH 640
@@ -24,6 +36,15 @@
 #define COLOR_HIGHLIGHT 0x007ACC
 #define COLOR_BUTTON_PRIMARY 0x4A90E2
 #define COLOR_BUTTON_SECONDARY 0x50E3C2
+
+// Screen types
+typedef enum {
+    SCREEN_GAMELIST,
+    SCREEN_QUICKMENU,
+    SCREEN_GAMESWITCHER,
+    SCREEN_SETTINGS,
+    SCREEN_COUNT
+} screen_type;
 
 // Key mappings (keyboard to controller)
 typedef struct {
@@ -46,6 +67,19 @@ typedef struct {
     SDL_Surface* screen;
     int running;
     
+    // Screenshot mode
+    int screenshot_mode;
+    int screenshot_index;
+    char screenshot_dir[256];
+    
+    // Auto-traversal mode
+    int auto_traverse;
+    int traverse_delay;
+    Uint32 last_traverse_time;
+    
+    // Current screen
+    screen_type current_screen;
+    
     // Input state
     int up_pressed;
     int down_pressed;
@@ -64,6 +98,49 @@ typedef struct {
     int menu_open;
 } simulator_state;
 
+// Global simulator state
+simulator_state* g_sim = NULL;
+
+// Forward declarations
+const char* screen_type_name(screen_type type);
+
+#ifdef STUB_SDL_IMAGE
+// Simple PNG save stub (saves as BMP instead)
+static inline int save_png_stub(SDL_Surface* surface, const char* file) {
+    // Convert .png extension to .bmp
+    char bmp_file[512];
+    strncpy(bmp_file, file, sizeof(bmp_file) - 1);
+    char* ext = strstr(bmp_file, ".png");
+    if (ext) {
+        strcpy(ext, ".bmp");
+    }
+    return SDL_SaveBMP(surface, bmp_file) == 0 ? 0 : -1;
+}
+#endif
+
+// Save screenshot
+int save_screenshot(simulator_state* sim, const char* name) {
+    if (!sim || !sim->screen) return 0;
+    
+    char path[512];
+    snprintf(path, sizeof(path), "%s/%s.png", sim->screenshot_dir, name);
+    
+    // Create directory if it doesn't exist
+    char cmd[512];
+    snprintf(cmd, sizeof(cmd), "mkdir -p %s", sim->screenshot_dir);
+    system(cmd);
+    
+    // Save surface as PNG
+    int result = IMG_SavePNG(sim->screen, path);
+    if (result == 0) {
+        printf("  Saved: %s\n", path);
+    } else {
+        printf("  Failed to save: %s\n", path);
+    }
+    
+    return result == 0;
+}
+
 // Initialize SDL
 int init_sdl(simulator_state* sim) {
     // Initialize SDL
@@ -71,6 +148,14 @@ int init_sdl(simulator_state* sim) {
         fprintf(stderr, "Failed to initialize SDL: %s\n", SDL_GetError());
         return 0;
     }
+    
+#ifndef STUB_SDL_IMAGE
+    // Initialize SDL_image
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        fprintf(stderr, "Failed to initialize SDL_image: %s\n", IMG_GetError());
+        fprintf(stderr, "Screenshot functionality may not work properly.\n");
+    }
+#endif
     
     // Create window
     sim->window = SDL_CreateWindow(
@@ -84,6 +169,7 @@ int init_sdl(simulator_state* sim) {
     
     if (!sim->window) {
         fprintf(stderr, "Failed to create window: %s\n", SDL_GetError());
+        IMG_Quit();
         SDL_Quit();
         return 0;
     }
@@ -94,6 +180,7 @@ int init_sdl(simulator_state* sim) {
     sim->running = 1;
     sim->selected_item = 0;
     sim->menu_open = 0;
+    sim->current_screen = SCREEN_GAMELIST;
     
     return 1;
 }
@@ -102,103 +189,71 @@ int init_sdl(simulator_state* sim) {
 void cleanup_sdl(simulator_state* sim) {
     if (sim->window) {
         SDL_DestroyWindow(sim->window);
+        sim->window = NULL;
     }
+#ifndef STUB_SDL_IMAGE
+    IMG_Quit();
+#endif
     SDL_Quit();
 }
 
-// Draw rounded rectangle (pill)
+// Draw a rounded pill
 void draw_pill(SDL_Surface* surface, int x, int y, int width, int height, Uint32 color, int selected) {
     SDL_Rect rect = {x, y, width, height};
+    SDL_FillRect(surface, &rect, color);
     
-    // Draw rounded corners approximation
-    int radius = height / 2;
-    
-    // Draw center rectangle
-    SDL_Rect center = {x + radius, y, width - 2 * radius, height};
-    SDL_FillRect(surface, &center, color);
-    
-    // Draw left and right circles
-    for (int dy = -radius; dy <= radius; dy++) {
-        int dx = (int)sqrt(radius * radius - dy * dy);
-        
-        // Left circle
-        int px = x + radius;
-        int py = y + radius + dy;
-        if (py >= y && py < y + height) {
-            SDL_Rect left = {px - dx, py, 2 * dx, 1};
-            SDL_FillRect(surface, &left, color);
-        }
-        
-        // Right circle
-        px = x + width - radius;
-        if (py >= y && py < y + height) {
-            SDL_Rect right = {px - dx, py, 2 * dx, 1};
-            SDL_FillRect(surface, &right, color);
-        }
-    }
-    
-    // Draw highlight if selected
     if (selected) {
-        Uint32 highlight = SDL_MapRGB(surface->format, 100, 180, 255);
-        SDL_Rect highlight_rect = {x + 4, y + 4, width - 8, height - 8};
-        draw_pill(surface, x + 4, y + 4, width - 8, height - 8, highlight, 0);
+        // Draw highlight border
+        SDL_Rect border = {x + 2, y + 2, width - 4, height - 4};
+        SDL_FillRect(surface, &border, SDL_MapRGB(surface->format, 255, 255, 255));
     }
 }
 
 // Draw button hint
 void draw_button_hint(SDL_Surface* surface, const char* button, const char* text, int x, int y) {
-    // Draw button label (simple text)
-    Uint32 text_color = SDL_MapRGB(surface->format, 255, 255, 255);
+    (void)button; // TODO: Implement button icon
+    (void)text;   // TODO: Implement text rendering
     
-    // Draw button box
-    SDL_Rect button_rect = {x, y, 30, 20};
-    SDL_FillRect(surface, &button_rect, SDL_MapRGB(surface->format, 100, 100, 100));
-    
-    // Note: In a real implementation, you would use SDL_ttf for proper text rendering
-    // For now, we just draw a placeholder
+    // Draw placeholder
+    SDL_Rect hint = {x, y + 5, 80, 20};
+    SDL_FillRect(surface, &hint, SDL_MapRGB(surface->format, 100, 100, 100));
 }
 
 // Draw status pill
-void draw_status_pill(SDL_Surface* surface, int x, int y, int width, int height) {
-    Uint32 pill_color = SDL_MapRGB(surface->format, 60, 60, 60);
-    draw_pill(surface, x, y, width, height, pill_color, 0);
-    
-    // Draw status indicators (placeholders)
+void draw_status_pill(SDL_Surface* surface) {
     // Battery indicator
-    SDL_Rect battery = {x + 10, y + height / 2 - 5, 20, 10};
-    SDL_FillRect(surface, &battery, SDL_MapRGB(surface->format, 0, 255, 0));
+    SDL_Rect battery = {SCREEN_WIDTH - 120, 5, 40, 30};
+    SDL_FillRect(surface, &battery, SDL_MapRGB(surface->format, 0, 200, 0));
     
     // WiFi indicator
-    SDL_Rect wifi = {x + 40, y + height / 2 - 5, 10, 10};
-    SDL_FillRect(surface, &wifi, SDL_MapRGB(surface->format, 0, 200, 255));
+    SDL_Rect wifi = {SCREEN_WIDTH - 170, 5, 40, 30};
+    SDL_FillRect(surface, &wifi, SDL_MapRGB(surface->format, 0, 150, 255));
     
-    // Clock indicator
-    SDL_Rect clock = {x + width - 40, y + height / 2 - 5, 30, 10};
-    SDL_FillRect(surface, &clock, SDL_MapRGB(surface->format, 255, 255, 255));
+    // Clock
+    SDL_Rect clock = {SCREEN_WIDTH - 220, 5, 40, 30};
+    SDL_FillRect(surface, &clock, SDL_MapRGB(surface->format, 200, 200, 200));
 }
 
 // Render game list screen
 void render_game_list(SDL_Surface* surface, simulator_state* sim) {
-    // Clear background
-    Uint32 bg_color = SDL_MapRGB(surface->format, 30, 30, 30);
-    SDL_FillRect(surface, NULL, bg_color);
-    
     // Draw status pill
-    draw_status_pill(surface, 10, 10, SCREEN_WIDTH - 20, 40);
+    draw_status_pill(surface);
+    
+    // Draw header
+    SDL_Rect header = {0, 40, SCREEN_WIDTH, 2};
+    SDL_FillRect(surface, &header, SDL_MapRGB(surface->format, 100, 100, 100));
     
     // Draw menu items
-    int item_count = 8;
-    int start_y = 60;
     int item_height = 50;
-    int margin = 10;
+    int start_y = 60;
     
-    for (int i = 0; i < item_count; i++) {
-        int y = start_y + i * (item_height + margin);
+    for (int i = 0; i < 8; i++) {
+        int y = start_y + i * item_height;
         int selected = (i == sim->selected_item);
         
         Uint32 pill_color = selected ? 
-            SDL_MapRGB(surface->format, 74, 144, 226) : 
-            SDL_MapRGB(surface->format, 60, 60, 60);
+            SDL_MapRGB(surface->format, 70, 70, 70) : 
+            SDL_MapRGB(surface->format, 55, 55, 55);
         
         draw_pill(surface, 10, y, SCREEN_WIDTH - 20, item_height, pill_color, 0);
         
@@ -258,6 +313,77 @@ void render_quick_menu(SDL_Surface* surface, simulator_state* sim) {
     }
 }
 
+// Render game switcher screen
+void render_game_switcher(SDL_Surface* surface, simulator_state* sim) {
+    // Draw status pill
+    draw_status_pill(surface);
+    
+    // Draw header
+    SDL_Rect header = {0, 40, SCREEN_WIDTH, 2};
+    SDL_FillRect(surface, &header, SDL_MapRGB(surface->format, 100, 100, 100));
+    
+    // Draw carousel of recent games
+    int item_width = 120;
+    int item_height = 100;
+    int spacing = 20;
+    int start_x = (SCREEN_WIDTH - (3 * item_width + 2 * spacing)) / 2;
+    
+    for (int i = 0; i < 3; i++) {
+        int x = start_x + i * (item_width + spacing);
+        int y = (SCREEN_HEIGHT - item_height) / 2;
+        int selected = (i == sim->selected_item % 3);
+        
+        Uint32 item_color = selected ? 
+            SDL_MapRGB(surface->format, 100, 180, 255) : 
+            SDL_MapRGB(surface->format, 55, 55, 55);
+        
+        draw_pill(surface, x, y, item_width, item_height, item_color, 0);
+        
+        // Draw placeholder for game thumbnail
+        SDL_Rect thumb = {x + 10, y + 10, item_width - 20, item_height - 30};
+        SDL_FillRect(surface, &thumb, SDL_MapRGB(surface->format, 30, 30, 30));
+    }
+    
+    // Draw button hints
+    draw_button_hint(surface, "A", "Resume", 10, SCREEN_HEIGHT - 30);
+    draw_button_hint(surface, "B", "Close", 100, SCREEN_HEIGHT - 30);
+    draw_button_hint(surface, "LEFT/RIGHT", "Switch", 200, SCREEN_HEIGHT - 30);
+}
+
+// Render settings screen
+void render_settings(SDL_Surface* surface, simulator_state* sim) {
+    // Draw status pill
+    draw_status_pill(surface);
+    
+    // Draw header
+    SDL_Rect header = {0, 40, SCREEN_WIDTH, 2};
+    SDL_FillRect(surface, &header, SDL_MapRGB(surface->format, 100, 100, 100));
+    
+    // Draw settings options
+    int option_count = 4;
+    int item_height = 50;
+    int start_y = 60;
+    
+    for (int i = 0; i < option_count; i++) {
+        int y = start_y + i * item_height;
+        int selected = (i == sim->selected_item);
+        
+        Uint32 pill_color = selected ? 
+            SDL_MapRGB(surface->format, 70, 70, 70) : 
+            SDL_MapRGB(surface->format, 55, 55, 55);
+        
+        draw_pill(surface, 10, y, SCREEN_WIDTH - 20, item_height, pill_color, 0);
+        
+        // Draw option name placeholder
+        SDL_Rect name = {30, y + item_height / 2 - 5, 100, 10};
+        SDL_FillRect(surface, &name, SDL_MapRGB(surface->format, 255, 255, 255));
+    }
+    
+    // Draw button hints
+    draw_button_hint(surface, "A", "Select", 10, SCREEN_HEIGHT - 30);
+    draw_button_hint(surface, "B", "Back", 100, SCREEN_HEIGHT - 30);
+}
+
 // Main render function
 void render(simulator_state* sim) {
     // Clear screen
@@ -265,14 +391,83 @@ void render(simulator_state* sim) {
     SDL_FillRect(sim->screen, NULL, bg_color);
     
     // Render appropriate screen
-    if (sim->menu_open) {
-        render_quick_menu(sim->screen, sim);
-    } else {
-        render_game_list(sim->screen, sim);
+    switch (sim->current_screen) {
+        case SCREEN_GAMELIST:
+            render_game_list(sim->screen, sim);
+            break;
+        case SCREEN_QUICKMENU:
+            render_quick_menu(sim->screen, sim);
+            break;
+        case SCREEN_GAMESWITCHER:
+            render_game_switcher(sim->screen, sim);
+            break;
+        case SCREEN_SETTINGS:
+            render_settings(sim->screen, sim);
+            break;
+        default:
+            break;
     }
     
     // Update window
     SDL_UpdateWindowSurface(sim->window);
+}
+
+// Auto-traverse and capture screenshots
+void auto_traverse_and_capture(simulator_state* sim) {
+    Uint32 now = SDL_GetTicks();
+    
+    if ((Sint32)(now - sim->last_traverse_time) < sim->traverse_delay) {
+        return;
+    }
+    
+    sim->last_traverse_time = now;
+    
+    // Capture screenshot for current state
+    char screenshot_name[256];
+    snprintf(screenshot_name, sizeof(screenshot_name), "%03d_%s_item%d", 
+             sim->screenshot_index,
+             screen_type_name(sim->current_screen),
+             sim->selected_item);
+    
+    save_screenshot(sim, screenshot_name);
+    sim->screenshot_index++;
+    
+    // Navigate to next state
+    sim->selected_item++;
+    
+    int max_items = 0;
+    switch (sim->current_screen) {
+        case SCREEN_GAMELIST:
+            max_items = 8;
+            if (sim->selected_item >= max_items) {
+                sim->selected_item = 0;
+                sim->current_screen = SCREEN_QUICKMENU;
+            }
+            break;
+        case SCREEN_QUICKMENU:
+            max_items = 4;
+            if (sim->selected_item >= max_items) {
+                sim->selected_item = 0;
+                sim->current_screen = SCREEN_GAMESWITCHER;
+            }
+            break;
+        case SCREEN_GAMESWITCHER:
+            max_items = 3;
+            if (sim->selected_item >= max_items) {
+                sim->selected_item = 0;
+                sim->current_screen = SCREEN_SETTINGS;
+            }
+            break;
+        case SCREEN_SETTINGS:
+            max_items = 4;
+            if (sim->selected_item >= max_items) {
+                sim->selected_item = 0;
+                sim->current_screen = SCREEN_GAMELIST;
+                // All screens traversed, exit
+                sim->running = 0;
+            }
+            break;
+    }
 }
 
 // Handle keyboard input
@@ -296,6 +491,18 @@ void handle_input(simulator_state* sim) {
                         sim->down_pressed = 1;
                     }
                     break;
+                case SDLK_LEFT:
+                    if (!sim->left_pressed) {
+                        sim->selected_item = (sim->selected_item > 0) ? sim->selected_item - 1 : 2;
+                        sim->left_pressed = 1;
+                    }
+                    break;
+                case SDLK_RIGHT:
+                    if (!sim->right_pressed) {
+                        sim->selected_item = (sim->selected_item < 2) ? sim->selected_item + 1 : 0;
+                        sim->right_pressed = 1;
+                    }
+                    break;
                 case SDLK_a:
                     sim->a_pressed = 1;
                     // Handle selection
@@ -303,15 +510,32 @@ void handle_input(simulator_state* sim) {
                     break;
                 case SDLK_b:
                     sim->b_pressed = 1;
-                    // Go back
-                    sim->menu_open = 0;
+                    // Go back to game list
+                    if (sim->current_screen != SCREEN_GAMELIST) {
+                        sim->current_screen = SCREEN_GAMELIST;
+                        sim->selected_item = 0;
+                    }
                     break;
                 case SDLK_MENU:
                 case SDLK_m:
                     if (!sim->menu_pressed) {
-                        sim->menu_open = !sim->menu_open;
+                        if (sim->current_screen == SCREEN_GAMELIST) {
+                            sim->current_screen = SCREEN_QUICKMENU;
+                        } else if (sim->current_screen == SCREEN_QUICKMENU) {
+                            sim->current_screen = SCREEN_GAMELIST;
+                        }
                         sim->selected_item = 0;
                         sim->menu_pressed = 1;
+                    }
+                    break;
+                case SDLK_s:
+                    // Manual screenshot
+                    if (!sim->screenshot_mode) {
+                        char screenshot_name[256];
+                        snprintf(screenshot_name, sizeof(screenshot_name), "manual_%s_item%d", 
+                                 screen_type_name(sim->current_screen),
+                                 sim->selected_item);
+                        save_screenshot(sim, screenshot_name);
                     }
                     break;
                 case SDLK_ESCAPE:
@@ -325,6 +549,12 @@ void handle_input(simulator_state* sim) {
                     break;
                 case SDLK_DOWN:
                     sim->down_pressed = 0;
+                    break;
+                case SDLK_LEFT:
+                    sim->left_pressed = 0;
+                    break;
+                case SDLK_RIGHT:
+                    sim->right_pressed = 0;
                     break;
                 case SDLK_a:
                     sim->a_pressed = 0;
@@ -350,7 +580,11 @@ void main_loop(simulator_state* sim) {
         frame_start = SDL_GetTicks();
         
         // Handle input
-        handle_input(sim);
+        if (sim->auto_traverse) {
+            auto_traverse_and_capture(sim);
+        } else {
+            handle_input(sim);
+        }
         
         // Render
         render(sim);
@@ -363,22 +597,84 @@ void main_loop(simulator_state* sim) {
     }
 }
 
-// Global simulator state
-simulator_state* g_sim = NULL;
+// Get screen type name
+const char* screen_type_name(screen_type type) {
+    switch (type) {
+        case SCREEN_GAMELIST: return "gamelist";
+        case SCREEN_QUICKMENU: return "quickmenu";
+        case SCREEN_GAMESWITCHER: return "gameswitcher";
+        case SCREEN_SETTINGS: return "settings";
+        case SCREEN_COUNT: return "unknown";
+        default: return "unknown";
+    }
+}
 
+// Print usage
+void print_usage(const char* program_name) {
+    printf("Usage: %s [OPTIONS]\n\n", program_name);
+    printf("OPTIONS:\n");
+    printf("  --screenshot DIR  Enable screenshot mode and save to DIR\n");
+    printf("  --auto            Enable automatic traversal mode\n");
+    printf("  --delay MS        Delay between screenshots in auto mode (default: 500)\n");
+    printf("  --help            Show this help message\n\n");
+    printf("CONTROLS:\n");
+    printf("  UP/DOWN/LEFT/RIGHT - Navigate\n");
+    printf("  A                  - Select\n");
+    printf("  B                  - Back\n");
+    printf("  MENU/M             - Toggle quick menu\n");
+    printf("  S                  - Manual screenshot\n");
+    printf("  ESC                - Exit\n\n");
+    printf("SCREENS:\n");
+    printf("  Game List        - Main game list screen\n");
+    printf("  Quick Menu       - Quick menu overlay\n");
+    printf("  Game Switcher    - Recent games carousel\n");
+    printf("  Settings         - Settings screen\n");
+}
+
+// Main entry point
 int main(int argc, char* argv[]) {
-    printf("=== NextUI UI Simulator ===\n");
-    printf("Controls:\n");
-    printf("  UP/DOWN    - Navigate menu\n");
-    printf("  A          - Select item\n");
-    printf("  B          - Go back\n");
-    printf("  MENU/M    - Toggle quick menu\n");
-    printf("  ESC        - Exit\n");
-    printf("==========================\n\n");
+    printf("=== NextUI UI Simulator ===\n\n");
     
     simulator_state sim;
     memset(&sim, 0, sizeof(sim));
     g_sim = &sim;
+    
+    // Default values
+    snprintf(sim.screenshot_dir, sizeof(sim.screenshot_dir), "screenshots");
+    sim.auto_traverse = 0;
+    sim.traverse_delay = 500;
+    sim.screenshot_mode = 0;
+    
+    // Parse command line arguments
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            print_usage(argv[0]);
+            return 0;
+        } else if (strcmp(argv[i], "--screenshot") == 0 && i + 1 < argc) {
+            snprintf(sim.screenshot_dir, sizeof(sim.screenshot_dir), "%s", argv[++i]);
+            sim.screenshot_mode = 1;
+        } else if (strcmp(argv[i], "--auto") == 0) {
+            sim.auto_traverse = 1;
+            sim.screenshot_mode = 1;
+        } else if (strcmp(argv[i], "--delay") == 0 && i + 1 < argc) {
+            sim.traverse_delay = atoi(argv[++i]);
+        }
+    }
+    
+    // Print mode information
+    if (sim.auto_traverse) {
+        printf("Mode: Auto-traversal with screenshots\n");
+        printf("Output directory: %s\n", sim.screenshot_dir);
+        printf("Delay: %d ms\n\n");
+    } else if (sim.screenshot_mode) {
+        printf("Mode: Manual screenshots\n");
+        printf("Output directory: %s\n", sim.screenshot_dir);
+        printf("Press 'S' to capture screenshot\n\n");
+    } else {
+        printf("Mode: Interactive\n\n");
+        print_usage(argv[0]);
+        printf("\nStarting interactive mode...\n\n");
+    }
     
     // Initialize SDL
     if (!init_sdl(&sim)) {
@@ -394,5 +690,9 @@ int main(int argc, char* argv[]) {
     cleanup_sdl(&sim);
     
     printf("Simulator closed.\n");
+    if (sim.screenshot_mode) {
+        printf("Screenshots saved to: %s\n", sim.screenshot_dir);
+    }
+    
     return 0;
 }
