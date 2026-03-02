@@ -198,13 +198,15 @@ void component_render_button(component* comp, SDL_Surface* surface) {
     
     // Draw button background
     if (comp->state.pressed) {
-        GFX_blitRectColor(ASSET_STATE_BG, surface, &rect, comp->style.bg_color);
+        uint32_t bg_color = (comp->style.bg_color.r << 16) | (comp->style.bg_color.g << 8) | comp->style.bg_color.b | (comp->style.bg_color.a << 24);
+        GFX_blitRectColor(ASSET_STATE_BG, surface, &rect, bg_color);
     } else if (comp->state.hovered) {
         // Lighter color for hover
         uint32_t hover_color = THEME_COLOR2;
         GFX_blitRectColor(ASSET_STATE_BG, surface, &rect, hover_color);
     } else {
-        GFX_blitRectColor(ASSET_WHITE_PILL, surface, &rect, comp->style.bg_color);
+        uint32_t bg_color = (comp->style.bg_color.r << 16) | (comp->style.bg_color.g << 8) | comp->style.bg_color.b | (comp->style.bg_color.a << 24);
+        GFX_blitRectColor(ASSET_WHITE_PILL, surface, &rect, bg_color);
     }
     
     // Draw icon if present
@@ -221,7 +223,8 @@ void component_render_button(component* comp, SDL_Surface* surface) {
             int y = rect.y + (rect.h - icon->h) / 2;
             SDL_Rect destRect = {x, y, 0, 0};
             
-            GFX_blitSurfaceColor(icon, NULL, surface, &destRect, comp->style.text_color);
+            uint32_t modulate_color = (comp->style.text_color.r << 16) | (comp->style.text_color.g << 8) | comp->style.text_color.b | (comp->style.text_color.a << 24);
+            GFX_blitSurfaceColor(converted, NULL, surface, &destRect, modulate_color);
             SDL_FreeSurface(icon);
         }
     }
@@ -232,7 +235,7 @@ void component_render_button(component* comp, SDL_Surface* surface) {
         const char* label = data->text;
         GFX_sizeText(font.large, label, SCALE1(FONT_LARGE), &w, &h);
         
-        SDL_Surface* text = TTF_RenderUTF8_Blended(font.large, label, uintToColour(comp->state.enabled ? comp->style.text_color : THEME_COLOR4));
+        SDL_Surface* text = TTF_RenderUTF8_Blended(font.large, label, uintToColour(comp->state.enabled ? ((comp->style.text_color.r << 16) | (comp->style.text_color.g << 8) | comp->style.text_color.b | (comp->style.text_color.a << 24)) : THEME_COLOR4));
         if (text) {
             int x = rect.x + (rect.w - text->w) / 2;
             int y = rect.y + (rect.h - text->h) / 2;
@@ -296,8 +299,11 @@ void component_render_thumbnail(component* comp, SDL_Surface* surface) {
         // Semi-transparent background
         SDL_Surface* bg = SDL_CreateRGBSurfaceWithFormat(0, rect.w, rect.h, 32, SDL_PIXELFORMAT_RGBA8888);
         if (bg) {
-            SDL_FillRect(bg, NULL, SDL_MapRGBA(surface->format, THEME_COLOR3 >> 24, 
-                             (THEME_COLOR3 >> 16) & 0xFF, (THEME_COLOR3 >> 8) & 0xFF, THEME_COLOR3 & 0xFF, 128));
+            Uint8 r = (THEME_COLOR3 >> 16) & 0xFF;
+            Uint8 g = (THEME_COLOR3 >> 8) & 0xFF;
+            Uint8 b = THEME_COLOR3 & 0xFF;
+            Uint8 a = 128;
+            SDL_FillRect(bg, NULL, SDL_MapRGBA(surface->format, r, g, b, a));
             SDL_BlitSurface(bg, NULL, surface, &rect);
             SDL_FreeSurface(bg);
         }
@@ -318,8 +324,9 @@ void component_render_thumbnail(component* comp, SDL_Surface* surface) {
             int x = rect.x + (rect.w - scaled_w) / 2;
             int y = rect.y + (rect.h - scaled_h) / 2;
             
-            SDL_Surface* scaled = NULL;
-            if (SDL_SCALE_SMOOTH(img, scaled_w, scaled_h, &scaled) == 0) {
+            SDL_Surface* scaled = SDL_CreateRGBSurfaceWithFormat(0, scaled_w, scaled_h, 32, SDL_PIXELFORMAT_RGBA8888);
+            if (scaled) {
+                SDL_BlitScaled(img, NULL, scaled, NULL);
                 SDL_BlitSurface(scaled, NULL, surface, &(SDL_Rect){x, y, 0, 0});
                 SDL_FreeSurface(scaled);
             }
@@ -352,10 +359,10 @@ void component_render_background(component* comp, SDL_Surface* surface) {
         SDL_BlitSurface(comp->state.surface, NULL, surface, &rect);
     } else {
         SDL_FillRect(surface, &rect, SDL_MapRGBA(surface->format, 
-                     (comp->style.bg_color >> 24) & 0xFF,
-                     (comp->style.bg_color >> 16) & 0xFF,
-                     (comp->style.bg_color >> 8) & 0xFF,
-                     comp->style.bg_color & 0xFF));
+                     comp->style.bg_color.r,
+                     comp->style.bg_color.g,
+                     comp->style.bg_color.b,
+                     comp->style.bg_color.a));
     }
 }
 
@@ -609,9 +616,13 @@ void list_component_add_item(component* list, component* item) {
 }
 
 void list_component_remove_item(component* list, int index) {
-    if (!list || !list->data || index < 0 || index >= list->data->count) return;
+    if (!list || !list->data || index < 0) {
+        list_component_data* data = (list_component_data*)list->data;
+        if (data && index >= data->count) return;
+    }
     
     list_component_data* data = (list_component_data*)list->data;
+    if (index >= data->count) return;
     
     component_free(data->items[index]);
     

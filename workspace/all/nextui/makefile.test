@@ -1,48 +1,94 @@
-# Makefile for NextUI UI Simulator (Simplified Version)
-# This version uses only the simulator code without full NextUI integration
+# Makefile for NextUI UI Simulator
+# Uses platform adaptation layer for cross-platform support
 
 # Platform configuration
 PLATFORM = desktop
+UNION_PLATFORM = desktop
 
-# SDL configuration
-SDL_CONFIG ?= sdl2-config
-SDL_CFLAGS = $(shell $(SDL_CONFIG) --cflags)
-SDL_LIBS = $(shell $(SDL_CONFIG) --libs)
-
-# Compiler settings
+# Base compiler settings
 CC ?= gcc
-CFLAGS += -Wall -Wextra -Wno-unused-parameter -O2
-CFLAGS += $(SDL_CFLAGS)
-CFLAGS += -DPLATFORM="$(PLATFORM)"
-CFLAGS += -DSTUB_SDL_IMAGE  # Use stub for SDL2_image
+OPT = -g
+# Disable LTO for now to investigate build issues
+# CFLAGS += -flto=auto
+CFLAGS += -Wall -Wextra -Wno-unused-parameter
+CFLAGS += '-DPLATFORM="desktop"' -DUSE_SDL2 -DGL_SILENCE_DEPRECATION
 
-# Linker flags
-LDFLAGS += $(SDL_LIBS)
-LDFLAGS += -lpthread -ldl -lm -lz
+# Platform dependencies
+CFLAGS += $(shell pkg-config --cflags sdl2 2>/dev/null || echo '-I/usr/include/SDL2')
+LDFLAGS += $(shell pkg-config --libs sdl2 2>/dev/null || echo '-lSDL2')
+
+# Optional SDL2_image support
+HAS_SDL2_IMAGE := $(shell pkg-config --exists SDL2_image && echo 1 || echo 0)
+ifeq ($(HAS_SDL2_IMAGE),1)
+    CFLAGS += -DHAS_SDL2_IMAGE
+    CFLAGS += $(shell pkg-config --cflags SDL2_image)
+    LDFLAGS += $(shell pkg-config --libs SDL2_image)
+endif
+
+# Optional SDL2_ttf support
+HAS_SDL2_TTF := $(shell pkg-config --exists SDL2_ttf && echo 1 || echo 0)
+ifeq ($(HAS_SDL2_TTF),1)
+    CFLAGS += -DHAS_SDL2_TTF
+    CFLAGS += $(shell pkg-config --cflags SDL2_ttf)
+    LDFLAGS += $(shell pkg-config --libs SDL2_ttf)
+endif
+
+# OpenGL support
+CFLAGS += -DUSE_GL -DGL_GLEXT_PROTOTYPES
+LDFLAGS += -lGL
+
+# Common libraries
+LDFLAGS += -lpthread -ldl -lm -lz -lsamplerate
+
+# Silence some warnings
+CFLAGS += -Wno-format-overflow -Wno-format-truncation -Wno-format-zero-length -Wno-format-extra-args -Wno-format
+
+# Include paths
+CFLAGS += -I. -I../common/ -I../../desktop/platform/ -I../../i18n/ -I../../desktop/libmsettings/
+
+# Display optional dependencies status
+$(info SDL2_image support: $(HAS_SDL2_IMAGE))
+$(info SDL2_ttf support: $(HAS_SDL2_TTF))
 
 # Target
 TARGET = nextui_simulator
 
-# Source files - only simulator code
-SOURCE = simulator.c
+# Source files - using real NextUI framework code
+SOURCE = screen.c \
+	component.c \
+	state.c \
+	../common/scaler.c \
+	../common/utils.c \
+	../common/config.c \
+	../common/api.c \
+	../../i18n/i18n.c \
+	../../desktop/platform/platform.c \
+	simulator_main.c \
+	simulator_platform.c
+
+# msettings source
+MSETTINGS_SOURCE = ../../desktop/libmsettings/msettings.c
 
 # Output directory
 BUILD_DIR = build/desktop
 
-# CI environment variables
-export TARGET
-
 .PHONY: all clean run test help
 
 all: $(BUILD_DIR)/$(TARGET)
-	@echo "Simulator built successfully"
+	@echo ""
+	@echo "Simulator built successfully with platform adaptation layer"
 	@echo "Run: make -f makefile.test run"
 	@echo "Test: make -f makefile.test test"
 
-$(BUILD_DIR)/$(TARGET): $(SOURCE)
+$(BUILD_DIR)/$(TARGET): $(SOURCE) $(MSETTINGS_SOURCE)
 	@mkdir -p $(BUILD_DIR)
-	$(CC) $(SOURCE) -o $(BUILD_DIR)/$(TARGET) $(CFLAGS) $(LDFLAGS)
+	@echo "Building msettings library..."
+	$(CC) -c $(MSETTINGS_SOURCE) -o $(BUILD_DIR)/msettings.o $(CFLAGS)
+	ar rcs $(BUILD_DIR)/libmsettings.a $(BUILD_DIR)/msettings.o
+	@echo "Building simulator..."
+	$(CC) $(SOURCE) -o $(BUILD_DIR)/$(TARGET) $(CFLAGS) $(LDFLAGS) -L$(BUILD_DIR) -lmsettings
 	@echo "Built: $(BUILD_DIR)/$(TARGET)"
+	@ls -lh $(BUILD_DIR)/$(TARGET)
 
 run: $(BUILD_DIR)/$(TARGET)
 	@echo "Starting NextUI Simulator..."
@@ -56,14 +102,14 @@ test: $(BUILD_DIR)/$(TARGET)
 	@echo "Total screenshots: $$(ls screenshots/*.bmp 2>/dev/null | wc -l)"
 
 clean:
-	rm -f $(BUILD_DIR)/$(TARGET)
+	rm -f $(BUILD_DIR)/$(TARGET) $(BUILD_DIR)/*.o $(BUILD_DIR)/*.a
 	rm -rf screenshots baseline comparison_report.md
 	@echo "Cleaned build artifacts and test outputs"
 
 help:
-	@echo "NextUI UI Simulator"
+	@echo "NextUI UI Simulator (Platform Adaptation Layer)"
 	@echo ""
-	@echo "A desktop simulator for testing NextUI UI components without hardware."
+	@echo "This simulator uses real NextUI framework code with cross-platform adaptation."
 	@echo ""
 	@echo "Targets:"
 	@echo "  all   Build simulator"
@@ -75,7 +121,10 @@ help:
 	@echo "Usage:"
 	@echo "  make -f makefile.test [target]"
 	@echo ""
-	@echo "Test Output:"
-	@echo "  Screenshots are saved to screenshots/ directory"
-	@echo "  Baseline images are stored in baseline/ directory"
-	@echo "  Comparison report is saved to comparison_report.md"
+	@echo "Optional Dependencies:"
+	@echo "  - SDL2 (required)"
+	@echo "  - SDL2_image (optional, for PNG support)"
+	@echo "  - SDL2_ttf (optional, for text rendering)"
+	@echo "  - OpenGL (required)"
+	@echo ""
+	@echo "Note: The simulator will work without SDL2_image and SDL2_ttf,"

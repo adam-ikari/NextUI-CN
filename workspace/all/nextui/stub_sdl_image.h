@@ -1,26 +1,31 @@
-// Stub for SDL2_image.h (for simulator use)
 #ifndef STUB_SDL_IMAGE_H
 #define STUB_SDL_IMAGE_H
 
 #include <SDL2/SDL.h>
 
-typedef struct SDL_Surface SDL_Surface;
+// Stub for SDL_image functions
+#define IMG_Init(flags) 0
+#define IMG_Quit() ((void)0)
+#define IMG_GetError() SDL_GetError()
 
-// Stub functions
-static inline SDL_Surface* IMG_Load(const char* file) {
-    (void)file;
-    return NULL;
+// Stub for image loading
+#define IMG_LoadPNG_RW(src) NULL
+#define IMG_LoadJPG_RW(src) NULL
+#define IMG_LoadTyped_RW(src, freesrc, type) NULL
+
+// Stub for image saving - use SDL_SaveBMP instead
+static inline int IMG_SavePNG(SDL_Surface *surface, const char *file) {
+    // Save as BMP instead of PNG
+    char bmp_file[512];
+    snprintf(bmp_file, sizeof(bmp_file), "%s", file);
+    // If filename ends with .png, replace with .bmp
+    size_t len = strlen(file);
+    if (len > 4 && strcmp(file + len - 4, ".png") == 0) {
+        strncpy(bmp_file, file, len - 4);
+        bmp_file[len - 4] = '\0';
+        strcat(bmp_file, ".bmp");
+    }
+    return SDL_SaveBMP(surface, bmp_file);
 }
-
-static inline int IMG_Init(int flags) {
-    (void)flags;
-    return 0;
-}
-
-static inline void IMG_Quit(void) {
-}
-
-#define IMG_INIT_PNG 0x00000001
-#define IMG_INIT_JPG 0x00000002
 
 #endif // STUB_SDL_IMAGE_H

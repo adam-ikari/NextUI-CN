@@ -6,6 +6,7 @@
  */
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -67,6 +68,10 @@ typedef struct {
     SDL_Surface* screen;
     int running;
     
+    // Font
+    TTF_Font* font;
+    int font_size;
+    
     // Screenshot mode
     int screenshot_mode;
     int screenshot_index;
@@ -103,6 +108,8 @@ simulator_state* g_sim = NULL;
 
 // Forward declarations
 const char* screen_type_name(screen_type type);
+int render_text(SDL_Surface* surface, const char* text, int x, int y, Uint32 color, int size);
+void cleanup_font(simulator_state* sim);
 
 #ifdef STUB_SDL_IMAGE
 // Simple PNG save stub (saves as BMP instead)
@@ -117,6 +124,75 @@ static inline int save_png_stub(SDL_Surface* surface, const char* file) {
     return SDL_SaveBMP(surface, bmp_file) == 0 ? 0 : -1;
 }
 #endif
+
+// Initialize font
+int init_font(simulator_state* sim) {
+    if (TTF_Init() == -1) {
+        fprintf(stderr, "Failed to initialize SDL_ttf: %s\n", TTF_GetError());
+        return 0;
+    }
+    
+    // Try to load a system font
+    const char* font_paths[] = {
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+        "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",  // macOS
+        "C:\\Windows\\Fonts\\arial.ttf",  // Windows
+        NULL
+    };
+    
+    for (int i = 0; font_paths[i] != NULL; i++) {
+        sim->font = TTF_OpenFont(font_paths[i], 16);
+        if (sim->font) {
+            printf("Loaded font: %s\n", font_paths[i]);
+            break;
+        }
+    }
+    
+    if (!sim->font) {
+        fprintf(stderr, "Warning: Could not load any font. Text will not be displayed.\n");
+        fprintf(stderr, "Please install a TTF font (e.g., sudo apt-get install fonts-dejavu)\n");
+        return 0;
+    }
+    
+    sim->font_size = 16;
+    return 1;
+}
+
+// Cleanup font
+void cleanup_font(simulator_state* sim) {
+    if (sim->font) {
+        TTF_CloseFont(sim->font);
+        sim->font = NULL;
+    }
+    TTF_Quit();
+}
+
+// Render text to surface
+int render_text(SDL_Surface* surface, const char* text, int x, int y, Uint32 color, int size) {
+    if (!g_sim || !g_sim->font || !text || !surface) {
+        return 0;
+    }
+    
+    SDL_Color text_color = {
+        (color >> 16) & 0xFF,
+        (color >> 8) & 0xFF,
+        color & 0xFF,
+        (color >> 24) & 0xFF
+    };
+    
+    SDL_Surface* text_surface = TTF_RenderText_Blended(g_sim->font, text, text_color);
+    if (!text_surface) {
+        return 0;
+    }
+    
+    SDL_Rect dest_rect = {x, y, text_surface->w, text_surface->h};
+    SDL_BlitSurface(text_surface, NULL, surface, &dest_rect);
+    
+    SDL_FreeSurface(text_surface);
+    return 1;
+}
 
 // Save screenshot
 int save_screenshot(simulator_state* sim, const char* name) {
@@ -157,6 +233,11 @@ int init_sdl(simulator_state* sim) {
     }
 #endif
     
+    // Initialize SDL_ttf
+    if (!init_font(sim)) {
+        fprintf(stderr, "Warning: Font initialization failed. Text may not display.\n");
+    }
+    
     // Create window
     sim->window = SDL_CreateWindow(
         "NextUI Simulator",
@@ -169,7 +250,10 @@ int init_sdl(simulator_state* sim) {
     
     if (!sim->window) {
         fprintf(stderr, "Failed to create window: %s\n", SDL_GetError());
+        cleanup_font(sim);
+#ifndef STUB_SDL_IMAGE
         IMG_Quit();
+#endif
         SDL_Quit();
         return 0;
     }
@@ -187,13 +271,17 @@ int init_sdl(simulator_state* sim) {
 
 // Cleanup SDL
 void cleanup_sdl(simulator_state* sim) {
+    cleanup_font(sim);
+    
     if (sim->window) {
         SDL_DestroyWindow(sim->window);
         sim->window = NULL;
     }
+    
 #ifndef STUB_SDL_IMAGE
     IMG_Quit();
 #endif
+    
     SDL_Quit();
 }
 
@@ -211,12 +299,11 @@ void draw_pill(SDL_Surface* surface, int x, int y, int width, int height, Uint32
 
 // Draw button hint
 void draw_button_hint(SDL_Surface* surface, const char* button, const char* text, int x, int y) {
-    (void)button; // TODO: Implement button icon
-    (void)text;   // TODO: Implement text rendering
+    // Draw button name
+    render_text(surface, button, x, y, SDL_MapRGB(surface->format, 100, 180, 255), 16);
     
-    // Draw placeholder
-    SDL_Rect hint = {x, y + 5, 80, 20};
-    SDL_FillRect(surface, &hint, SDL_MapRGB(surface->format, 100, 100, 100));
+    // Draw hint text
+    render_text(surface, text, x + 50, y, SDL_MapRGB(surface->format, 255, 255, 255), 16);
 }
 
 // Draw status pill

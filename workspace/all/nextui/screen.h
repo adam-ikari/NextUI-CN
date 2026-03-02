@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include "common/config.h"
 #include "common/api.h"
+#include "component.h"
+#include "state.h"
 
 // Forward declarations
 typedef struct state state;
