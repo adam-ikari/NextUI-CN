@@ -6,12 +6,26 @@ This directory contains automated testing tools for NextUI to ensure visual cons
 
 ## Test Suite
 
-The test suite (`test_nextui.c`) provides:
+### Basic Tests (`test_nextui.c`)
+
+Provides fundamental rendering tests:
 
 - **Off-screen rendering**: Tests run without requiring a display
 - **Screenshot comparison**: Compares output against baseline images
 - **Diff generation**: Creates visual diff images for failed tests
 - **Automated reporting**: Generates test summaries with pass/fail rates
+
+### Page Tests (`test_pages.c`)
+
+Provides comprehensive page-level testing:
+
+- **Empty directory screen**: Tests empty folder state
+- **Game list screen**: Tests main game list rendering
+- **Game list with thumbnail**: Tests list with preview images
+- **Game switcher screen**: Tests recent games carousel
+- **Game switcher empty**: Tests empty recent games state
+- **Button hints**: Tests default and combined key hints
+- **Status pill**: Tests status indicator rendering
 
 ## Building Tests
 
@@ -22,45 +36,42 @@ make -f makefile.test all
 
 ## Running Tests
 
-### 1. Create Baseline Images
-
-Before running regression tests, create baseline images from the original implementation:
+### Basic Tests
 
 ```bash
-# Build original NextUI from main branch
-git checkout main
-make
+# Run basic regression tests
+make -f makefile.test test
 
-# Run the application and capture screenshots
-# (manual process - take screenshots of key screens)
-
-# Create baseline for test suite
-git checkout refactor/remove-quickmenu
+# Create baseline for basic tests
 make -f makefile.test create-baseline
 ```
 
-### 2. Run Regression Tests
-
-After making changes, run tests to verify visual consistency:
+### Page Tests
 
 ```bash
-make -f makefile.test test
+# Run page regression tests
+make -f makefile.test test-pages
+
+# Create baseline for page tests
+make -f makefile.test create-baseline-pages
 ```
 
-### 3. Review Results
+### All Tests
 
-Test results are saved in `test_output/`:
+```bash
+# Run all tests
+make -f makefile.test test && make -f makefile.test test-pages
 
-- `*_output.png` - Current test output
-- `baseline_*.png` - Baseline reference images
-- `*_diff.png` - Difference visualization (red highlights differences)
+# Create all baselines
+make -f makefile.test create-baseline && make -f makefile.test create-baseline-pages
+```
 
 ## Test Coverage
 
-The test suite covers:
+### Basic Tests (8 tests)
 
 1. **Empty screen rendering**
-2. **Solid color patterns**
+2. **Solid color patterns** (red, green, blue)
 3. **Gradient rendering**
 4. **Checkerboard patterns**
 5. **Text rendering**
@@ -68,50 +79,103 @@ The test suite covers:
 7. **List component rendering**
 8. **Status pill rendering**
 
-## Customizing Tests
+### Page Tests (9 tests)
 
-To add new tests:
+1. **Empty directory screen**
+   - Empty folder message
+   - Status pill (battery, wifi, clock)
+   - Button hints
 
-1. Add a test function in `test_nextui.c`:
+2. **Game list screen**
+   - Multiple list items
+   - Selected item highlighting
+   - Status pill
+   - Button hints (Open, Back, Resume)
 
-```c
-void test_my_feature(SDL_Surface* surface) {
-    // Your rendering code here
-}
-```
+3. **Game list with thumbnail**
+   - Thumbnail preview on right
+   - Adjusted list width
+   - Status pill
+   - Button hints
 
-2. Register the test in `main()`:
+4. **Game switcher screen**
+   - Title pill
+   - Large preview area
+   - Status pill
+   - Button hints (Resume, Remove, Back)
 
-```c
-register_test(ctx, "my_feature", "baseline_my_feature.png", test_my_feature);
-```
+5. **Game switcher empty**
+   - Title pill
+   - Empty message
+   - Status pill
+   - Back button
 
-3. Rebuild and rerun:
+6. **Default button hints**
+   - Primary hints (top)
+   - Secondary hints (bottom)
+
+7. **Combined key hints (menu held)**
+   - Brightness adjustment
+   - Color temperature adjustment
+
+8. **Status pill only**
+   - Battery indicator
+   - WiFi indicator
+   - Clock display
+
+9. **Status pill with hints**
+   - Combined rendering
+   - Layout verification
+
+## Reviewing Results
+
+Test results are saved in `test_output/`:
+
+- `*_output.png` - Current test output
+- `baseline_*.png` - Baseline reference images
+- `*_diff.png` - Difference visualization (red highlights differences)
+
+## Creating Baselines
+
+Before running regression tests, create baseline images:
 
 ```bash
-make -f makefile.test clean
+# From main branch (original implementation)
+git checkout main
+
+# Run the application and capture screenshots manually
+# Or use automated testing
+
+# Create baselines
 make -f makefile.test create-baseline
+make -f makefile.test create-baseline-pages
+
+# Commit baselines
+git add test_output/baseline_*.png
+git commit -m "Add test baselines for original implementation"
+
+# Switch to refactor branch
+git checkout refactor/remove-quickmenu
+```
+
+## Running Regression Tests
+
+After making changes, run tests to verify visual consistency:
+
+```bash
 make -f makefile.test test
+make -f makefile.test test-pages
 ```
 
 ## Thresholds
 
-The comparison threshold is set to 10% by default. Adjust this in `test_nextui.c`:
+The comparison threshold is set to 10% by default:
 
 ```c
 int passed = compare_screenshots(baseline_path, output_path, diff_path, 0.1); // 10%
 ```
 
-## CI/CD Integration
-
-To integrate with GitHub Actions:
-
-```yaml
-- name: Run Visual Regression Tests
-  run: |
-    cd workspace/all/nextui
-    make -f makefile.test test
-```
+Adjust this in `test_nextui.c` or `test_pages.c` if needed.
 
 ## Troubleshooting
 
@@ -132,26 +196,33 @@ brew install sdl2 sdl2_image
 
 If tests fail after expected changes:
 
-1. Review the diff images to understand what changed
+1. Review diff images to understand what changed
 2. If the change is intentional, update baselines:
 
 ```bash
 make -f makefile.test create-baseline
+make -f makefile.test create-baseline-pages
 git add test_output/baseline_*.png
 ```
 
 3. If the change is unintended, investigate the code
 
-## Continuous Testing
+## CI/CD Integration
 
-For continuous testing during development:
+```yaml
+# GitHub Actions example
+- name: Run Visual Regression Tests
+  run: |
+    cd workspace/all/nextui
+    make -f makefile.test test
+    make -f makefile.test test-pages
 
-```bash
-# Watch mode (requires entr or similar)
-make -f makefile.test all
-while true; do
-    find . -name "*.c" | entr -r make -f makefile.test test
-done
+- name: Upload Test Results
+  if: failure()
+  uses: actions/upload-artifact@v2
+  with:
+    name: test-results
+    path: workspace/all/nextui/test_output/
 ```
 
 ## Notes
@@ -160,13 +231,32 @@ done
 - All output is saved as PNG images
 - Memory usage is minimal due to off-screen rendering
 - Tests are platform-independent (run on any system with SDL2)
+- Page tests use mock rendering to simulate actual UI components
+
+## Test Workflow
+
+### Development Phase
+
+1. Make code changes
+2. Run tests: `make -f makefile.test test-pages`
+3. Review any failures
+4. Fix issues or update baselines if intentional
+
+### Release Phase
+
+1. Ensure all tests pass
+2. Run full test suite: `make -f makefile.test test && make -f makefile.test test-pages`
+3. Review all baseline images
+4. Tag release with passing tests
 
 ## Future Enhancements
 
 Potential improvements:
 
-- Add support for testing actual NextUI screens (game list, switcher, etc.)
-- Implement font rendering tests
-- Add animation frame comparison
+- Integrate with actual NextUI screen components
+- Test animation frame sequences
 - Support multiple screen resolutions
 - Generate HTML test reports with embedded images
+- Add performance benchmarking
+- Test user interactions (button presses, navigation)
+- Automated screenshot capture from actual device

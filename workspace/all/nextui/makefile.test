@@ -26,43 +26,85 @@ CFLAGS += -Wall -Wextra -O2 $(SDL_CFLAGS) $(SDL_IMAGE_CFLAGS)
 LDFLAGS += $(SDL_LIBS) $(SDL_IMAGE_LIBS)
 
 # Source files
-TEST_SOURCES = test_nextui.c
-TEST_TARGET = test_nextui
+TEST_BASIC_SOURCES = test_nextui.c
+TEST_BASIC_TARGET = test_nextui
+
+TEST_PAGES_SOURCES = test_pages.c
+TEST_PAGES_TARGET = test_pages
 
 # Output directory
 TEST_OUTPUT_DIR = test_output
 
-.PHONY: all clean test create-baseline run
+.PHONY: all clean test create-baseline test-pages create-baseline-pages help
 
-all: $(TEST_TARGET)
+all: $(TEST_BASIC_TARGET) $(TEST_PAGES_TARGET)
+	@echo "All test binaries built"
 
-$(TEST_TARGET): $(TEST_SOURCES)
-	$(CC) $(CFLAGS) $(TEST_SOURCES) -o $(TEST_TARGET) $(LDFLAGS)
-	@echo "Test binary built: $(TEST_TARGET)"
+$(TEST_BASIC_TARGET): $(TEST_BASIC_SOURCES)
+	$(CC) $(CFLAGS) $(TEST_BASIC_SOURCES) -o $(TEST_BASIC_TARGET) $(LDFLAGS)
+	@echo "Built: $(TEST_BASIC_TARGET)"
 
-test: $(TEST_TARGET)
+$(TEST_PAGES_TARGET): $(TEST_PAGES_SOURCES)
+	$(CC) $(CFLAGS) $(TEST_PAGES_SOURCES) -o $(TEST_PAGES_TARGET) $(LDFLAGS)
+	@echo "Built: $(TEST_PAGES_TARGET)"
+
+test: $(TEST_BASIC_TARGET)
 	@mkdir -p $(TEST_OUTPUT_DIR)
-	@echo "Running tests..."
-	./$(TEST_TARGET)
+	@echo "Running basic tests..."
+	./$(TEST_BASIC_TARGET)
 
-create-baseline: $(TEST_TARGET)
+test-pages: $(TEST_PAGES_TARGET)
+	@mkdir -p $(TEST_OUTPUT_DIR)
+	@echo "Running page tests..."
+	./$(TEST_PAGES_TARGET)
+
+create-baseline: $(TEST_BASIC_TARGET)
 	@mkdir -p $(TEST_OUTPUT_DIR)
 	@echo "Creating baseline images..."
-	./$(TEST_TARGET) --create-baseline
+	./$(TEST_BASIC_TARGET) --create-baseline
+
+create-baseline-pages: $(TEST_PAGES_TARGET)
+	@mkdir -p $(TEST_OUTPUT_DIR)
+	@echo "Creating page baseline images..."
+	./$(TEST_PAGES_TARGET) --create-baseline
 
 clean:
-	rm -f $(TEST_TARGET)
+	rm -f $(TEST_BASIC_TARGET) $(TEST_PAGES_TARGET)
 	rm -rf $(TEST_OUTPUT_DIR)
 
 help:
 	@echo "NextUI Test Suite"
 	@echo ""
 	@echo "Targets:"
-	@echo "  all            Build test binary"
-	@echo "  test           Run regression tests"
-	@echo "  create-baseline Create baseline images"
-	@echo "  clean          Clean build artifacts"
-	@echo "  help           Show this help message"
+	@echo "  all                    Build all test binaries"
+	@echo "  test                   Run basic regression tests"
+	@echo "  test-pages             Run page regression tests"
+	@echo "  create-baseline        Create baseline images (basic)"
+	@echo "  create-baseline-pages  Create baseline images (pages)"
+	@echo "  clean                  Clean build artifacts"
+	@echo "  help                   Show this help message"
 	@echo ""
 	@echo "Usage:"
 	@echo "  make -f makefile.test [target]"
+	@echo ""
+	@echo "Test Coverage:"
+	@echo "  Basic Tests:"
+	@echo "    - Empty screen rendering"
+	@echo "    - Solid color patterns"
+	@echo "    - Gradient rendering"
+	@echo "    - Checkerboard patterns"
+	@echo "    - Text rendering"
+	@echo "    - Button rendering"
+	@echo "    - List rendering"
+	@echo "    - Status pill rendering"
+	@echo ""
+	@echo "  Page Tests:"
+	@echo "    - Empty directory screen"
+	@echo "    - Game list screen"
+	@echo "    - Game list with thumbnail"
+	@echo "    - Game switcher screen"
+	@echo "    - Game switcher empty state"
+	@echo "    - Default button hints"
+	@echo "    - Combined key hints (menu held)"
+	@echo "    - Status pill only"
+	@echo "    - Status pill with hints"
