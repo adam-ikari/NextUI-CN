@@ -117,4 +117,24 @@ void screen_render_hints(screen* scr, SDL_Surface* surface);
 screen* game_list_screen_new(void);
 screen* game_switcher_screen_new(void);
 
+// Game List Screen API
+void game_list_screen_set_list_component(screen* scr, component* list_comp);
+void game_list_screen_set_thumbnail(screen* scr, component* thumb_comp, int has_thumb);
+component_factory* game_list_screen_get_factory(screen* scr);
+void game_list_screen_set_selected(screen* scr, int selected);
+void game_list_screen_set_total(screen* scr, int total);
+int game_list_screen_get_selected(screen* scr);
+int game_list_screen_get_total(screen* scr);
+
+// Game Switcher Screen API
+void game_switcher_screen_set_title(screen* scr, const char* title, int status_pill_width);
+void game_switcher_screen_set_carousel(screen* scr, component* carousel);
+component_factory* game_switcher_screen_get_factory(screen* scr);
+void game_switcher_screen_set_selected(screen* scr, int selected);
+void game_switcher_screen_set_total(screen* scr, int total);
+void game_switcher_screen_set_anim_direction(screen* scr, int direction);
+int game_switcher_screen_get_selected(screen* scr);
+int game_switcher_screen_get_total(screen* scr);
+int game_switcher_screen_get_anim_direction(screen* scr);
+
 #endif // NEXTUI_SCREEN_H__
