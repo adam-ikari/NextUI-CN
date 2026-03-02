@@ -22,6 +22,8 @@ SDL?=SDL
 TARGET = nextui
 INCDIR = -I. -I../common/ -I../../$(PLATFORM)/platform/ -I../../i18n/
 SOURCE = $(TARGET).c \
+	screen.c \
+	component.c \
 	../common/scaler.c \
 	../common/utils.c \
 	../common/config.c \
