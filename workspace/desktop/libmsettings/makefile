@@ -34,7 +34,7 @@ LDFLAGS = -ldl
 OPTM=-Ofast
 
 build:
-	$(CC) -c -Werror -fpic "$(TARGET).c" $(CFLAGS) -Wl,--no-as-needed $(LDFLAGS)
+	$(CC) -c -Werror -fpic "$(TARGET).c" $(CFLAGS) $(LDFLAGS)
 	$(CC) -shared -o "lib$(TARGET).so" "$(TARGET).o" $(LDFLAGS)
 	mkdir -p "$(PREFIX_LOCAL)/include"
 	mkdir -p "$(PREFIX_LOCAL)/lib"
