@@ -18,9 +18,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       PLATFORM: tg5040
-      CROSS_COMPILE: ${{ github.workspace }}/toolchains/tg5040-toolchain/bin/aarch64-linux-gnu-
-      PREFIX: ${{ github.workspace }}/toolchains/tg5040-toolchain
-      PREFIX_LOCAL: ${{ github.workspace }}/toolchains/tg5040-toolchain
 
     steps:
       - name: Checkout
@@ -73,42 +70,57 @@ jobs:
           echo "::error::Failed to clone toolchain repo after 10 attempts"
           exit 1
 
+      - name: Initialize toolchain
+        run: |
+          echo "Initializing toolchain..."
+          cd toolchains/${PLATFORM}-toolchain
+          if [[ ! -f ".build" ]]; then
+            echo "Pulling toolchain Docker image..."
+            docker pull ghcr.io/loveretro/${PLATFORM}-toolchain:modernize
+            touch .build
+            echo "✓ Toolchain initialized"
+          else
+            echo "✓ Toolchain already initialized"
+          fi
+
       - name: Setup
         run: make setup
 
-      - name: Verify toolchain
-        run: |
-          echo "Verifying toolchain installation..."
-          if [[ ! -d "toolchains/${PLATFORM}-toolchain" ]]; then
-            echo "::error::Toolchain directory not found: toolchains/${PLATFORM}-toolchain"
-            exit 1
-          fi
-          if [[ ! -f "toolchains/${PLATFORM}-toolchain/bin/aarch64-linux-gnu-gcc" ]]; then
-            echo "::error::GCC not found in toolchain: toolchains/${PLATFORM}-toolchain/bin/aarch64-linux-gnu-gcc"
-            echo "Toolchain contents:"
-            find toolchains/${PLATFORM}-toolchain -type f | head -20 || true
-            exit 1
-          fi
-          echo "✓ Toolchain verified successfully"
-          toolchains/${PLATFORM}-toolchain/bin/aarch64-linux-gnu-gcc --version || true
-
       - name: Build minimal cores
         run: |
-          # Build only a few essential cores for testing
-          make build-core CORE=fbneo
-          make build-core CORE=fceumm
-          make build-core CORE=gambatte
-          make build-core CORE=snes9x
+          # Build only a few essential cores for testing using Docker
+          docker run --rm \
+            -v ${{ github.workspace }}:/root/workspace \
+            -e COMPILE_CORES=true \
+            ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
+            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make core CORE=fbneo'
+
+          docker run --rm \
+            -v ${{ github.workspace }}:/root/workspace \
+            -e COMPILE_CORES=true \
+            ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
+            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make core CORE=fceumm'
+
+          docker run --rm \
+            -v ${{ github.workspace }}:/root/workspace \
+            -e COMPILE_CORES=true \
+            ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
+            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make core CORE=gambatte'
+
+          docker run --rm \
+            -v ${{ github.workspace }}:/root/workspace \
+            -e COMPILE_CORES=true \
+            ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
+            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make core CORE=snes9x'
 
       - name: Build NextUI
         run: |
-          # Build nextui without NextCommander (which has SDL2 dependencies not in toolchain)
-          cd workspace/all/nextui
-          make PLATFORM=${{ env.PLATFORM }}
-          cd ../..
-
-          # Copy nextui.elf to build directory
-          make system PLATFORM=${{ env.PLATFORM }}
+          # Build nextui using Docker
+          docker run --rm \
+            -v ${{ github.workspace }}:/root/workspace \
+            -e COMPILE_CORES=true \
+            ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
+            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make system PLATFORM=${PLATFORM}'
 
       - name: Verify build artifacts
         run: |
@@ -117,6 +129,8 @@ jobs:
             ls -lh build/SYSTEM/${PLATFORM}/bin/nextui.elf
           else
             echo "✗ NextUI build failed"
+            echo "Build directory contents:"
+            find build -type f 2>/dev/null | head -20 || true
             exit 1
           fi
 
@@ -124,9 +138,6 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       PLATFORM: desktop
-      CROSS_COMPILE: /usr/bin/
-      PREFIX: /usr
-      PREFIX_LOCAL: /home/runner/.local
 
     steps:
       - name: Checkout
