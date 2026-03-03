@@ -2288,6 +2288,10 @@ int main (int argc, char *argv[]) {
 		// Auto-traversal mode for screenshot testing
 		if (auto_mode) {
 			Uint32 current_time = SDL_GetTicks();
+			if (frame_count < 5) {
+				LOG_info("Frame %d: auto-traversal check: current_time=%u, last_action=%u, delay=%d, step=%d\n",
+				         frame_count, current_time, auto_last_action, auto_delay, auto_step);
+			}
 			if (current_time - auto_last_action >= auto_delay) {
 				auto_last_action = current_time;
 				
@@ -2641,16 +2645,29 @@ int main (int argc, char *argv[]) {
 			}
 		}
 		
+		if (frame_count < 5) {
+			LOG_info("Frame %d: checking dirty=%d\n", frame_count, dirty);
+		}
+		
 		if(dirty) {
+			if (frame_count < 5) {
+				LOG_info("Frame %d: entering dirty block\n", frame_count);
+			}
 			SDL_Surface *tmpOldScreen = NULL;
 			SDL_Surface * switcherSur = NULL;
 			// NOTE:22 This causes slowdown when CFG_getMenuTransitions is set to false because animationdirection turns > 0 somewhere but is never set back to 0 and so this code runs on every action, will fix later
 			if(animationdirection != ANIM_NONE || (lastScreen==SCREEN_GAMELIST && currentScreen == SCREEN_GAMESWITCHER)) {
+				if (frame_count < 5) {
+					LOG_info("Frame %d: checking animation direction\n", frame_count);
+				}
 				if(tmpOldScreen) SDL_FreeSurface(tmpOldScreen);
 				tmpOldScreen = GFX_captureRendererToSurface();
 				SDL_SetSurfaceBlendMode(tmpOldScreen,SDL_BLENDMODE_BLEND);
 			}
 
+			if (frame_count < 5) {
+				LOG_info("Frame %d: clearing layers\n", frame_count);
+			}
 			// clear only background layer on start
 			if(lastScreen==SCREEN_GAME || lastScreen==SCREEN_OFF) {
 				GFX_clearLayers(LAYER_ALL);
@@ -2662,13 +2679,18 @@ int main (int argc, char *argv[]) {
 				if(lastScreen!=SCREEN_GAMELIST)
 					GFX_clearLayers(LAYER_THUMBNAIL);
 				GFX_clearLayers(LAYER_SCROLLTEXT);
-				GFX_clearLayers(LAYER_IDK2);
-			}
-			GFX_clear(screen);
-
-			// Render status pill
-			int ow = GFX_blitHardwareGroup(screen, show_setting);
-			
+							GFX_clearLayers(LAYER_IDK2);
+							}
+							if (frame_count < 5) {
+								LOG_info("Frame %d: before GFX_clear\n", frame_count);
+							}
+							GFX_clear(screen);
+				
+							if (frame_count < 5) {
+								LOG_info("Frame %d: before GFX_blitHardwareGroup\n", frame_count);
+							}
+							// Render status pill
+							int ow = GFX_blitHardwareGroup(screen, show_setting);			
 			// Render button hints based on menu key state
 			if (menu_key_held) {
 				// Show combined key hints (brightness, volume) when menu is held
@@ -3118,9 +3140,15 @@ int main (int argc, char *argv[]) {
 				}
 				SDL_UnlockMutex(animMutex);
 			}
+			if (frame_count < 5) {
+				LOG_info("Frame %d: before GFX_flip, startgame=%d\n", frame_count, startgame);
+			}
 			if(!startgame) // dont flip if game gonna start
 				GFX_flip(screen);
 
+			if (frame_count < 5) {
+				LOG_info("Frame %d: after GFX_flip, quit=%d\n", frame_count, quit);
+			}
 			dirty = 0;
 		} else if(animationDraw || folderbgchanged || thumbchanged || is_scrolling) {
 			// honestly this whole thing is here only for the scrolling text, I set it now to run this at 30fps which is enough for scrolling text, should move this to seperate animation function eventually
