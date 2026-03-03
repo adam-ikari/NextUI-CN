@@ -48,8 +48,11 @@ CFLAGS  += $(INCDIR) -DPLATFORM=\"$(PLATFORM)\" -std=gnu99
 ifeq ($(PLATFORM),desktop)
     CFLAGS += -DNO_SDL2_IMAGE -DNO_SDL2_TTF
     LDFLAGS += `pkg-config --libs sdl2`
+    # macOS doesn't use -lGL or -lGLESv2, it uses -framework OpenGL
+else
+    LDFLAGS	 += -lmsettings -lGL -lGLESv2
 endif
-LDFLAGS	 += -lmsettings -lGL -lGLESv2
+LDFLAGS  += -lmsettings
 ifeq ($(PLATFORM), tg5040)
 CFLAGS += -DHAS_WIFIMG -DHAS_BTMG
 LDFLAGS +=  -lwifimg -lwifid
