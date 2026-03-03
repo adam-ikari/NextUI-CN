@@ -128,11 +128,9 @@ jobs:
       - name: Build NextUI for desktop
         run: |
           # Build nextui first
-          cd workspace/all/nextui
-          make PLATFORM=${{ env.PLATFORM }}
-          cd ../..
+          cd workspace/all/nextui && make PLATFORM=${{ env.PLATFORM }} && cd ../..
 
-          # Copy nextui.elf to build directory
+          # Copy nextui.elf to build directory (from root directory)
           make system PLATFORM=${{ env.PLATFORM }}
 
       - name: Verify build artifacts
