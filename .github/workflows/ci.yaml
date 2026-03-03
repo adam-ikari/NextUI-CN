@@ -171,8 +171,7 @@ jobs:
   build:
     needs:
       - prepare
-      # Temporarily remove build-core dependency to test if build task can run
-      # - build-core
+      - build-core
     runs-on: ubuntu-24.04-arm
     env:
       PLATFORM: ${{ matrix.toolchain }}
