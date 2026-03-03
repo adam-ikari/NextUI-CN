@@ -2,6 +2,7 @@
 #include "../common/api.h"
 #include "../common/utils.h"
 #include "../components/button_component.h"
+#include "../../i18n/i18n.h"
 #include <stdlib.h>
 #include <string.h>
 
