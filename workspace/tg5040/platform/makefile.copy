@@ -10,13 +10,13 @@ $(PLATFORM):
 	cp ./workspace/$@/show/show.elf ./build/BOOT/common/$@/
 	-cp ./workspace/$@/other/unzip60/unzip ./build/BOOT/common/$@/ 2>/dev/null || true
 	# wifi
-	cp ./workspace/$@/wifimanager/daemon/libwifid.so ./build/SYSTEM/$@/lib/
-	cp ./workspace/$@/wifimanager/daemon/wifi_daemon ./build/SYSTEM/$@/bin/
+	-cp ./workspace/$@/wifimanager/daemon/libwifid.so ./build/SYSTEM/$@/lib/ 2>/dev/null || true
+	-cp ./workspace/$@/wifimanager/daemon/wifi_daemon ./build/SYSTEM/$@/bin/ 2>/dev/null || true
 	# rfkill
-	cp ./workspace/$@/rfkill/rfkill.elf ./build/SYSTEM/$@/bin/
+	-cp ./workspace/$@/rfkill/rfkill.elf ./build/SYSTEM/$@/bin/ 2>/dev/null || true
 	# bluetooth
-	cp ./workspace/$@/btmanager/build/nextui.upgrade_bluez.pakz ./build/BASE/
-	cp ./workspace/$@/audiomon/audiomon.elf ./build/SYSTEM/$@/bin/
+	-cp ./workspace/$@/btmanager/build/nextui.upgrade_bluez.pakz ./build/BASE/ 2>/dev/null || true
+	-cp ./workspace/$@/audiomon/audiomon.elf ./build/SYSTEM/$@/bin/ 2>/dev/null || true
 
 	# extras
 	-mkdir -p ./build/EXTRAS/Tools/$@/Files.pak/
