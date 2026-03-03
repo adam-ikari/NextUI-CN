@@ -7,6 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// External declarations
+extern int GetHDMI(void);
+extern int CFG_getShowSetting(void);
+
 // Entry type definition (matching nextui.c)
 enum EntryType {
     ENTRY_DIR,
@@ -313,7 +317,7 @@ void quick_menu_screen_handle_input(void* screen_instance, int input) {
                         screen_data->qm_shift++;
                     }
                 }
-                ui_state_set_dirty(screen_data->state, 1);
+                ui_state_mark_dirty(screen_data->state);
                             } else if (screen_data->qm_row == 1) {
                             screen_data->qm_col += 1;
                             if (screen_data->qm_col >= qm_total) {
@@ -336,13 +340,13 @@ void quick_menu_screen_handle_input(void* screen_instance, int input) {
                         screen_data->qm_shift--;
                     }
                 }
-                ui_state_set_dirty(screen_data->state, 1);
+                ui_state_mark_dirty(screen_data->state);
             } else if (screen_data->qm_row == 1) {
                 screen_data->qm_col -= 1;
                 if (screen_data->qm_col < 0) {
                     screen_data->qm_col = qm_total - 1;
                 }
-                ui_state_set_dirty(screen_data->state, 1);
+                ui_state_mark_dirty(screen_data->state);
             }
             break;
 
@@ -350,7 +354,7 @@ void quick_menu_screen_handle_input(void* screen_instance, int input) {
             if (screen_data->qm_row == 0) {
                 screen_data->qm_row = 1;
                 screen_data->qm_col = 0;
-                ui_state_set_dirty(screen_data->state, 1);
+                ui_state_mark_dirty(screen_data->state);
             }
             break;
 
@@ -358,7 +362,7 @@ void quick_menu_screen_handle_input(void* screen_instance, int input) {
             if (screen_data->qm_row == 1) {
                 screen_data->qm_row = 0;
                 screen_data->qm_col = screen_data->qm_slot + screen_data->qm_shift;
-                ui_state_set_dirty(screen_data->state, 1);
+                ui_state_mark_dirty(screen_data->state);
             }
             break;
     }

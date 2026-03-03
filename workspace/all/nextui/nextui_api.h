@@ -40,6 +40,5 @@ extern int should_resume;
 
 // Configuration functions
 extern int CFG_getShowSetting(void);
-extern int GetHDMI(void);
 
 #endif // __NEXTUI_API_H__

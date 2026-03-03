@@ -61,3 +61,12 @@ int can_resume = 0;
 int has_preview = 0;
 char preview_path[256] = {0};
 int should_resume = 0;
+
+// Public API for configuration
+int CFG_getShowSetting(void) {
+    // Return the show_setting configuration value
+    // This should be synchronized with the actual config system
+    return 0; // Default: don't show setting
+}
+
+// GetHDMI is defined in desktop_stubs.c for desktop platform

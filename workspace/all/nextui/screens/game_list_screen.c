@@ -21,7 +21,7 @@ static inline const char* Entry_label(const Entry* self) {
     return (self && self->display) ? self->display : (self ? self->name : "");
 }
 
-// Forward declarations
+// GetHDMI is defined in platform-specific files
 extern int GetHDMI(void);
 
 GameListScreen* game_list_screen_new(UIState* state, SDL_Surface* screen, Array* entries) {

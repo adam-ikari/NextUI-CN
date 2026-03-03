@@ -7,6 +7,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// External declarations
+extern int CFG_getShowSetting(void);
+
 // Entry type definition (matching nextui.c)
 enum EntryType {
     ENTRY_DIR,
