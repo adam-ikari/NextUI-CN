@@ -18,9 +18,9 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       PLATFORM: tg5040
-      CROSS_COMPILE: toolchains/tg5040-toolchain/bin/aarch64-linux-gnu-
-      PREFIX: toolchains/tg5040-toolchain
-      PREFIX_LOCAL: toolchains/tg5040-toolchain
+      CROSS_COMPILE: ${{ github.workspace }}/toolchains/tg5040-toolchain/bin/aarch64-linux-gnu-
+      PREFIX: ${{ github.workspace }}/toolchains/tg5040-toolchain
+      PREFIX_LOCAL: ${{ github.workspace }}/toolchains/tg5040-toolchain
 
     steps:
       - name: Checkout
@@ -133,7 +133,7 @@ jobs:
           cd ../..
 
           # Copy nextui.elf to build directory
-          make system PLATFORM=${{ env.PLATFORM }}
+          make -f makefile.native system PLATFORM=${{ env.PLATFORM }}
 
       - name: Verify build artifacts
         run: |
