@@ -127,7 +127,10 @@ jobs:
 
       - name: Build NextUI for desktop
         run: |
-          # Build nextui first
+          # Build minarch first (required by system target)
+          (cd workspace/all/minarch && make PLATFORM=${{ env.PLATFORM }})
+
+          # Build nextui
           (cd workspace/all/nextui && make PLATFORM=${{ env.PLATFORM }})
 
           # Copy nextui.elf to build directory (from root directory)
