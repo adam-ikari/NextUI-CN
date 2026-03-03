@@ -82,13 +82,20 @@ jobs:
           make build-core CORE=snes9x
 
       - name: Build NextUI
-        run: make ${PLATFORM}
+        run: |
+          # Build nextui without NextCommander (which has SDL2 dependencies not in toolchain)
+          cd workspace/all/nextui
+          make PLATFORM=${{ env.PLATFORM }}
+          cd ../..
+
+          # Copy nextui.elf to build directory
+          make system PLATFORM=${{ env.PLATFORM }}
 
       - name: Verify build artifacts
         run: |
-          if [[ -f "build/${PLATFORM}/nextui.elf" ]]; then
+          if [[ -f "build/SYSTEM/${PLATFORM}/bin/nextui.elf" ]]; then
             echo "✓ NextUI build successful"
-            ls -lh build/${PLATFORM}/nextui.elf
+            ls -lh build/SYSTEM/${PLATFORM}/bin/nextui.elf
           else
             echo "✗ NextUI build failed"
             exit 1
@@ -113,13 +120,20 @@ jobs:
         run: make setup
 
       - name: Build NextUI for desktop
-        run: make common PLATFORM=${{ env.PLATFORM }}
+        run: |
+          # Build nextui first
+          cd workspace/all/nextui
+          make PLATFORM=${{ env.PLATFORM }}
+          cd ../..
+
+          # Copy nextui.elf to build directory
+          make system PLATFORM=${{ env.PLATFORM }}
 
       - name: Verify build artifacts
         run: |
-          if [[ -f "build/${PLATFORM}/nextui.elf" ]]; then
+          if [[ -f "build/SYSTEM/${PLATFORM}/bin/nextui.elf" ]]; then
             echo "✓ Desktop build successful"
-            ls -lh build/${PLATFORM}/nextui.elf
+            ls -lh build/SYSTEM/${PLATFORM}/bin/nextui.elf
           else
             echo "✗ Desktop build failed"
             exit 1
