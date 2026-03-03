@@ -59,9 +59,10 @@ void list_component_render(UIComponent* component, SDL_Surface* screen, void* pr
 
             // Render item background (pill)
             if (is_selected) {
-                GFX_blitPillColor(ASSET_WHITE_PILL, screen, &item_rect, 
-                                  list_props->selected_color, list_props->selected_color);
+                // Use GFX_blitPillDark for selected items (matching original code)
+                GFX_blitPillDark(ASSET_WHITE_PILL, screen, &item_rect);
             } else {
+                // Use GFX_blitPillLight for non-selected items
                 GFX_blitPillLight(ASSET_WHITE_PILL, screen, &item_rect);
             }
 
@@ -80,14 +81,23 @@ void list_component_render(UIComponent* component, SDL_Surface* screen, void* pr
             if (item->label) {
                 uint32_t text_color_uint = is_selected ? list_props->selected_text_color : list_props->text_color;
                 SDL_Color text_color = uintToColour(text_color_uint);
+                
+                // Calculate text position with proper offset
                 SDL_Surface* text_surf = TTF_RenderUTF8_Blended(font.large, item->label, text_color);
                 if (text_surf) {
+                    const int text_offset_y = (SCALE1(PILL_SIZE) - text_surf->h + 1) >> 1 + SCALE1(TEXT_Y_OFFSET);
                     SDL_Rect text_rect = {
-                        item_rect.x + (item_rect.w - text_surf->w) / 2,
-                        item_rect.y + (item_rect.h - text_surf->h) / 2,
+                        item_rect.x + SCALE1(BUTTON_PADDING),
+                        item_rect.y + text_offset_y,
                         text_surf->w,
                         text_surf->h
                     };
+                    
+                    // Truncate text if too long
+                    if (text_rect.w > item_rect.w - SCALE1(BUTTON_PADDING * 2)) {
+                        text_rect.w = item_rect.w - SCALE1(BUTTON_PADDING * 2);
+                    }
+                    
                     SDL_BlitSurface(text_surf, NULL, screen, &text_rect);
                     SDL_FreeSurface(text_surf);
                 }

@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Forward declaration for GetHDMI function
+extern int GetHDMI(void);
+
 GameListScreen* game_list_screen_new(UIState* state, SDL_Surface* screen, Array* entries) {
     GameListScreen* screen_data = (GameListScreen*)malloc(sizeof(GameListScreen));
     if (!screen_data) return NULL;
@@ -63,70 +66,137 @@ void game_list_screen_render(void* screen_instance, SDL_Surface* surface) {
 
     // Draw game list
     if (screen_data->entries && screen_data->entries->count > 0) {
-        int visible_items = (surface->h - 100) / SCALE1(PILL_SIZE);
+        int visible_items = (surface->h - SCALE1(PADDING * 2)) / SCALE1(PILL_SIZE);
         int start_index = screen_data->top_index;
         int end_index = start_index + visible_items;
         if (end_index > screen_data->entries->count) {
             end_index = screen_data->entries->count;
         }
 
-        ListProps list_props = {
-            .rect = {20, 80, surface->w - 40, surface->h - 100},
-            .items = NULL,
-            .count = end_index - start_index,
-            .selected = screen_data->selected - start_index,
-            .columns = 1,
-            .item_size = SCALE1(PILL_SIZE),
-            .style = LIST_STYLE_VERTICAL,
-            .show_thumbnails = false,
-            .selected_color = THEME_COLOR1,
-            .normal_color = RGB_WHITE,
-            .text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT),
-            .selected_text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT)
-        };
+        // Calculate available width for list items (considering thumbnail area)
+        int ox = surface->w;
+        int had_thumb = (screen_data->thumbnail != NULL);
+        int max_w = (int)(surface->w - (surface->w * CFG_getGameArtWidth()));
+        
+        if (had_thumb) {
+            ox = (int)(max_w) - SCALE1(BUTTON_MARGIN*5);
+        }
 
-        // Create temporary item array for rendering
-        ListItem* items = (ListItem*)malloc(sizeof(ListItem) * list_props.count);
-        if (items) {
-            for (int i = 0; i < list_props.count; i++) {
-                int entry_index = start_index + i;
-                if (entry_index < screen_data->entries->count) {
-                    // Assuming entry is a struct with label field
-                    // This needs to be adapted based on actual Entry structure
-                    items[i].label = "Game"; // Placeholder
-                    items[i].icon_path = NULL;
-                    items[i].thumbnail = NULL;
-                    items[i].user_data = screen_data->entries->items[entry_index];
-                }
+        int available_width = MAX(0, (had_thumb ? ox + SCALE1(BUTTON_MARGIN) : surface->w - SCALE1(BUTTON_MARGIN)) - SCALE1(PADDING * 2));
+        
+        // Render each list item using original rendering logic
+        for (int i = start_index; i < end_index; i++) {
+            int j = i - start_index;
+            int is_selected = (i == screen_data->selected);
+            
+            // Get entry data (placeholder - needs actual Entry structure access)
+            void* entry_data = screen_data->entries->items[i];
+            char* entry_name = "Game Name"; // Placeholder - should use Entry_label(entry_data)
+            char* entry_unique = "Game Unique"; // Placeholder - should use entry->unique
+            
+            // Calculate text width and truncate if needed
+            char display_name[256];
+            int text_width = GFX_getTextWidth(font.large, entry_unique ? entry_unique : entry_name, 
+                                              display_name, available_width, SCALE1(BUTTON_PADDING * 2));
+            int max_width = MIN(available_width, text_width);
+            
+            // Calculate pill rectangle
+            SDL_Rect item_rect = {
+                SCALE1(BUTTON_MARGIN),
+                SCALE1(PADDING + (j * PILL_SIZE)),
+                max_width,
+                SCALE1(PILL_SIZE)
+            };
+
+            // Render pill background
+            if (is_selected) {
+                // Selected item uses dark pill
+                GFX_blitPillDark(ASSET_WHITE_PILL, surface, &item_rect);
+            } else {
+                // Non-selected item uses light pill
+                GFX_blitPillLight(ASSET_WHITE_PILL, surface, &item_rect);
             }
-            list_props.items = items;
-            screen_data->list_component->render(screen_data->list_component, surface, &list_props);
-            free(items);
+
+            // Render text
+            SDL_Color text_color = uintToColour(THEME_COLOR4_255);
+            if (is_selected) {
+                text_color = uintToColour(THEME_COLOR5_255);
+            }
+
+            SDL_Surface* text = TTF_RenderUTF8_Blended(font.large, entry_name, text_color);
+            if (text) {
+                const int text_offset_y = (SCALE1(PILL_SIZE) - text->h + 1) >> 1 + SCALE1(TEXT_Y_OFFSET);
+                SDL_Rect text_rect = { 0, 0, max_width - SCALE1(BUTTON_PADDING*2), text->h };
+                SDL_Rect dest_rect = { 
+                    item_rect.x + SCALE1(BUTTON_PADDING), 
+                    item_rect.y + text_offset_y 
+                };
+                
+                SDL_BlitSurface(text, &text_rect, surface, &dest_rect);
+                SDL_FreeSurface(text);
+            }
         }
     }
 
     // Draw thumbnail if available
     if (screen_data->thumbnail) {
-        SDL_Rect thumb_rect = {
-            surface->w - screen_data->thumbnail->w - 20,
-            80,
-            screen_data->thumbnail->w,
-            screen_data->thumbnail->h
-        };
-        SDL_BlitSurface(screen_data->thumbnail, NULL, surface, &thumb_rect);
+        int max_w = (int)(surface->w * CFG_getGameArtWidth());
+        int max_h = (int)(surface->h * 0.6);
+        int img_w = screen_data->thumbnail->w;
+        int img_h = screen_data->thumbnail->h;
+        double aspect_ratio = (double)img_h / img_w;
+        int new_w = max_w;
+        int new_h = (int)(new_w * aspect_ratio);
+        
+        if (new_h > max_h) {
+            new_h = max_h;
+            new_w = (int)(new_h / aspect_ratio);
+        }
+
+        int target_x = surface->w - (new_w + SCALE1(BUTTON_MARGIN*3));
+        int target_y = (int)(surface->h * 0.50);
+        int center_y = target_y - (new_h / 2);
+        
+        // Apply rounded corners if configured
+        if (CFG_getThumbnailRadius() > 0) {
+            GFX_ApplyRoundedCorners_RGBA8888(
+                screen_data->thumbnail,
+                &(SDL_Rect){0, 0, screen_data->thumbnail->w, screen_data->thumbnail->h},
+                SCALE1((float)CFG_getThumbnailRadius() * ((float)img_w / (float)new_w))
+            );
+        }
+        
+        // Scale and blit thumbnail
+        SDL_Rect thumb_rect = {target_x, center_y, new_w, new_h};
+        GFX_blitScaleToFill(screen_data->thumbnail, surface);
     }
 
-    // Draw buttons
+    // Draw button groups (bottom controls)
     if (screen_data->entries && screen_data->entries->count > 0) {
-        ButtonProps button_props = {
-            .label = "Open",
-            .hint = NULL,
-            .rect = {surface->w - 100, surface->h - 50, 80, 40},
-            .style = BUTTON_STYLE_PRIMARY,
-            .highlighted = true,
-            .color = THEME_COLOR1
-        };
-        // Note: This is a placeholder - actual button rendering needs component integration
+        // Check if we should show hardware hints or resume button
+        // Placeholder logic - needs actual implementation
+        bool can_resume = false; // Should check if game has save state
+        int show_setting = 0;    // Should check current setting state
+        
+        if (show_setting && !GetHDMI()) {
+            GFX_blitHardwareHints(surface, show_setting);
+        } else if (can_resume) {
+            GFX_blitButtonGroup((char*[]){"X", "Resume", NULL}, 0, surface, 0);
+        } else {
+            GFX_blitButtonGroup((char*[]){
+                (char*)(BTN_SLEEP==BTN_POWER?"Power":"Menu"),
+                (char*)(BTN_SLEEP==BTN_POWER?"Sleep":"Info"),
+                NULL
+            }, 0, surface, 0);
+        }
+        
+        // Show back/open buttons
+        if (screen_data->entries->count > 0) {
+            GFX_blitButtonGroup((char*[]){"B", "Back", "A", "Open", NULL}, 1, surface, 1);
+        }
+    } else {
+        // Show empty folder message
+        GFX_blitMessage(font.large, (char*)"Empty Folder", surface, &(SDL_Rect){0,0,surface->w,surface->h});
     }
 }
 
