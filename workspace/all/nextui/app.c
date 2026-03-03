@@ -1,4 +1,5 @@
 #include "app.h"
+#include "../common/defines.h"
 #include "screens/game_list_screen.h"
 #include "screens/quick_menu_screen.h"
 #include "screens/game_switcher_screen.h"

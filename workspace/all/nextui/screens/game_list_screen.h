@@ -2,6 +2,7 @@
 #define __GAME_LIST_SCREEN_H__
 
 #include "screen.h"
+#include "../array.h"
 #include "../state/ui_state.h"
 #include "../components/list_component.h"
 #include "../components/status_component.h"
@@ -13,8 +14,8 @@ typedef struct {
     Array* entries;
     int selected;
     int top_index;
-    ListComponent* list_component;
-    StatusComponent* status_component;
+    UIComponent* list_component;
+    UIComponent* status_component;
     SDL_Surface* thumbnail;
     SDL_Surface* background;
 } GameListScreen;

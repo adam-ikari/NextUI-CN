@@ -1,6 +1,7 @@
 #ifndef __API_H__
 #define __API_H__
 #include "sdl.h"
+#include "defines.h"
 #include "platform.h"
 #include "scaler.h"
 #include "config.h"
@@ -332,6 +333,8 @@ void GFX_blitRect(int asset, SDL_Surface* dst, SDL_Rect* dst_rect);
 void GFX_blitRectColor(int asset, SDL_Surface* dst, SDL_Rect* dst_rect, uint32_t asset_color);
 void GFX_blitBattery(SDL_Surface* dst, SDL_Rect* dst_rect);
 void GFX_blitBatteryAtPosition(SDL_Surface *dst, int x, int y);
+void GFX_blitRoundedRect(SDL_Surface* dst, SDL_Rect* dst_rect, uint32_t color, int radius);
+void GFX_blitWiFi(SDL_Surface* dst, bool connected);
 int GFX_getButtonWidth(char* hint, char* button);
 void GFX_blitButton(char* hint, char*button, SDL_Surface* dst, SDL_Rect* dst_rect);
 void GFX_blitMessage(TTF_Font* font, char* msg, SDL_Surface* dst, SDL_Rect* dst_rect);

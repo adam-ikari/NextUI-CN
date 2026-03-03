@@ -2,6 +2,7 @@
 #define __APP_H__
 
 #include "sdl.h"
+#include "array.h"
 #include "state/ui_state.h"
 #include "renderer.h"
 #include "screens/screen.h"

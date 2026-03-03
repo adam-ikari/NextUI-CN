@@ -22,8 +22,8 @@ UIComponent* list_component_new(void) {
     props->show_thumbnails = false;
     props->selected_color = THEME_COLOR1;
     props->normal_color = RGB_WHITE;
-    props->text_color = COLOR_LIGHT_TEXT;
-    props->selected_text_color = COLOR_LIGHT_TEXT;
+    props->text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT);
+    props->selected_text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT);
 
     component->props = props;
     return component;
@@ -173,4 +173,10 @@ void list_component_destroy(UIComponent* component) {
     }
     free(props);
     component->props = NULL;
+}
+
+void list_component_free(UIComponent* component) {
+    if (!component) return;
+    list_component_destroy(component);
+    ui_component_free(component);
 }

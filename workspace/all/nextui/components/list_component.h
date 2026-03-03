@@ -31,8 +31,14 @@ typedef struct {
     uint32_t selected_text_color;
 } ListProps;
 
+typedef struct {
+    UIComponent base;
+    ListProps props;
+} ListComponent;
+
 UIComponent* list_component_new(void);
 void list_component_render(UIComponent* component, SDL_Surface* screen, void* props);
 void list_component_destroy(UIComponent* component);
+void list_component_free(UIComponent* component);
 
 #endif // __LIST_COMPONENT_H__

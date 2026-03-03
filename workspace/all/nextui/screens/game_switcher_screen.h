@@ -2,6 +2,7 @@
 #define __GAME_SWITCHER_SCREEN_H__
 
 #include "screen.h"
+#include "../array.h"
 #include "../state/ui_state.h"
 #include "sdl.h"
 

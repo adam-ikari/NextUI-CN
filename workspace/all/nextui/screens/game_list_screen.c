@@ -1,5 +1,6 @@
 #include "game_list_screen.h"
 #include "../common/api.h"
+#include "../components/button_component.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -56,7 +57,7 @@ void game_list_screen_render(void* screen_instance, SDL_Surface* surface) {
         .show_battery = true,
         .show_wifi = true,
         .show_time = true,
-        .text_color = COLOR_LIGHT_TEXT
+        .text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT)
     };
     screen_data->status_component->render(screen_data->status_component, surface, &status_props);
 
@@ -80,8 +81,8 @@ void game_list_screen_render(void* screen_instance, SDL_Surface* surface) {
             .show_thumbnails = false,
             .selected_color = THEME_COLOR1,
             .normal_color = RGB_WHITE,
-            .text_color = COLOR_LIGHT_TEXT,
-            .selected_text_color = COLOR_LIGHT_TEXT
+            .text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT),
+            .selected_text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT)
         };
 
         // Create temporary item array for rendering

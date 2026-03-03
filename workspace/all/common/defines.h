@@ -52,6 +52,9 @@
 #define COLOR_DARK_TEXT		(SDL_Color){TRIAD_DARK_TEXT}
 #define COLOR_BUTTON_TEXT	(SDL_Color){TRIAD_GRAY}
 
+// Helper macro to convert SDL_Color to uint32_t
+#define SDL_COLOR_TO_UINT32(c) (((uint32_t)(c.r) << 24) | ((uint32_t)(c.g) << 16) | ((uint32_t)(c.b) << 8) | (uint32_t)(c.a))
+
 // all before scale
 #define PILL_SIZE 30
 #define BUTTON_SIZE 20

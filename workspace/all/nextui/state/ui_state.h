@@ -4,17 +4,6 @@
 #include "../common/config.h"
 #include <stdbool.h>
 
-// Screen type enumeration
-typedef enum {
-    // actual views
-    SCREEN_GAMELIST,
-    SCREEN_GAMESWITCHER,
-    SCREEN_QUICKMENU,
-    // meta
-    SCREEN_GAME,
-    SCREEN_OFF
-} ScreenType;
-
 typedef void (*StateChangeListener)(void* user_data);
 
 typedef struct UIState {

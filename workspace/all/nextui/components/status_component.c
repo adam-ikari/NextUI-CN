@@ -20,7 +20,7 @@ UIComponent* status_component_new(void) {
     props->show_battery = true;
     props->show_wifi = true;
     props->show_time = true;
-    props->text_color = COLOR_LIGHT_TEXT;
+    props->text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT);
 
     component->props = props;
     return component;
@@ -36,7 +36,10 @@ void status_component_render(UIComponent* component, SDL_Surface* screen, void* 
 
     // Render battery indicator
     if (status_props->show_battery) {
-        GFX_blitBattery(screen, status_props->battery_level, status_props->is_charging);
+        // Note: GFX_blitBattery only takes 2 parameters, using a simplified approach
+        // In a full implementation, we would need to render battery based on level and charging state
+        SDL_Rect battery_rect = {x, 10, SCALE1(40), SCALE1(20)};
+        GFX_blitBattery(screen, &battery_rect);
         x += SCALE1(50) + gap;
     }
 
@@ -73,4 +76,10 @@ void status_component_destroy(UIComponent* component) {
     }
     free(props);
     component->props = NULL;
+}
+
+void status_component_free(UIComponent* component) {
+    if (!component) return;
+    status_component_destroy(component);
+    ui_component_free(component);
 }

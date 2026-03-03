@@ -8,10 +8,6 @@ ifeq (,$(PLATFORM))
 $(error please specify PLATFORM, eg. PLATFORM=trimui make)
 endif
 
-ifeq (,$(CROSS_COMPILE))
-$(error missing CROSS_COMPILE for this toolchain)
-endif
-
 ###########################################################
 
 include ../../$(PLATFORM)/platform/makefile.env
@@ -22,22 +18,37 @@ SDL?=SDL
 TARGET = nextui
 INCDIR = -I. -I../common/ -I../../$(PLATFORM)/platform/ -I../../i18n/
 INCDIR += -Icomponents -Istate -Iscreens
-SOURCE = $(TARGET).c \
+SOURCE = main.c \
+	array.c \
+	app.c \
+	renderer.c \
+	screens/screen.c \
+	screens/game_list_screen.c \
+	screens/quick_menu_screen.c \
+	screens/game_switcher_screen.c \
+	screens/settings_screen.c \
+	components/ui_component.c \
+	components/pill_component.c \
+	components/button_component.c \
+	components/list_component.c \
+	components/status_component.c \
+	state/ui_state.c \
 	../common/scaler.c \
 	../common/utils.c \
 	../common/config.c \
 	../common/api.c \
 	../../i18n/i18n.c \
-	../../$(PLATFORM)/platform/platform.c \
-	renderer.c \
-	components/ui_component.c \
-	components/pill_component.c \
-	state/ui_state.c
+	../../$(PLATFORM)/platform/platform.c
 
 CC = $(CROSS_COMPILE)gcc
 CFLAGS  += $(OPT) -fomit-frame-pointer
 CFLAGS  += $(INCDIR) -DPLATFORM=\"$(PLATFORM)\" -std=gnu99
-LDFLAGS	 += -lmsettings
+# Add stub defines for SDL2 libraries that might not be available on desktop
+ifeq ($(PLATFORM),desktop)
+    CFLAGS += -DNO_SDL2_IMAGE -DNO_SDL2_TTF
+    LDFLAGS += `pkg-config --libs sdl2`
+endif
+LDFLAGS	 += -lmsettings -lGL -lGLESv2
 ifeq ($(PLATFORM), tg5040)
 CFLAGS += -DHAS_WIFIMG -DHAS_BTMG
 LDFLAGS +=  -lwifimg -lwifid

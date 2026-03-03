@@ -1802,6 +1802,47 @@ void GFX_blitBatteryAtPosition(SDL_Surface *dst, int x, int y)
 	}
 }
 
+void GFX_blitRoundedRect(SDL_Surface *dst, SDL_Rect *dst_rect, uint32_t color, int radius)
+{
+	if (!dst || !dst_rect) return;
+
+	SDL_Rect rect = *dst_rect;
+	if (rect.w < 2 * radius) radius = rect.w / 2;
+	if (rect.h < 2 * radius) radius = rect.h / 2;
+
+	SDL_FillRect(dst, &rect, color);
+
+	if (radius > 0) {
+		GFX_ApplyRoundedCorners(dst, &rect, radius);
+	}
+}
+
+void GFX_blitWiFi(SDL_Surface *dst, bool connected)
+{
+	if (!dst) return;
+
+	// Draw WiFi icon using simple shapes
+	int x = dst->w - SCALE1(30) - SCALE1(10);
+	int y = SCALE1(5);
+	int size = SCALE1(20);
+
+	uint32_t color = connected ? THEME_COLOR6_255 : RGB_GRAY;
+
+	// Draw base (small circle)
+	SDL_Rect base = {x + size/2 - 2, y + size - 4, 4, 4};
+	SDL_FillRect(dst, &base, color);
+
+	if (connected) {
+		// Draw signal bars (arcs)
+		for (int i = 0; i < 3; i++) {
+			int bar_radius = 4 + i * 4;
+			int bar_height = 4;
+			SDL_Rect bar = {x + size/2 - bar_radius/2, y + size - 4 - i * 4 - 2, bar_radius, bar_height};
+			SDL_FillRect(dst, &bar, color);
+		}
+	}
+}
+
 int GFX_blitHardwareGroup(SDL_Surface *dst, int show_setting)
 {
 	int ox;

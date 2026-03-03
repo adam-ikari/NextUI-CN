@@ -45,7 +45,7 @@ enum
 	STATE_FORMAT_SRM_UNCOMRESSED
 };
 
-enum {
+typedef enum {
 	// actual views
 	SCREEN_GAMELIST,
 	SCREEN_GAMESWITCHER,
@@ -53,7 +53,7 @@ enum {
 	// meta
 	SCREEN_GAME,
 	SCREEN_OFF
-};
+} ScreenType;
 
 typedef struct
 {

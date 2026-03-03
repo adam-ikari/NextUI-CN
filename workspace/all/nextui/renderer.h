@@ -2,19 +2,10 @@
 #define __RENDERER_H__
 
 #include "sdl.h"
+#include "array.h"
 #include "state/ui_state.h"
 #include "components/ui_component.h"
-
-typedef void (*ScreenRenderFunc)(void* screen_instance, SDL_Surface* surface);
-typedef void (*ScreenHandleInputFunc)(void* screen_instance, int input);
-typedef void (*ScreenDestroyFunc)(void* screen_instance);
-
-typedef struct ScreenModule {
-    ScreenRenderFunc render;
-    ScreenHandleInputFunc handle_input;
-    ScreenDestroyFunc destroy;
-    void* instance;
-} ScreenModule;
+#include "screens/screen.h"
 
 typedef struct Renderer {
     SDL_Surface* screen;

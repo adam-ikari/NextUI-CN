@@ -1,6 +1,6 @@
 #include "quick_menu_screen.h"
 #include "../common/api.h"
-#include "../common/i18n.h"
+#include "../../i18n/i18n.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -59,7 +59,7 @@ void quick_menu_screen_render(void* screen_instance, SDL_Surface* surface) {
         300,
         200
     };
-    GFX_blitRoundedRect(surface, &menu_rect, THEME_BG_COLOR, SCALE1(10));
+    GFX_blitRoundedRect(surface, &menu_rect, THEME_COLOR7, SCALE1(10));
 
     // Draw menu items
     ListProps list_props = {
@@ -73,8 +73,8 @@ void quick_menu_screen_render(void* screen_instance, SDL_Surface* surface) {
         .show_thumbnails = false,
         .selected_color = THEME_COLOR1,
         .normal_color = RGB_WHITE,
-        .text_color = COLOR_LIGHT_TEXT,
-        .selected_text_color = COLOR_LIGHT_TEXT
+        .text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT),
+        .selected_text_color = SDL_COLOR_TO_UINT32(COLOR_LIGHT_TEXT)
     };
 
     // Create temporary item array for rendering

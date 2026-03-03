@@ -16,8 +16,14 @@ typedef struct {
     uint32_t text_color;
 } StatusProps;
 
+typedef struct {
+    UIComponent base;
+    StatusProps props;
+} StatusComponent;
+
 UIComponent* status_component_new(void);
 void status_component_render(UIComponent* component, SDL_Surface* screen, void* props);
 void status_component_destroy(UIComponent* component);
+void status_component_free(UIComponent* component);
 
 #endif // __STATUS_COMPONENT_H__

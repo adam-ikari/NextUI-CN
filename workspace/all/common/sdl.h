@@ -7,8 +7,16 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_opengl.h>
 #include <SDL2/SDL_opengl_glext.h>
+#ifndef NO_SDL2_IMAGE
 #include <SDL2/SDL_image.h>
+#else
+#include "sdl_image_stub.h"
+#endif
+#ifndef NO_SDL2_TTF
 #include <SDL2/SDL_ttf.h>
+#else
+#include "sdl_ttf_stub.h"
+#endif
 
 ///////////////////////////////
 

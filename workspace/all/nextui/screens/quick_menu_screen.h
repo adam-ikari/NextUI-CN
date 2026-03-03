@@ -12,7 +12,7 @@ typedef struct {
     int selected;
     int menu_item_count;
     char** menu_items;
-    ListComponent* list_component;
+    UIComponent* list_component;
 } QuickMenuScreen;
 
 QuickMenuScreen* quick_menu_screen_new(UIState* state, SDL_Surface* screen);
