@@ -31,6 +31,7 @@ SOURCE = $(TARGET).c \
 	../../$(PLATFORM)/platform/platform.c \
 	renderer.c \
 	components/ui_component.c \
+	components/pill_component.c \
 	state/ui_state.c
 
 CC = $(CROSS_COMPILE)gcc
