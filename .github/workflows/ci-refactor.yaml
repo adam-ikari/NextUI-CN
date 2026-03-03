@@ -93,25 +93,25 @@ jobs:
             -v ${{ github.workspace }}:/root/workspace \
             -e COMPILE_CORES=true \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make core CORE=fbneo'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make core CORE=fbneo'
 
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
             -e COMPILE_CORES=true \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make core CORE=fceumm'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make core CORE=fceumm'
 
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
             -e COMPILE_CORES=true \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make core CORE=gambatte'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make core CORE=gambatte'
 
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
             -e COMPILE_CORES=true \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make core CORE=snes9x'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make core CORE=snes9x'
 
       - name: Build NextUI
         run: |
@@ -120,7 +120,7 @@ jobs:
             -v ${{ github.workspace }}:/root/workspace \
             -e COMPILE_CORES=true \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c '. ~/.bashrc && cd /root/workspace && make system PLATFORM=${PLATFORM}'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make system PLATFORM=${PLATFORM}'
 
       - name: Verify build artifacts
         run: |
