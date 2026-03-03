@@ -17,7 +17,7 @@ SDL?=SDL
 
 TARGET = nextui
 INCDIR = -I. -I../common/ -I../../$(PLATFORM)/platform/ -I../../i18n/
-INCDIR += -Icomponents -Istate -Iscreens -I../../$(PLATFORM)/wifimanager/daemon
+INCDIR += -Icomponents -Istate -Iscreens -I../../$(PLATFORM)/wifimanager/daemon -I../../$(PLATFORM)/btmanager/src/include
 SOURCE = main.c \
 	array.c \
 	app.c \
