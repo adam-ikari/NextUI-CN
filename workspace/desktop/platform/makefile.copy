@@ -1,2 +1,8 @@
 $(PLATFORM):
 	# $@
+	# Build minarch (required by system target)
+	(cd ../../all/minarch && make PLATFORM=$(PLATFORM))
+	# Build nextval (required by system target)
+	(cd ../../all/nextval && make PLATFORM=$(PLATFORM))
+	# Build nextui
+	(cd ../../all/nextui && make PLATFORM=$(PLATFORM))

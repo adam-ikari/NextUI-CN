@@ -130,6 +130,9 @@ jobs:
           # Build minarch first (required by system target)
           (cd workspace/all/minarch && make PLATFORM=${{ env.PLATFORM }})
 
+          # Build nextval (required by system target)
+          (cd workspace/all/nextval && make PLATFORM=${{ env.PLATFORM }})
+
           # Build nextui
           (cd workspace/all/nextui && make PLATFORM=${{ env.PLATFORM }})
 
