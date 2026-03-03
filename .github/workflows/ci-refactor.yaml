@@ -18,6 +18,9 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       PLATFORM: tg5040
+      CROSS_COMPILE: toolchains/tg5040-toolchain/bin/aarch64-linux-gnu-
+      PREFIX: toolchains/tg5040-toolchain
+      PREFIX_LOCAL: toolchains/tg5040-toolchain
 
     steps:
       - name: Checkout
@@ -105,6 +108,9 @@ jobs:
     runs-on: ubuntu-24.04-arm
     env:
       PLATFORM: desktop
+      CROSS_COMPILE: /usr/bin/
+      PREFIX: /usr
+      PREFIX_LOCAL: /home/runner/.local
 
     steps:
       - name: Checkout
