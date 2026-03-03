@@ -1,0 +1,125 @@
+---
+name: CI for Component Architecture Refactor
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+      - 'refactor/**'
+  pull_request:
+    branches:
+      - 'refactor/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build-tg5040:
+    runs-on: ubuntu-24.04-arm
+    env:
+      PLATFORM: tg5040
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Get toolchain hash
+        id: toolchain-hash
+        run: |
+          if [[ -d "toolchains/${PLATFORM}-toolchain/.git" ]]; then
+            TOOLCHAIN_HASH=$(cd "toolchains/${PLATFORM}-toolchain" && git rev-parse HEAD)
+          else
+            TOOLCHAIN_HASH="missing"
+          fi
+          echo "toolchain-hash=${TOOLCHAIN_HASH}" >> "$GITHUB_OUTPUT"
+          echo "Toolchain hash: ${TOOLCHAIN_HASH}"
+
+      - name: Cache toolchains
+        uses: actions/cache@v4
+        with:
+          path: toolchains
+          key: toolchains-${{ runner.os }}-${{ env.PLATFORM }}-modernize-${{ steps.toolchain-hash.outputs.toolchain-hash }}
+
+      - name: Ensure toolchain repo (retry)
+        shell: bash
+        run: |
+          set -uo pipefail
+          if [[ -d "toolchains/${PLATFORM}-toolchain/.git" ]]; then
+            echo "Toolchain repo already present (from cache)."
+            exit 0
+          fi
+          mkdir -p toolchains
+          git config --global http.postBuffer 524288000
+          git config --global http.lowSpeedLimit 0
+          git config --global http.lowSpeedTime 999999
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            echo "Cloning toolchain (attempt $i of 10)..."
+            if timeout 300 git clone -b modernize --depth 1 "https://github.com/LoveRetro/${PLATFORM}-toolchain/" "toolchains/${PLATFORM}-toolchain" 2>&1; then
+              echo "Toolchain cloned successfully on attempt $i"
+              exit 0
+            else
+              CLONE_EXIT=$?
+              echo "::warning::Clone attempt $i failed with exit code $CLONE_EXIT"
+              rm -rf "toolchains/${PLATFORM}-toolchain" || true
+              if [[ $i -lt 10 ]]; then
+                echo "Waiting $((i * 15)) seconds before retry..."
+                sleep $((i * 15))
+              fi
+            fi
+          done
+          echo "::error::Failed to clone toolchain repo after 10 attempts"
+          exit 1
+
+      - name: Setup
+        run: make setup
+
+      - name: Build minimal cores
+        run: |
+          # Build only a few essential cores for testing
+          make build-core CORE=fbneo
+          make build-core CORE=fceumm
+          make build-core CORE=gambatte
+          make build-core CORE=snes9x
+
+      - name: Build NextUI
+        run: make ${PLATFORM}
+
+      - name: Verify build artifacts
+        run: |
+          if [[ -f "build/${PLATFORM}/nextui.elf" ]]; then
+            echo "✓ NextUI build successful"
+            ls -lh build/${PLATFORM}/nextui.elf
+          else
+            echo "✗ NextUI build failed"
+            exit 1
+          fi
+
+  build-desktop:
+    runs-on: ubuntu-24.04-arm
+    env:
+      PLATFORM: desktop
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsdl2-dev
+
+      - name: Setup
+        run: make setup
+
+      - name: Build NextUI for desktop
+        run: make common PLATFORM=${{ env.PLATFORM }}
+
+      - name: Verify build artifacts
+        run: |
+          if [[ -f "build/${PLATFORM}/nextui.elf" ]]; then
+            echo "✓ Desktop build successful"
+            ls -lh build/${PLATFORM}/nextui.elf
+          else
+            echo "✗ Desktop build failed"
+            exit 1
+          fi
