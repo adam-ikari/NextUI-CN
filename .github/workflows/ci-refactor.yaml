@@ -133,7 +133,7 @@ jobs:
           cd ../..
 
           # Copy nextui.elf to build directory
-          make -f makefile.native system PLATFORM=${{ env.PLATFORM }}
+          make system PLATFORM=${{ env.PLATFORM }}
 
       - name: Verify build artifacts
         run: |
