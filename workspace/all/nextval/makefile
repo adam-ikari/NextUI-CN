@@ -5,11 +5,16 @@ PLATFORM=$(UNION_PLATFORM)
 endif
 
 ifeq (,$(PLATFORM))
-	$(error please specify PLATFORM, eg. PLATFORM=trimui make)
+$(error please specify PLATFORM, eg. PLATFORM=trimui make)
 endif
 
+# Set default CROSS_COMPILE for desktop platform
 ifeq (,$(CROSS_COMPILE))
-	$(error missing CROSS_COMPILE for this toolchain)
+ifeq ($(PLATFORM),desktop)
+CROSS_COMPILE=/usr/bin/
+else
+$(error missing CROSS_COMPILE for this toolchain)
+endif
 endif
 
 ###########################################################

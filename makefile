@@ -89,24 +89,37 @@ ifneq ($(PLATFORM), desktop)
 	cp ./workspace/$(PLATFORM)/keymon/keymon.elf ./build/SYSTEM/$(PLATFORM)/bin/
 	cp ./workspace/all/syncsettings/build/$(PLATFORM)/syncsettings.elf ./build/SYSTEM/$(PLATFORM)/bin/
 endif
+	# Build libmsettings if needed
+	$(MAKE) -C ./workspace/$(PLATFORM)/libmsettings build
 	cp ./workspace/$(PLATFORM)/libmsettings/libmsettings.so ./build/SYSTEM/$(PLATFORM)/lib
 	cp ./workspace/all/nextui/build/$(PLATFORM)/nextui.elf ./build/SYSTEM/$(PLATFORM)/bin/
 	cp ./workspace/all/minarch/build/$(PLATFORM)/minarch.elf ./build/SYSTEM/$(PLATFORM)/bin/
 	cp ./workspace/all/nextval/build/$(PLATFORM)/nextval.elf ./build/SYSTEM/$(PLATFORM)/bin/
-	cp ./workspace/all/clock/build/$(PLATFORM)/clock.elf ./build/EXTRAS/Tools/$(PLATFORM)/Clock.pak/
-	cp ./workspace/all/minput/build/$(PLATFORM)/minput.elf ./build/EXTRAS/Tools/$(PLATFORM)/Input.pak/
+	# Build clock if makefile exists
+	[ -f ./workspace/all/clock/makefile ] && $(MAKE) -C ./workspace/all/clock PLATFORM=$(PLATFORM) || true
+	[ -f ./workspace/all/clock/build/$(PLATFORM)/clock.elf ] && cp ./workspace/all/clock/build/$(PLATFORM)/clock.elf ./build/EXTRAS/Tools/$(PLATFORM)/Clock.pak/ || true
+	# Build minput if makefile exists
+	[ -f ./workspace/all/minput/makefile ] && $(MAKE) -C ./workspace/all/minput PLATFORM=$(PLATFORM) || true
+	[ -f ./workspace/all/minput/build/$(PLATFORM)/minput.elf ] && cp ./workspace/all/minput/build/$(PLATFORM)/minput.elf ./build/EXTRAS/Tools/$(PLATFORM)/Input.pak/ || true
 
 	# battery tracking
-	cp ./workspace/all/libbatmondb/build/$(PLATFORM)/libbatmondb.so ./build/SYSTEM/$(PLATFORM)/lib
-	cp ./workspace/all/batmon/build/$(PLATFORM)/batmon.elf ./build/SYSTEM/$(PLATFORM)/bin/
-	cp ./workspace/all/battery/build/$(PLATFORM)/battery.elf ./build/EXTRAS/Tools/$(PLATFORM)/Battery.pak/
+	[ -f ./workspace/all/libbatmondb/makefile ] && $(MAKE) -C ./workspace/all/libbatmondb PLATFORM=$(PLATFORM) || true
+	[ -f ./workspace/all/libbatmondb/build/$(PLATFORM)/libbatmondb.so ] && cp ./workspace/all/libbatmondb/build/$(PLATFORM)/libbatmondb.so ./build/SYSTEM/$(PLATFORM)/lib || true
+	[ -f ./workspace/all/batmon/makefile ] && $(MAKE) -C ./workspace/all/batmon PLATFORM=$(PLATFORM) || true
+	[ -f ./workspace/all/batmon/build/$(PLATFORM)/batmon.elf ] && cp ./workspace/all/batmon/build/$(PLATFORM)/batmon.elf ./build/SYSTEM/$(PLATFORM)/bin || true
+	[ -f ./workspace/all/battery/makefile ] && $(MAKE) -C ./workspace/all/battery PLATFORM=$(PLATFORM) || true
+	[ -f ./workspace/all/battery/build/$(PLATFORM)/battery.elf ] && cp ./workspace/all/battery/build/$(PLATFORM)/battery.elf ./build/EXTRAS/Tools/$(PLATFORM)/Battery.pak/ || true
 
 	# game time tracking
-	cp ./workspace/all/libgametimedb/build/$(PLATFORM)/libgametimedb.so ./build/SYSTEM/$(PLATFORM)/lib
-	cp ./workspace/all/gametimectl/build/$(PLATFORM)/gametimectl.elf ./build/SYSTEM/$(PLATFORM)/bin/
-	cp ./workspace/all/gametime/build/$(PLATFORM)/gametime.elf ./build/EXTRAS/Tools/$(PLATFORM)/Game\ Tracker.pak/
-  
-	cp ./workspace/all/settings/build/$(PLATFORM)/settings.elf ./build/EXTRAS/Tools/$(PLATFORM)/Settings.pak/
+	[ -f ./workspace/all/libgametimedb/makefile ] && $(MAKE) -C ./workspace/all/libgametimedb PLATFORM=$(PLATFORM) || true
+	[ -f ./workspace/all/libgametimedb/build/$(PLATFORM)/libgametimedb.so ] && cp ./workspace/all/libgametimedb/build/$(PLATFORM)/libgametimedb.so ./build/SYSTEM/$(PLATFORM)/lib || true
+	[ -f ./workspace/all/gametimectl/makefile ] && $(MAKE) -C ./workspace/all/gametimectl PLATFORM=$(PLATFORM) || true
+	[ -f ./workspace/all/gametimectl/build/$(PLATFORM)/gametimectl.elf ] && cp ./workspace/all/gametimectl/build/$(PLATFORM)/gametimectl.elf ./build/SYSTEM/$(PLATFORM)/bin || true
+	[ -f ./workspace/all/gametime/makefile ] && $(MAKE) -C ./workspace/all/gametime PLATFORM=$(PLATFORM) || true
+	[ -f ./workspace/all/gametime/build/$(PLATFORM)/gametime.elf ] && cp ./workspace/all/gametime/build/$(PLATFORM)/gametime.elf ./build/EXTRAS/Tools/$(PLATFORM)/Game\ Tracker.pak/ || true
+
+	[ -f ./workspace/all/settings/makefile ] && $(MAKE) -C ./workspace/all/settings PLATFORM=$(PLATFORM) || true
+	[ -f ./workspace/all/settings/build/$(PLATFORM)/settings.elf ] && cp ./workspace/all/settings/build/$(PLATFORM)/settings.elf ./build/EXTRAS/Tools/$(PLATFORM)/Settings.pak/ || true
 ifeq ($(PLATFORM), tg5040)
 	cp ./workspace/all/ledcontrol/build/$(PLATFORM)/ledcontrol.elf ./build/EXTRAS/Tools/$(PLATFORM)/LedControl.pak/
 	cp ./workspace/all/bootlogo/build/$(PLATFORM)/bootlogo.elf ./build/EXTRAS/Tools/$(PLATFORM)/Bootlogo.pak/

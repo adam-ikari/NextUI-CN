@@ -5,11 +5,16 @@ PLATFORM=$(UNION_PLATFORM)
 endif
 
 ifeq (,$(PLATFORM))
-	$(error please specify PLATFORM, eg. PLATFORM=trimui make)
+$(error please specify PLATFORM, eg. PLATFORM=trimui make)
 endif
 
+# Set default CROSS_COMPILE for desktop platform
 ifeq (,$(CROSS_COMPILE))
-	$(error missing CROSS_COMPILE for this toolchain)
+ifeq ($(PLATFORM),desktop)
+CROSS_COMPILE=/usr/bin/
+else
+$(error missing CROSS_COMPILE for this toolchain)
+endif
 endif
 
 ###########################################################
@@ -58,8 +63,8 @@ endif
 AR=$(CROSS_COMPILE)ar
 ARFLAGS=rc
 
-BUILD_DATE!=date +%Y.%m.%d
-BUILD_HASH!=cat ../../hash.txt
+BUILD_DATE=$(shell date +%Y.%m.%d)
+BUILD_HASH=$(shell cat ../../hash.txt 2>/dev/null || echo "unknown")
 CFLAGS += -DBUILD_DATE=\"${BUILD_DATE}\" -DBUILD_HASH=\"${BUILD_HASH}\"
 
 ifeq ($(PLATFORM), desktop)
