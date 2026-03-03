@@ -76,6 +76,22 @@ jobs:
       - name: Setup
         run: make setup
 
+      - name: Verify toolchain
+        run: |
+          echo "Verifying toolchain installation..."
+          if [[ ! -d "toolchains/${PLATFORM}-toolchain" ]]; then
+            echo "::error::Toolchain directory not found: toolchains/${PLATFORM}-toolchain"
+            exit 1
+          fi
+          if [[ ! -f "toolchains/${PLATFORM}-toolchain/bin/aarch64-linux-gnu-gcc" ]]; then
+            echo "::error::GCC not found in toolchain: toolchains/${PLATFORM}-toolchain/bin/aarch64-linux-gnu-gcc"
+            echo "Toolchain contents:"
+            find toolchains/${PLATFORM}-toolchain -type f | head -20 || true
+            exit 1
+          fi
+          echo "✓ Toolchain verified successfully"
+          toolchains/${PLATFORM}-toolchain/bin/aarch64-linux-gnu-gcc --version || true
+
       - name: Build minimal cores
         run: |
           # Build only a few essential cores for testing
