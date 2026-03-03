@@ -3,7 +3,6 @@
 #include "screens/game_list_screen.h"
 #include "screens/quick_menu_screen.h"
 #include "screens/game_switcher_screen.h"
-#include "screens/settings_screen.h"
 #include <stdlib.h>
 
 NextUIApp* nextui_app_new(SDL_Surface* screen) {
@@ -133,7 +132,7 @@ void nextui_app_set_screen(NextUIApp* app, ScreenType screen_type) {
             screen_module = quick_menu_screen_module_new(app->state, app->screen);
             break;
         case SCREEN_GAMESWITCHER:
-            screen_module = game_switcher_screen_module_new(app->state, app->screen, app->recent_games);
+            screen_module = game_switcher_screen_module_new(app->state, app->screen);
             break;
         case SCREEN_GAME:
             // Game running - no UI to render

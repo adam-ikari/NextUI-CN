@@ -5,14 +5,27 @@
 #include "../state/ui_state.h"
 #include "../components/list_component.h"
 #include "sdl.h"
+#include "../common/api.h"
+#include "../array.h"
 
 typedef struct {
     UIState* state;
     SDL_Surface* screen;
-    int selected;
-    int menu_item_count;
-    char** menu_items;
-    UIComponent* list_component;
+    
+    // Quick menu state (matching original nextui.c)
+    int qm_row;        // 0 = quick entries, 1 = quick actions
+    int qm_col;        // current column index
+    int qm_slot;       // current slot in view
+    int qm_shift;      // horizontal shift for scrolling
+    int qm_slots;      // number of visible slots
+    
+    // Menu data
+    Array* quick;      // quick entries (recents, games, tools, etc.)
+    Array* quickActions; // quick actions (wifi, bluetooth, sleep, etc.)
+    char* folderBgPath; // current background path
+    
+    // UI elements
+    SDL_Surface* background;
 } QuickMenuScreen;
 
 QuickMenuScreen* quick_menu_screen_new(UIState* state, SDL_Surface* screen);

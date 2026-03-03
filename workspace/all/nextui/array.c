@@ -40,3 +40,20 @@ void Array_clear(Array* self) {
 	if (!self) return;
 	self->count = 0;
 }
+
+void Array_remove(Array* self, void* item) {
+	if (!self || !item || self->count == 0) return;
+	
+	int i = 0;
+	while (i < self->count && self->items[i] != item) {
+		i++;
+	}
+	
+	if (i < self->count) {
+		// Shift items to fill the gap
+		for (int j = i; j < self->count - 1; j++) {
+			self->items[j] = self->items[j + 1];
+		}
+		self->count--;
+	}
+}

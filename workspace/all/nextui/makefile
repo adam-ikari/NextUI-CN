@@ -26,7 +26,6 @@ SOURCE = main.c \
 	screens/game_list_screen.c \
 	screens/quick_menu_screen.c \
 	screens/game_switcher_screen.c \
-	screens/settings_screen.c \
 	components/ui_component.c \
 	components/pill_component.c \
 	components/button_component.c \
