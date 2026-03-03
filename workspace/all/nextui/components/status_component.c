@@ -53,7 +53,8 @@ void status_component_render(UIComponent* component, SDL_Surface* screen, void* 
 
     // Render time
     if (status_props->show_time && status_props->time_string) {
-        SDL_Surface* text_surf = TTF_RenderUTF8_Blended(font.large, status_props->time_string, status_props->text_color);
+        SDL_Color text_color = uintToColour(status_props->text_color);
+        SDL_Surface* text_surf = TTF_RenderUTF8_Blended(font.large, status_props->time_string, text_color);
         if (text_surf) {
             SDL_Rect text_rect = {
                 x,
