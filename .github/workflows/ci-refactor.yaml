@@ -103,7 +103,7 @@ jobs:
             -e PLATFORM=${PLATFORM} \
             -e COMPILE_CORES=true \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && (cd workspace/${PLATFORM}/show && make PLATFORM=${PLATFORM}) && make system PLATFORM=${PLATFORM}'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && (cd workspace/${PLATFORM}/show && make PLATFORM=${PLATFORM}) && (cd workspace/all/nextui && make PLATFORM=${PLATFORM}) && make system PLATFORM=${PLATFORM}'
 
       - name: Verify build artifacts
         run: |
