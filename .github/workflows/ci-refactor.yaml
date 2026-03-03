@@ -91,6 +91,7 @@ jobs:
           # Build only a few essential cores for testing using Docker
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
+            -e PLATFORM=${PLATFORM} \
             -e COMPILE_CORES=true \
             -e CORE=fbneo \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
@@ -98,6 +99,7 @@ jobs:
 
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
+            -e PLATFORM=${PLATFORM} \
             -e COMPILE_CORES=true \
             -e CORE=fceumm \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
@@ -105,6 +107,7 @@ jobs:
 
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
+            -e PLATFORM=${PLATFORM} \
             -e COMPILE_CORES=true \
             -e CORE=gambatte \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
@@ -112,6 +115,7 @@ jobs:
 
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
+            -e PLATFORM=${PLATFORM} \
             -e COMPILE_CORES=true \
             -e CORE=snes9x \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
@@ -122,6 +126,7 @@ jobs:
           # Build nextui using Docker
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
+            -e PLATFORM=${PLATFORM} \
             -e COMPILE_CORES=true \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
             /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make system PLATFORM=${PLATFORM}'
