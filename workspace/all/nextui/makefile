@@ -38,7 +38,8 @@ SOURCE = main.c \
 	../common/config.c \
 	../common/api.c \
 	../../i18n/i18n.c \
-	../../$(PLATFORM)/platform/platform.c
+	../../$(PLATFORM)/platform/platform.c \
+	desktop_stubs.c
 
 CC = $(CROSS_COMPILE)gcc
 CFLAGS  += $(OPT) -fomit-frame-pointer

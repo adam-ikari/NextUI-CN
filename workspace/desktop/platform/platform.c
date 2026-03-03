@@ -11,15 +11,6 @@
 #include <errno.h>
 #include <assert.h>
 
-#ifdef USE_SDL2
-#include <SDL2/SDL_opengl.h>
-#include <SDL2/SDL_opengl_glext.h>
-#endif
-
-#if defined(__ARM_NEON) || defined(__ARM_NEON__)
-#include <arm_neon.h>
-#endif
-
 #include <msettings.h>
 
 #include "defines.h"
@@ -1920,28 +1911,11 @@ void PLAT_pixelFlipper(uint8_t* pixels, int width, int height) {
         rowTop = pixels + y * rowBytes;
         rowBottom = pixels + (height - 1 - y) * rowBytes;
 
-#if defined(__ARM_NEON) || defined(__ARM_NEON__)
-        int x = 0;
-        for (; x + 15 < rowBytes; x += 16) {
-            uint8x16_t top = vld1q_u8(rowTop + x);
-            uint8x16_t bottom = vld1q_u8(rowBottom + x);
-
-            vst1q_u8(rowTop + x, bottom);
-            vst1q_u8(rowBottom + x, top);
-        }
-        for (; x < rowBytes; ++x) {
-            uint8_t temp = rowTop[x];
-            rowTop[x] = rowBottom[x];
-            rowBottom[x] = temp;
-        }
-#else
-        // Fallback for non-ARM platforms
         for (int x = 0; x < rowBytes; ++x) {
             uint8_t temp = rowTop[x];
             rowTop[x] = rowBottom[x];
             rowBottom[x] = temp;
         }
-#endif
     }
 }
 
@@ -2205,29 +2179,3 @@ void PLAT_setCurrentTimezone(const char* tz) {
  void PLAT_wifiConnect(char *ssid, WifiSecurityType sec) {}
  void PLAT_wifiConnectPass(const char *ssid, WifiSecurityType sec, const char* pass) {}
  void PLAT_wifiDisconnect() {}
-
-// Desktop platform stub functions for NextUI
-int autoResume() {
-    return 0;
-}
-
-void initImageLoaderPool() {
-    // Stub implementation for desktop
-}
-
-void Menu_init() {
-    // Stub implementation for desktop
-}
-
-void destroyImageLoaderPool() {
-    // Stub implementation for desktop
-}
-
-int getInputBlocking() {
-    // Stub implementation - return no input
-    return -1;
-}
-
-void InitSettings() {
-    // Stub implementation for desktop
-}
