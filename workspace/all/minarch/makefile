@@ -30,14 +30,21 @@ CFLAGS  += $(INCDIR) -DPLATFORM=\"$(PLATFORM)\" -std=gnu99
 LDFLAGS	 += -lmsettings -lsamplerate
 ifeq ($(PLATFORM), desktop)
 ifeq ($(UNAME_S),Linux)
-CFLAGS += `pkg-config --cflags libzip`
+# Check if libzip is available
+ifeq ($(shell pkg-config --exists libzip && echo yes),yes)
+CFLAGS += `pkg-config --cflags libzip` -DHAVE_LIBZIP
 LDFLAGS += `pkg-config --libs libzip`
 else
+CFLAGS += -DNO_LIBZIP
+endif
+else
+# macOS or other platforms
 LDFLAGS += -lzip
+CFLAGS += -DHAVE_LIBZIP
 endif
 else
 LDFLAGS	 +=  -Llibretro-common -lsrm -lzip
-CFLAGS   += -DHAS_SRM
+CFLAGS   += -DHAS_SRM -DHAVE_LIBZIP
 endif
 ifeq ($(PLATFORM), tg5040)
 CFLAGS += -DHAS_WIFIMG -DHAS_BTMG
