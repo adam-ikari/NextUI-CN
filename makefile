@@ -31,7 +31,7 @@ else
 	TOOLCHAIN_FILE := makefile.toolchain
 endif
 RELEASE_BASE=NextUI-Adam-$(RELEASE_TIME)$(RELEASE_BETA)
-RELEASE_DOT:=$(shell find ./releases/. -regex ".*/${RELEASE_BASE}-[0-9]+-base\.zip" | wc -l | sed 's/ //g')
+RELEASE_DOT:=$(shell find ./releases/. -regex ".*/${RELEASE_BASE}-[0-9]+-base\.zip" 2>/dev/null | wc -l | sed 's/ //g')
 RELEASE_NAME ?= $(RELEASE_BASE)-$(RELEASE_DOT)
 
 # Extra paks to ship
