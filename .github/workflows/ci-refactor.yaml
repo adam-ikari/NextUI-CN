@@ -95,6 +95,11 @@ jobs:
           make build-core PLATFORM=${PLATFORM} CORE=gambatte
           make build-core PLATFORM=${PLATFORM} CORE=snes9x
 
+      - name: Build show utility
+        run: |
+          # Build show.elf required by makefile.copy
+          (cd workspace/${PLATFORM}/show && make PLATFORM=${PLATFORM})
+
       - name: Build NextUI
         run: |
           # Build nextui using Docker (single command)
