@@ -5,11 +5,11 @@ PLATFORM=$(UNION_PLATFORM)
 endif
 
 ifeq (,$(PLATFORM))
-	$(error please specify PLATFORM, eg. PLATFORM=trimui make)
+$(error please specify PLATFORM, eg. PLATFORM=trimui make)
 endif
 
 ifeq (,$(CROSS_COMPILE))
-	$(error missing CROSS_COMPILE for this toolchain)
+$(error missing CROSS_COMPILE for this toolchain)
 endif
 
 ###########################################################
@@ -21,13 +21,17 @@ SDL?=SDL
 
 TARGET = nextui
 INCDIR = -I. -I../common/ -I../../$(PLATFORM)/platform/ -I../../i18n/
+INCDIR += -Icomponents -Istate -Iscreens
 SOURCE = $(TARGET).c \
 	../common/scaler.c \
 	../common/utils.c \
 	../common/config.c \
 	../common/api.c \
 	../../i18n/i18n.c \
-	../../$(PLATFORM)/platform/platform.c
+	../../$(PLATFORM)/platform/platform.c \
+	renderer.c \
+	components/ui_component.c \
+	state/ui_state.c
 
 CC = $(CROSS_COMPILE)gcc
 CFLAGS  += $(OPT) -fomit-frame-pointer
