@@ -78,7 +78,8 @@ void list_component_render(UIComponent* component, SDL_Surface* screen, void* pr
 
             // Render label
             if (item->label) {
-                uint32_t text_color = is_selected ? list_props->selected_text_color : list_props->text_color;
+                uint32_t text_color_uint = is_selected ? list_props->selected_text_color : list_props->text_color;
+                SDL_Color text_color = uintToColour(text_color_uint);
                 SDL_Surface* text_surf = TTF_RenderUTF8_Blended(font.large, item->label, text_color);
                 if (text_surf) {
                     SDL_Rect text_rect = {
