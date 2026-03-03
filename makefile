@@ -86,8 +86,8 @@ system:
 	
 	# populate system
 ifneq ($(PLATFORM), desktop)
-	cp ./workspace/$(PLATFORM)/keymon/keymon.elf ./build/SYSTEM/$(PLATFORM)/bin/
-	cp ./workspace/all/syncsettings/build/$(PLATFORM)/syncsettings.elf ./build/SYSTEM/$(PLATFORM)/bin/
+	-cp ./workspace/$(PLATFORM)/keymon/keymon.elf ./build/SYSTEM/$(PLATFORM)/bin/ 2>/dev/null || true
+	-cp ./workspace/all/syncsettings/build/$(PLATFORM)/syncsettings.elf ./build/SYSTEM/$(PLATFORM)/bin/ 2>/dev/null || true
 endif
 	# Build libmsettings if needed
 	$(MAKE) -C ./workspace/$(PLATFORM)/libmsettings build
