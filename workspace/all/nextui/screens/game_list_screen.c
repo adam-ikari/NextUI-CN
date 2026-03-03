@@ -4,8 +4,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-// Forward declaration for GetHDMI function
+// Entry structure definition (must match the one in nextui.c)
+typedef struct Entry {
+    char* path;
+    char* name;
+    char* display;
+    char* unique;
+    int type;
+    int alpha;
+} Entry;
+
+// Entry_label function (must match the one in nextui.c)
+static inline const char* Entry_label(const Entry* self) {
+    return (self && self->display) ? self->display : (self ? self->name : "");
+}
+
+// Forward declarations
 extern int GetHDMI(void);
+extern void trimSortingMeta(char** str);
 
 GameListScreen* game_list_screen_new(UIState* state, SDL_Surface* screen, Array* entries) {
     GameListScreen* screen_data = (GameListScreen*)malloc(sizeof(GameListScreen));
@@ -83,22 +99,35 @@ void game_list_screen_render(void* screen_instance, SDL_Surface* surface) {
         }
 
         int available_width = MAX(0, (had_thumb ? ox + SCALE1(BUTTON_MARGIN) : surface->w - SCALE1(BUTTON_MARGIN)) - SCALE1(PADDING * 2));
+        int ow = 0; // Overlay width (for scroll indicator)
         
         // Render each list item using original rendering logic
         for (int i = start_index; i < end_index; i++) {
             int j = i - start_index;
             int is_selected = (i == screen_data->selected);
             
-            // Get entry data (placeholder - needs actual Entry structure access)
-            void* entry_data = screen_data->entries->items[i];
-            char* entry_name = "Game Name"; // Placeholder - should use Entry_label(entry_data)
-            char* entry_unique = "Game Unique"; // Placeholder - should use entry->unique
+            // Get entry data
+            Entry* entry = (Entry*)screen_data->entries->items[i];
+            char* entry_name = (char*)Entry_label(entry);
+            char* entry_unique = entry->unique;
+            
+            // Trim sorting metadata
+            trimSortingMeta(&entry_name);
+            if (entry_unique) {
+                trimSortingMeta(&entry_unique);
+            }
             
             // Calculate text width and truncate if needed
             char display_name[256];
             int text_width = GFX_getTextWidth(font.large, entry_unique ? entry_unique : entry_name, 
                                               display_name, available_width, SCALE1(BUTTON_PADDING * 2));
             int max_width = MIN(available_width, text_width);
+            
+            // Adjust available width for first item when no thumbnail
+            if (i == start_index && !had_thumb) {
+                available_width -= ow;
+                max_width = MIN(available_width, text_width);
+            }
             
             // Calculate pill rectangle
             SDL_Rect item_rect = {
@@ -117,13 +146,19 @@ void game_list_screen_render(void* screen_instance, SDL_Surface* surface) {
                 GFX_blitPillLight(ASSET_WHITE_PILL, surface, &item_rect);
             }
 
-            // Render text
+            // Render text colors
             SDL_Color text_color = uintToColour(THEME_COLOR4_255);
             if (is_selected) {
                 text_color = uintToColour(THEME_COLOR5_255);
             }
 
+            // Render text (double layer like original)
             SDL_Surface* text = TTF_RenderUTF8_Blended(font.large, entry_name, text_color);
+            SDL_Surface* text_unique = NULL;
+            if (entry_unique) {
+                text_unique = TTF_RenderUTF8_Blended(font.large, display_name, COLOR_DARK_TEXT);
+            }
+            
             if (text) {
                 const int text_offset_y = (SCALE1(PILL_SIZE) - text->h + 1) >> 1 + SCALE1(TEXT_Y_OFFSET);
                 SDL_Rect text_rect = { 0, 0, max_width - SCALE1(BUTTON_PADDING*2), text->h };
@@ -132,6 +167,13 @@ void game_list_screen_render(void* screen_instance, SDL_Surface* surface) {
                     item_rect.y + text_offset_y 
                 };
                 
+                // Render unique name first (dark text)
+                if (text_unique) {
+                    SDL_BlitSurface(text_unique, &text_rect, surface, &dest_rect);
+                    SDL_FreeSurface(text_unique);
+                }
+                
+                // Render main name on top
                 SDL_BlitSurface(text, &text_rect, surface, &dest_rect);
                 SDL_FreeSurface(text);
             }
@@ -172,31 +214,38 @@ void game_list_screen_render(void* screen_instance, SDL_Surface* surface) {
     }
 
     // Draw button groups (bottom controls)
-    if (screen_data->entries && screen_data->entries->count > 0) {
-        // Check if we should show hardware hints or resume button
-        // Placeholder logic - needs actual implementation
-        bool can_resume = false; // Should check if game has save state
-        int show_setting = 0;    // Should check current setting state
-        
-        if (show_setting && !GetHDMI()) {
-            GFX_blitHardwareHints(surface, show_setting);
-        } else if (can_resume) {
-            GFX_blitButtonGroup((char*[]){"X", "Resume", NULL}, 0, surface, 0);
-        } else {
-            GFX_blitButtonGroup((char*[]){
-                (char*)(BTN_SLEEP==BTN_POWER?"Power":"Menu"),
-                (char*)(BTN_SLEEP==BTN_POWER?"Sleep":"Info"),
-                NULL
-            }, 0, surface, 0);
-        }
-        
-        // Show back/open buttons
-        if (screen_data->entries->count > 0) {
-            GFX_blitButtonGroup((char*[]){"B", "Back", "A", "Open", NULL}, 1, surface, 1);
+    int total = screen_data->entries ? screen_data->entries->count : 0;
+    int show_setting = 0; // Should check current setting state
+    bool can_resume = false; // Should check if game has save state
+    
+    // Top button group
+    if (show_setting && !GetHDMI()) {
+        GFX_blitHardwareHints(surface, show_setting);
+    } else if (can_resume) {
+        GFX_blitButtonGroup((char*[]){"X", (char*)TR("common.resume"), NULL}, 0, surface, 0);
+    } else {
+        GFX_blitButtonGroup((char*[]){
+            (char*)(BTN_SLEEP==BTN_POWER?(char*)TR("common.power"):(char*)TR("common.menu")),
+            (char*)(BTN_SLEEP==BTN_POWER?(char*)TR("common.sleep"):(char*)TR("common.info")),
+            NULL
+        }, 0, surface, 0);
+    }
+    
+    // Bottom button group
+    if (total == 0) {
+        // Empty folder - show back button if not in root
+        if (screen_data->state->last_screen != SCREEN_OFF) {
+            GFX_blitButtonGroup((char*[]){"B", (char*)TR("common.back"), NULL}, 0, surface, 1);
         }
     } else {
-        // Show empty folder message
-        GFX_blitMessage(font.large, (char*)"Empty Folder", surface, &(SDL_Rect){0,0,surface->w,surface->h});
+        // Has items - show appropriate buttons
+        if (screen_data->state->last_screen != SCREEN_OFF) {
+            // Not in root - show back and open
+            GFX_blitButtonGroup((char*[]){"B", (char*)TR("common.back"), "A", (char*)TR("common.open"), NULL}, 1, surface, 1);
+        } else {
+            // In root - only show open
+            GFX_blitButtonGroup((char*[]){"A", (char*)TR("common.open"), NULL}, 0, surface, 1);
+        }
     }
 }
 
