@@ -1,5 +1,6 @@
 #include "game_list_screen.h"
 #include "../common/api.h"
+#include "../common/utils.h"
 #include "../components/button_component.h"
 #include <stdlib.h>
 #include <string.h>
@@ -21,7 +22,6 @@ static inline const char* Entry_label(const Entry* self) {
 
 // Forward declarations
 extern int GetHDMI(void);
-extern void trimSortingMeta(char** str);
 
 GameListScreen* game_list_screen_new(UIState* state, SDL_Surface* screen, Array* entries) {
     GameListScreen* screen_data = (GameListScreen*)malloc(sizeof(GameListScreen));
