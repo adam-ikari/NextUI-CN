@@ -50,9 +50,8 @@ ifeq ($(PLATFORM),desktop)
     LDFLAGS += `pkg-config --libs sdl2`
     # macOS doesn't use -lGL or -lGLESv2, it uses -framework OpenGL
 else
-    LDFLAGS	 += -lmsettings -lGL -lGLESv2
+    LDFLAGS	 += -lmsettings -lGLESv2
 endif
-LDFLAGS  += -lmsettings
 ifeq ($(PLATFORM), tg5040)
 CFLAGS += -DHAS_WIFIMG -DHAS_BTMG
 LDFLAGS +=  -lwifimg -lwifid
