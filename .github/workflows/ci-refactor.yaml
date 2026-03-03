@@ -92,26 +92,30 @@ jobs:
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
             -e COMPILE_CORES=true \
+            -e CORE=fbneo \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make core CORE=fbneo'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make build-core'
 
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
             -e COMPILE_CORES=true \
+            -e CORE=fceumm \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make core CORE=fceumm'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make build-core'
 
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
             -e COMPILE_CORES=true \
+            -e CORE=gambatte \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make core CORE=gambatte'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make build-core'
 
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
             -e COMPILE_CORES=true \
+            -e CORE=snes9x \
             ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make core CORE=snes9x'
+            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make build-core'
 
       - name: Build NextUI
         run: |
