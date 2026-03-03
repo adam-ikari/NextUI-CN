@@ -88,42 +88,16 @@ jobs:
 
       - name: Build minimal cores
         run: |
-          # Build only a few essential cores for testing using Docker
-          docker run --rm \
-            -v ${{ github.workspace }}:/root/workspace \
-            -e PLATFORM=${PLATFORM} \
-            -e COMPILE_CORES=true \
-            -e CORE=fbneo \
-            ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make build-core'
-
-          docker run --rm \
-            -v ${{ github.workspace }}:/root/workspace \
-            -e PLATFORM=${PLATFORM} \
-            -e COMPILE_CORES=true \
-            -e CORE=fceumm \
-            ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make build-core'
-
-          docker run --rm \
-            -v ${{ github.workspace }}:/root/workspace \
-            -e PLATFORM=${PLATFORM} \
-            -e COMPILE_CORES=true \
-            -e CORE=gambatte \
-            ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make build-core'
-
-          docker run --rm \
-            -v ${{ github.workspace }}:/root/workspace \
-            -e PLATFORM=${PLATFORM} \
-            -e COMPILE_CORES=true \
-            -e CORE=snes9x \
-            ghcr.io/loveretro/${PLATFORM}-toolchain:modernize \
-            /bin/bash -c 'git config --global --add safe.directory /root/workspace && . ~/.bashrc && cd /root/workspace && make build-core'
+          # Build only a few essential cores for testing
+          # Run these directly on the CI host using makefile.toolchain
+          make build-core PLATFORM=${PLATFORM} CORE=fbneo
+          make build-core PLATFORM=${PLATFORM} CORE=fceumm
+          make build-core PLATFORM=${PLATFORM} CORE=gambatte
+          make build-core PLATFORM=${PLATFORM} CORE=snes9x
 
       - name: Build NextUI
         run: |
-          # Build nextui using Docker
+          # Build nextui using Docker (single command)
           docker run --rm \
             -v ${{ github.workspace }}:/root/workspace \
             -e PLATFORM=${PLATFORM} \
