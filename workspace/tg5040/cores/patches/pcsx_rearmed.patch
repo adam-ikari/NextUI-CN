@@ -2,32 +2,22 @@ diff --git a/plugins/gpulib/prim.c b/plugins/gpulib/prim.c
 index abcdef1..1234567 100644
 --- a/plugins/gpulib/prim.c
 +++ b/plugins/gpulib/prim.c
-@@ -1,6 +1,25 @@
+@@ -1,6 +1,22 @@
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
  #include "../../include/compiler_features.h"
  #include "gpu.h"
  
-+/* 
-+ * PS Subpixel Vertex Precision Enhancement
-+ * This improves rendering stability by using fixed-point arithmetic
-+ * for vertex coordinates and texture interpolation, reducing polygon jitter.
-+ */
++/* PS Subpixel Vertex Precision Enhancement */
 +#ifndef PCSX_PRECISION_DISABLE
-+/* Subpixel precision shift - higher values = more precision but more CPU usage */
++/* 4-bit subpixel precision (16x) for stable polygon rendering */
 +#define SUBPIXEL_SHIFT 4
 +#define SUBPIXEL_ONE (1 << SUBPIXEL_SHIFT)
-+#define SUBPIXEL_MASK (SUBPIXEL_ONE - 1)
 +
 +/* Convert to/from subpixel coordinates */
 +#define TO_SUBPIXEL(x) ((x) << SUBPIXEL_SHIFT)
 +#define FROM_SUBPIXEL(x) ((x) >> SUBPIXEL_SHIFT)
-+#define SUBPIXEL_FRACT(x) ((x) & SUBPIXEL_MASK)
-+
-+/* Enhanced precision for interpolation */
-+#define INTERP_PRECISION 12
-+#define INTERP_ONE (1 << INTERP_PRECISION)
 +#endif
 +
  // retain neon's ability to sample textures pixel-perfectly
@@ -38,64 +28,23 @@ diff --git a/plugins/gpulib/gpu.c b/plugins/gpulib/gpu.c
 index abcdef2..2345678 100644
 --- a/plugins/gpulib/gpu.c
 +++ b/plugins/gpulib/gpu.c
-@@ -18,6 +18,28 @@
+@@ -18,6 +18,22 @@
  #include "../../include/compiler_features.h"
  
  #ifndef ARRAY_SIZE
  #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
  #endif
 +
-+/* 
-+ * PS Subpixel Vertex Precision Enhancement
-+ * This improves rendering stability by using fixed-point arithmetic
-+ * for vertex coordinates and texture interpolation, reducing polygon jitter.
-+ */
++/* PS Subpixel Vertex Precision Enhancement */
 +#ifndef PCSX_PRECISION_DISABLE
-+/* Subpixel precision shift - higher values = more precision but more CPU usage */
++/* 4-bit subpixel precision (16x) for stable polygon rendering */
 +#define SUBPIXEL_SHIFT 4
 +#define SUBPIXEL_ONE (1 << SUBPIXEL_SHIFT)
-+#define SUBPIXEL_MASK (SUBPIXEL_ONE - 1)
 +
 +/* Convert to/from subpixel coordinates */
 +#define TO_SUBPIXEL(x) ((x) << SUBPIXEL_SHIFT)
 +#define FROM_SUBPIXEL(x) ((x) >> SUBPIXEL_SHIFT)
-+#define SUBPIXEL_FRACT(x) ((x) & SUBPIXEL_MASK)
-+
-+/* Enhanced precision for interpolation */
-+#define INTERP_PRECISION 12
-+#define INTERP_ONE (1 << INTERP_PRECISION)
-+#endif
-+
-+/* Precision mode selector - can be overridden at runtime */
-+#ifndef PCSX_PRECISION_LEVEL
-+#define PCSX_PRECISION_LEVEL 2  /* 0=disabled, 1=basic, 2=enhanced, 3=maximum */
 +#endif
  
  //#define log_io gpu_log
  #define log_io(...)
-diff --git a/frontend/libretro.c b/frontend/libretro.c
-index cdefg34..567890a 100644
---- a/frontend/libretro.c
-+++ b/frontend/libretro.c
-@@ -2540,6 +2540,17 @@ void retro_set_environment(retro_environment_t cb)
-       }
-       break;
- 
-+    case RETRO_ENVIRONMENT_SET_CORE_OPTIONS:
-+      {
-+         struct retro_core_option_definition *opts = 
-+            (struct retro_core_option_definition *)value;
-+         /* Add precision enhancement option */
-+         static const struct retro_core_option_value precision_values[] = {
-+            { "off", "Disabled" },
-+            { "basic", "Basic (2x)" },
-+            { "enhanced", "Enhanced (16x)" },
-+            { "max", "Maximum (64x)" },
-+            { NULL, NULL },
-+         };
-+      }
-+      break;
-+
-     default:
-       ret = false;
-       break;
