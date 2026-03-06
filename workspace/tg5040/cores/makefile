@@ -71,6 +71,8 @@ mednafen_supafaust_REPO = https://github.com/libretro/supafaust
 pcsx_rearmed_MAKEFILE = Makefile.libretro
 # pcsx has a disabled submodule for gnulib, which takes forever to check out and is unused - skil checkout
 pcsx_rearmed_SUBMODULES = frontend/libpicofe
+# Pin to stable version for PS precision testing
+pcsx_rearmed_HASH = v23.0.1
 
 picodrive_REPO = https://github.com/irixxxx/picodrive
 picodrive_MAKEFILE = Makefile.libretro
