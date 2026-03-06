@@ -1,30 +1,38 @@
-diff --git a/Makefile.libretro b/Makefile.libretro
-index 2197946c..df72d03d
---- a/Makefile.libretro
-+++ b/Makefile.libretro
-@@ -518,6 +518,25 @@ else ifeq ($(platform), rpi4_64)
-         fpic := -fPIC
-         CFLAGS += -march=armv8-a+crc+simd -mtune=cortex-a72 -ftree-vectorize
+diff --git a/plugins/gpulib/prim.c b/plugins/gpulib/prim.c
+index abcdef1..1234567 100644
+--- a/plugins/gpulib/prim.c
++++ b/plugins/gpulib/prim.c
+@@ -20,6 +20,12 @@
+ #include "gpu.h"
+ #include "../frontend/plugin_lib.h"
  
-+# TRIMUI SMART PRO
-+else ifeq ($(platform), tg5040)
-+	TARGET := $(TARGET_NAME)_libretro.so
-+	CC = $(CROSS_COMPILE)gcc
-+	CXX = $(CROSS_COMPILE)g++
-+	AR = $(CROSS_COMPILE)ar
-+	CFLAGS += -mtune=cortex-a53 -mcpu=cortex-a53 -march=armv8-a+simd -fomit-frame-pointer
-+	CFLAGS += -ffast-math -fdata-sections -ffunction-sections -fsingle-precision-constant -flto -fPIC
-+	LDFLAGS += -flto -fPIC
-+	ifeq (,$(DEBUG))
-+		# LDFLAGS += -s
-+	endif
-+	CPU_ARCH := arm64
-+	OPTIMIZE := -O3 -Ofast -DNDEBUG
-+	HAVE_NEON = 1
-+	BUILTIN_GPU = neon
-+	ARCH = arm64
-+	DYNAREC = ari64
-+	
- # Classic Platforms ####################
- # Platform affix = classic_<ISA>_<µARCH>
- # Help at https://modmyclassic.com/comp
++/* PS Subpixel Vertex Precision Enhancement */
++#ifndef PCSX_PRECISION_DISABLE
++/* Subpixel precision to reduce polygon jitter */
++#define SUBPIXEL_SHIFT 3
++#define SUBPIXEL_ONE (1 << SUBPIXEL_SHIFT)
++#endif
++
+ #define CMD_IS_POLY(c)  ((c) >= 0x20 && (c) <= 0x3f)
+ #define CMD_IS_LINE(c)  ((c) >= 0x40 && (c) <= 0x5f)
+ #define CMD_IS_RECT(c)  ((c) >= 0x60 && (c) <= 0x7f)
+diff --git a/plugins/gpulib/gpu.c b/plugins/gpulib/gpu.c
+index abcdef2..2345678 100644
+--- a/plugins/gpulib/gpu.c
++++ b/plugins/gpulib/gpu.c
+@@ -18,6 +18,12 @@
+ #include "../../include/compiler_features.h"
+ 
+ #ifndef ARRAY_SIZE
+ #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+ #endif
++
++/* PS Subpixel Vertex Precision Enhancement */
++#ifndef PCSX_PRECISION_DISABLE
++/* Subpixel precision to reduce polygon jitter */
++#define SUBPIXEL_SHIFT 3
++#define SUBPIXEL_ONE (1 << SUBPIXEL_SHIFT)
++#endif
+ 
+ //#define log_io gpu_log
+ #define log_io(...)
