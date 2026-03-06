@@ -15,7 +15,7 @@ CORES+= mednafen_pce_fast
 CORES+= mednafen_supafaust
 CORES+= mednafen_vb
 CORES+= mgba
-CORES+= pcsx_rearmed_mod
+CORES+= pcsx_rearmed
 CORES+= pet
 CORES+= picodrive
 CORES+= plus4
@@ -73,12 +73,6 @@ pcsx_rearmed_MAKEFILE = Makefile.libretro
 pcsx_rearmed_SUBMODULES = frontend/libpicofe
 # Pin to stable version for PS precision testing
 pcsx_rearmed_HASH = r25l
-
-# pcsx_rearmed_mod - Enhanced version with PS precision improvements
-pcsx_rearmed_mod_MAKEFILE = Makefile.libretro
-pcsx_rearmed_mod_REPO = https://github.com/adam-ikari/pcsx_rearmed_mod
-pcsx_rearmed_mod_SUBMODULES = frontend/libpicofe
-pcsx_rearmed_mod_HASH = main
 
 picodrive_REPO = https://github.com/irixxxx/picodrive
 picodrive_MAKEFILE = Makefile.libretro
