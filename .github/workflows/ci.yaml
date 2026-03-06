@@ -94,6 +94,43 @@ jobs:
           echo "core-hash=${CORE_HASH}" >> "$GITHUB_OUTPUT"
           echo "Core ${{ matrix.core }} hash: ${CORE_HASH}"
 
+      - name: Get patch file hash
+        id: patch-hash
+        run: |
+          # Check for platform-specific patches
+          PLATFORM_PATCH="workspace/${PLATFORM}/cores/patches/${{ matrix.core }}.patch"
+          # Check for all-cores patches
+          ALL_CORES_PATCH="workspace/all/cores/patches/${{ matrix.core }}.patch"
+          ALL_CORES_DIR_PATCH="workspace/all/cores/patches/${{ matrix.core }}/*.patch"
+          
+          PATCH_HASH="none"
+          
+          # Calculate hash for all patch files
+          if [[ -f "$PLATFORM_PATCH" ]]; then
+            PATCH_HASH=$(sha256sum "$PLATFORM_PATCH" | cut -d' ' -f1)
+          fi
+          
+          if [[ -f "$ALL_CORES_PATCH" ]]; then
+            ALL_HASH=$(sha256sum "$ALL_CORES_PATCH" | cut -d' ' -f1)
+            if [[ "$PATCH_HASH" == "none" ]]; then
+              PATCH_HASH="$ALL_HASH"
+            else
+              PATCH_HASH="${PATCH_HASH}-${ALL_HASH}"
+            fi
+          fi
+          
+          if compgen -G "$ALL_CORES_DIR_PATCH" > /dev/null; then
+            DIR_HASH=$(find "workspace/all/cores/patches/${{ matrix.core }}" -name "*.patch" -exec sha256sum {} \; | sort | sha256sum | cut -d' ' -f1)
+            if [[ "$PATCH_HASH" == "none" ]]; then
+              PATCH_HASH="$DIR_HASH"
+            else
+              PATCH_HASH="${PATCH_HASH}-${DIR_HASH}"
+            fi
+          fi
+          
+          echo "patch-hash=${PATCH_HASH}" >> "$GITHUB_OUTPUT"
+          echo "Patch ${{ matrix.core }} hash: ${PATCH_HASH}"
+
       - name: Cache toolchains
         uses: actions/cache@v4
         with:
@@ -104,7 +141,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: workspace/${{ env.PLATFORM }}/cores/output/${{ matrix.core }}_libretro.so
-          key: core-${{ env.PLATFORM }}-${{ matrix.core }}-${{ steps.core-hash.outputs.core-hash }}-${{ steps.toolchain-hash.outputs.toolchain-hash }}
+          key: core-${{ env.PLATFORM }}-${{ matrix.core }}-${{ steps.core-hash.outputs.core-hash }}-${{ steps.toolchain-hash.outputs.toolchain-hash }}-${{ steps.patch-hash.outputs.patch-hash }}
 
       - name: Restore toolchain from cache
         run: |
