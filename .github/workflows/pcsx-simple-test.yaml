@@ -1,0 +1,41 @@
+name: PCSX Simple Test
+
+on:
+  push:
+    branches:
+      - feature/pcsx-precision-clean-v2
+
+jobs:
+  test-pcsx-mod:
+    runs-on: ubuntu-24.04-arm
+    
+    steps:
+      - name: Test pcsx_rearmed_mod repository
+        run: |
+          echo "Testing pcsx_rearmed_mod repository access..."
+          
+          # Try to clone the repository
+          git clone --depth 1 https://github.com/adam-ikari/pcsx_rearmed_mod.git /tmp/pcsx_test 2>&1 || echo "Clone failed"
+          
+          if [ -d /tmp/pcsx_test ]; then
+            echo "Repository cloned successfully"
+            ls -la /tmp/pcsx_test/
+            
+            # Check if it has content
+            if [ "$(ls -A /tmp/pcsx_test)" ]; then
+              echo "Repository has content"
+              
+              # Check for pcsx_rearmed files
+              if [ -f /tmp/pcsx_test/Makefile.libretro ]; then
+                echo "PCSX Makefile found"
+              fi
+              
+              if [ -d /tmp/pcsx_test/plugins ]; then
+                echo "Plugins directory found"
+              fi
+            else
+              echo "Repository is empty"
+            fi
+          else
+            echo "Repository does not exist or is not accessible"
+          fi
