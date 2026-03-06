@@ -15,7 +15,7 @@ CORES+= mednafen_pce_fast
 CORES+= mednafen_supafaust
 CORES+= mednafen_vb
 CORES+= mgba
-CORES+= pcsx_rearmed_mod
+CORES+= pcsx_rearmed
 CORES+= pet
 CORES+= picodrive
 CORES+= plus4
@@ -68,10 +68,11 @@ gambatte_REPO = https://github.com/libretro/gambatte-libretro
 
 mednafen_supafaust_REPO = https://github.com/libretro/supafaust
 
-pcsx_rearmed_mod_MAKEFILE = Makefile.libretro
-pcsx_rearmed_mod_REPO = https://github.com/adam-ikari/pcsx_rearmed_mod
-pcsx_rearmed_mod_SUBMODULES = frontend/libpicofe
-pcsx_rearmed_mod_HASH = main
+pcsx_rearmed_MAKEFILE = Makefile.libretro
+# pcsx has a disabled submodule for gnulib, which takes forever to check out and is unused - skil checkout
+pcsx_rearmed_SUBMODULES = frontend/libpicofe
+# Pin to stable version r25l
+pcsx_rearmed_HASH = r25l
 
 picodrive_REPO = https://github.com/irixxxx/picodrive
 picodrive_MAKEFILE = Makefile.libretro

@@ -1,0 +1,38 @@
+diff --git a/plugins/gpulib/gpu.c b/plugins/gpulib/gpu.c
+index 8c1b8e8..f568ad6 100644
+--- a/plugins/gpulib/gpu.c
++++ b/plugins/gpulib/gpu.c
+@@ -20,6 +20,14 @@
+ #include "../../include/compiler_features.h"
+ 
+ #ifndef ARRAY_SIZE
++
++/* PS Subpixel Vertex Precision Enhancement */
++#ifndef PCSX_PRECISION_DISABLE
++#define SUBPIXEL_SHIFT 4
++#define SUBPIXEL_ONE (1 << SUBPIXEL_SHIFT)
++#define TO_SUBPIXEL(x) ((x) << SUBPIXEL_SHIFT)
++#define FROM_SUBPIXEL(x) ((x) >> SUBPIXEL_SHIFT)
++#endif
+ #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+ #endif
+ 
+diff --git a/plugins/gpulib/prim.c b/plugins/gpulib/prim.c
+index d629464..6b76ca1 100644
+--- a/plugins/gpulib/prim.c
++++ b/plugins/gpulib/prim.c
+@@ -4,6 +4,14 @@
+ #include "../../include/compiler_features.h"
+ #include "gpu.h"
+ 
++
++/* PS Subpixel Vertex Precision Enhancement */
++#ifndef PCSX_PRECISION_DISABLE
++#define SUBPIXEL_SHIFT 4
++#define SUBPIXEL_ONE (1 << SUBPIXEL_SHIFT)
++#define TO_SUBPIXEL(x) ((x) << SUBPIXEL_SHIFT)
++#define FROM_SUBPIXEL(x) ((x) >> SUBPIXEL_SHIFT)
++#endif
+ // retain neon's ability to sample textures pixel-perfectly
+ #ifdef GPU_NEON
+ #define STRICT
