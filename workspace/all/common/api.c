@@ -3600,7 +3600,9 @@ void PWR_update(int *_dirty, int *_show_setting, PWR_callback_t before_sleep, PW
 	if (was_charging == -1) was_charging = pwr.is_charging;
 
 	uint32_t now = SDL_GetTicks();
-	if (was_charging || PAD_anyPressed() || last_input_at == 0)
+	// Update last_input_at but exclude power button to avoid interfering with sleep logic
+	int any_pressed_except_power = PAD_anyPressed() && !PAD_isPressed(BTN_POWER);
+	if (was_charging || any_pressed_except_power || last_input_at == 0)
 		last_input_at = now;
 
 #define CHARGE_DELAY 1000
