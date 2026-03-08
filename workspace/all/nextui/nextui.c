@@ -7,7 +7,6 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <libgen.h>  // For dirname()
-#include <errno.h>
 #include "defines.h"
 #include "api.h"
 #include "utils.h"
@@ -145,26 +144,8 @@ static Entry* Entry_new(const char* path, int type) {
 	char display_name[256];
 	getDisplayName((char*)path, display_name);
 	Entry* self = malloc(sizeof(Entry));
-	if (!self) {
-		LOG_error("Failed to allocate memory for Entry: %s\n", path);
-		return NULL;
-	}
-	
 	self->path = strdup(path);
-	if (!self->path) {
-		LOG_error("Failed to allocate memory for path: %s\n", path);
-		free(self);
-		return NULL;
-	}
-	
 	self->name = strdup(display_name);
-	if (!self->name) {
-		LOG_error("Failed to allocate memory for name: %s\n", display_name);
-		free(self->path);
-		free(self);
-		return NULL;
-	}
-	
 	self->display = NULL;
 	// Translate display label for known virtual/special entries,
 	// but keep internal names stable for asset/icon mapping.
@@ -1128,7 +1109,6 @@ static void addEntries(Array* entries, char* path) {
 		char full_path[256];
 		sprintf(full_path, "%s/", path);
 		tmp = full_path + strlen(full_path);
-		int entry_count = 0;
 		while((dp = readdir(dh)) != NULL) {
 			if (hide(dp->d_name)) continue;
 			strcpy(tmp, dp->d_name);
@@ -1151,18 +1131,9 @@ static void addEntries(Array* entries, char* path) {
 					type = ENTRY_ROM;
 				}
 			}
-			Entry* entry = Entry_new(full_path, type);
-			if (entry) {
-				Array_push(entries, entry);
-				entry_count++;
-			} else {
-				LOG_error("Failed to create entry for: %s\n", full_path);
-			}
+			Array_push(entries, Entry_new(full_path, type));
 		}
 		closedir(dh);
-		LOG_info("Added %d entries from path: %s\n", entry_count, path);
-	} else {
-		LOG_error("Failed to open directory: %s (errno: %d)\n", path, errno);
 	}
 }
 
@@ -2267,10 +2238,6 @@ int main (int argc, char *argv[]) {
 	LOG_info("i18n: %s (%s)\n", TR("recents"), I18N_loadedPath());
 	InitSettings();
 	
-	// Startup haptic feedback (moved here from PWR_init to ensure settings are initialized first)
-	if (CFG_getHaptics())
-		VIB_singlePulse(VIB_bootStrength, VIB_bootDuration_ms);
-	
 	screen = GFX_init(MODE_MAIN);
 	// LOG_info("- graphics init: %lu\n", SDL_GetTicks() - main_begin);
 	
@@ -3011,7 +2978,6 @@ int main (int argc, char *argv[]) {
 				static int lastType = -1;
 
 				// this is only a choice on the root folder
-				// Default to showing entry names: always show in subdirectories, or in root if configured
 				list_show_entry_names = stack->count > 1 || CFG_getShowFolderNamesAtRoot();
 
 				// load folder background
@@ -3042,12 +3008,6 @@ int main (int argc, char *argv[]) {
 				}
 				else {
 					// Safeguard: If no background is available, still render the text to leave the user a way out
-					list_show_entry_names = true;
-				}
-				
-				// Final safeguard: Ensure text is always visible in root directory when no background images exist
-				// This prevents black screen issue when user is in root directory without background images
-				if (stack->count == 1 && !list_show_entry_names) {
 					list_show_entry_names = true;
 				}
 				// load game thumbnails

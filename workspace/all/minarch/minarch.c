@@ -7750,11 +7750,6 @@ int main(int argc , char* argv[]) {
 	SND_init(core.sample_rate, core.fps);
 	SND_registerDeviceWatcher(onAudioSinkChanged);
 	InitSettings(); // after we initialize audio
-	
-	// Startup haptic feedback (moved here from PWR_init to ensure settings are initialized first)
-	if (CFG_getHaptics())
-		VIB_singlePulse(VIB_bootStrength, VIB_bootDuration_ms);
-	
 	Menu_init();
 	State_resume();
 	Menu_initState(); // make ready for state shortcuts
