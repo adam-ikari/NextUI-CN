@@ -362,10 +362,6 @@ int main(int argc, char *argv[])
             []() -> std::any { return CFG_getPowerOffProtection(); },
             [](const std::any &value) { CFG_setPowerOffProtection(std::any_cast<bool>(value)); },
             []() { CFG_setPowerOffProtection(CFG_DEFAULT_POWEROFFPROTECTION); }},
-            new MenuItem{ListItemType::Generic, TR("settings.system.charging_breathing_led"), TR("settings.system.charging_breathing_led.desc"), {false, true}, on_off, 
-            []() -> std::any { return CFG_getChargingBreathingLed(); },
-            [](const std::any &value) { CFG_setChargingBreathingLed(std::any_cast<bool>(value)); },
-            []() { CFG_setChargingBreathingLed(CFG_DEFAULT_CHARGINGBREATHINGLED); }},
             new MenuItem{ListItemType::Button, tr_settings_reset_defaults.c_str(), tr_settings_reset_defaults_desc.c_str(), ResetCurrentMenu},
         });
 
