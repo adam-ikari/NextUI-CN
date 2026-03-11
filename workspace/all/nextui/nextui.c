@@ -2415,7 +2415,9 @@ int main (int argc, char *argv[]) {
 					// For Tools directory, use openDirectory without auto_launch to avoid auto-starting ROMs
 					if (selected->type == ENTRY_DIR && strstr(selected->path, "/Tools/") != NULL) {
 						LOG_info("Opening Tools directory from quick menu: %s\n", selected->path);
+						LOG_info("Before openDirectory: top=%p, stack->count=%d\n", (void*)top, stack ? stack->count : -1);
 						openDirectory(selected->path, 0);
+						LOG_info("After openDirectory: top=%p, stack->count=%d, top->entries->count=%d\n", (void*)top, stack ? stack->count : -1, top ? top->entries->count : -1);
 						// Update total after opening directory
 						total = top->entries->count;
 					} else {
