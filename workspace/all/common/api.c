@@ -73,6 +73,17 @@ LightSettings lightsSleep[MAX_LIGHTS];
 LightSettings lightsAmbient[MAX_LIGHTS];
 LightSettings (*lights)[MAX_LIGHTS] = NULL;
 
+// Ambient LED update throttling
+static uint32_t last_ambient_update_time = 0;
+static uint32_t last_ambient_color = 0;
+#define AMBIENT_UPDATE_INTERVAL_MS 100
+#define AMBIENT_COLOR_THRESHOLD 0x10000  // Minimum color change to trigger update
+
+// LED error tracking and recovery
+static int led_error_count = 0;
+static int leds_disabled = 0;
+#define LED_ERROR_THRESHOLD 10  // Disable LED after this many consecutive errors
+
 #define PROFILE_OVERRIDE_SIZE 4
 int profile_override_top = -1;
 enum LightProfile profile_override[PROFILE_OVERRIDE_SIZE];
@@ -580,8 +591,19 @@ void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size
 	}
 
 	// Update hardware if ambient profile is currently active
+	// Use throttling to avoid frequent sysfs writes
 	if (lights_initialized && lights == lightsAmbient) {
-		LEDS_updateLeds(false);
+		uint32_t current_time = SDL_GetTicks();
+		uint32_t color_diff = (dominant_color > last_ambient_color) ?
+			(dominant_color - last_ambient_color) : (last_ambient_color - dominant_color);
+
+		// Only update if color changed significantly and enough time has passed
+		if (color_diff >= AMBIENT_COLOR_THRESHOLD &&
+			(current_time - last_ambient_update_time) >= AMBIENT_UPDATE_INTERVAL_MS) {
+			LEDS_updateLeds(false);
+			last_ambient_update_time = current_time;
+			last_ambient_color = dominant_color;
+		}
 	}
 }
 
@@ -4060,10 +4082,11 @@ void LEDS_applyRules()
 		if (override == LIGHT_PROFILE_AMBIENT) {
 			// Keep ambient profile when charging
 			LEDS_setProfile(LIGHT_PROFILE_AMBIENT);
-		} else {
-			// Use default profile (user can configure via LedControl tool)
+		} else if (override == LIGHT_PROFILE_DEFAULT) {
+			// Only apply charging rules when no override is active
 			LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
 		}
+		// Don't override other profiles (LOW_BATTERY, CRITICAL_BATTERY, etc.)
 	}
 	// - if critical battery, critical battery takes priority over everything
 	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE && !pwr.is_charging) {
@@ -4094,7 +4117,13 @@ void LEDS_updateLeds(bool indicator_only)
 		LOG_error("LEDS_updateLeds: lights not initialized, skipping\n");
 		return;
 	}
-		
+
+	// Skip LED updates if hardware errors exceeded threshold
+	if (leds_disabled) {
+		LOG_debug("LEDS_updateLeds: LED functionality disabled due to hardware errors\n");
+		return;
+	}
+
 	int lightsize = 3;
 	char *device = getenv("DEVICE");
 	int is_brick = exactMatch("brick", device);

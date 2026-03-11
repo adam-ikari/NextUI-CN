@@ -27,6 +27,11 @@
 static int finalScaleFilter=GL_LINEAR;
 static int reloadShaderTextures = 1;
 
+// LED error tracking (extern from api.c)
+extern int led_error_count;
+extern int leds_disabled;
+#define LED_ERROR_THRESHOLD 10
+
 // shader stuff
 
 typedef struct Shader {
@@ -2672,10 +2677,17 @@ void PLAT_setLedInbrightness(LightSettings *led)
 		{
 			fprintf(file, "%i\n", led->inbrightness);
 			fclose(file);
+			led_error_count = 0;  // Reset error count on success
 		}
 		else
 		{
-			LOG_warn("Failed to open LED path for inbrightness: %s\n", filepath);
+			led_error_count++;
+			if (led_error_count >= LED_ERROR_THRESHOLD && !leds_disabled) {
+				LOG_error("LED hardware errors exceeded threshold (%d), disabling LED functionality\n", LED_ERROR_THRESHOLD);
+				leds_disabled = 1;
+			} else if (!leds_disabled) {
+				LOG_warn("Failed to open LED path for inbrightness: %s (error count: %d/%d)\n", filepath, led_error_count, LED_ERROR_THRESHOLD);
+			}
 		}
 	}
 }
@@ -2702,10 +2714,17 @@ void PLAT_setLedBrightness(LightSettings *led)
 		{
 			fprintf(file, "%i\n", led->brightness);
 			fclose(file);
+			led_error_count = 0;  // Reset error count on success
 		}
 		else
 		{
-			LOG_warn("Failed to open LED path for brightness: %s\n", filepath);
+			led_error_count++;
+			if (led_error_count >= LED_ERROR_THRESHOLD && !leds_disabled) {
+				LOG_error("LED hardware errors exceeded threshold (%d), disabling LED functionality\n", LED_ERROR_THRESHOLD);
+				leds_disabled = 1;
+			} else if (!leds_disabled) {
+				LOG_warn("Failed to open LED path for brightness: %s (error count: %d/%d)\n", filepath, led_error_count, LED_ERROR_THRESHOLD);
+			}
 		}
 	}
 }
@@ -2720,10 +2739,17 @@ void PLAT_setLedEffect(LightSettings *led)
     {
         fprintf(file, "%i\n", led->effect);
         fclose(file);
+        led_error_count = 0;  // Reset error count on success
     }
     else
     {
-        LOG_warn("Failed to open LED path for effect: %s\n", filepath);
+        led_error_count++;
+        if (led_error_count >= LED_ERROR_THRESHOLD && !leds_disabled) {
+            LOG_error("LED hardware errors exceeded threshold (%d), disabling LED functionality\n", LED_ERROR_THRESHOLD);
+            leds_disabled = 1;
+        } else if (!leds_disabled) {
+            LOG_warn("Failed to open LED path for effect: %s (error count: %d/%d)\n", filepath, led_error_count, LED_ERROR_THRESHOLD);
+        }
     }
 }
 void PLAT_setLedEffectCycles(LightSettings *led)
@@ -2737,10 +2763,17 @@ void PLAT_setLedEffectCycles(LightSettings *led)
     {
         fprintf(file, "%i\n", led->cycles);
         fclose(file);
+        led_error_count = 0;  // Reset error count on success
     }
     else
     {
-        LOG_warn("Failed to open LED path for effect cycles: %s\n", filepath);
+        led_error_count++;
+        if (led_error_count >= LED_ERROR_THRESHOLD && !leds_disabled) {
+            LOG_error("LED hardware errors exceeded threshold (%d), disabling LED functionality\n", LED_ERROR_THRESHOLD);
+            leds_disabled = 1;
+        } else if (!leds_disabled) {
+            LOG_warn("Failed to open LED path for effect cycles: %s (error count: %d/%d)\n", filepath, led_error_count, LED_ERROR_THRESHOLD);
+        }
     }
 }
 void PLAT_setLedEffectSpeed(LightSettings *led)
@@ -2754,10 +2787,17 @@ void PLAT_setLedEffectSpeed(LightSettings *led)
     {
         fprintf(file, "%i\n", led->speed);
         fclose(file);
+        led_error_count = 0;  // Reset error count on success
     }
     else
     {
-        LOG_warn("Failed to open LED path for effect speed: %s\n", filepath);
+        led_error_count++;
+        if (led_error_count >= LED_ERROR_THRESHOLD && !leds_disabled) {
+            LOG_error("LED hardware errors exceeded threshold (%d), disabling LED functionality\n", LED_ERROR_THRESHOLD);
+            leds_disabled = 1;
+        } else if (!leds_disabled) {
+            LOG_warn("Failed to open LED path for effect speed: %s (error count: %d/%d)\n", filepath, led_error_count, LED_ERROR_THRESHOLD);
+        }
     }
 }
 void PLAT_setLedColor(LightSettings *led)
@@ -2771,10 +2811,17 @@ void PLAT_setLedColor(LightSettings *led)
     {
         fprintf(file, "%06X\n", led->color1);
         fclose(file);
+        led_error_count = 0;  // Reset error count on success
     }
     else
     {
-        LOG_warn("Failed to open LED path for color: %s\n", filepath);
+        led_error_count++;
+        if (led_error_count >= LED_ERROR_THRESHOLD && !leds_disabled) {
+            LOG_error("LED hardware errors exceeded threshold (%d), disabling LED functionality\n", LED_ERROR_THRESHOLD);
+            leds_disabled = 1;
+        } else if (!leds_disabled) {
+            LOG_warn("Failed to open LED path for color: %s (error count: %d/%d)\n", filepath, led_error_count, LED_ERROR_THRESHOLD);
+        }
     }
 }
 
