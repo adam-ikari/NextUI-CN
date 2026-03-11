@@ -578,11 +578,6 @@ void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size
 		(lightsAmbient)[3].effect = 4;
 		(lightsAmbient)[3].brightness = 100;
 	}
-
-	// Update hardware if ambient profile is currently active
-	if (lights_initialized && lights == lightsAmbient) {
-		LEDS_updateLeds(false);
-	}
 }
 
 void GFX_flip(SDL_Surface *screen)
