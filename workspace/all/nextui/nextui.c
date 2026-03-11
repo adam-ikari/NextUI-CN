@@ -907,7 +907,12 @@ static Array* getQuickEntries(void) {
     if (hasTools() && !simple_mode) {
 		char tools_path[256];
 		snprintf(tools_path, sizeof(tools_path), "%s/Tools/%s", SDCARD_PATH, PLATFORM);
-        Array_push(entries, Entry_new(tools_path, ENTRY_DIR));
+		Entry* e = Entry_new(tools_path, ENTRY_DIR);
+		// Icon assets are keyed by Entry->name (e.g. /res/Tools@2x.png)
+		if (e->name) free(e->name);
+		e->name = strdup("Tools");
+		e->display = strdup(TR("tools"));
+        Array_push(entries, e);
     }
 
 	return entries;
