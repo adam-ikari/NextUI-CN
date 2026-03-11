@@ -248,6 +248,10 @@ int main(int argc, char *argv[])
                 []() -> std::any { return CFG_getShowTools(); },
                 [](const std::any &value) { CFG_setShowTools(std::any_cast<bool>(value)); },
                 []() { CFG_setShowTools(CFG_DEFAULT_SHOWTOOLS);}},
+                new MenuItem{ListItemType::Generic, TR("settings.show_quick_menu"), TR("settings.show_quick_menu.desc"), {false, true}, on_off, 
+                []() -> std::any { return CFG_getShowQuickMenu(); },
+                [](const std::any &value) { CFG_setShowQuickMenu(std::any_cast<bool>(value)); },
+                []() { CFG_setShowQuickMenu(CFG_DEFAULT_SHOWQUICKMENU);}},
                 new MenuItem{ListItemType::Generic, TR("settings.show_game_art"), TR("settings.show_game_art.desc"), {false, true}, on_off, []() -> std::any
                 { return CFG_getShowGameArt(); },
                 [](const std::any &value)

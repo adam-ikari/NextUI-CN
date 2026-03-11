@@ -2516,7 +2516,7 @@ int main (int argc, char *argv[]) {
 			}
 		}
 		else {
-			if (PAD_tappedMenu(now)) {
+			if (PAD_tappedMenu(now) && CFG_getShowQuickMenu()) {
 				currentScreen = SCREEN_QUICKMENU;
 				qm_col = 0;
 				qm_row = 0;
@@ -2725,7 +2725,7 @@ int main (int argc, char *argv[]) {
 				
 				GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "A",(char*)TR("common.open"), NULL }, 1, screen, 1);
 
-				if(CFG_getShowQuickswitcherUI()) {
+				if(CFG_getShowQuickswitcherUI() && CFG_getShowQuickMenu()) {
 					#define MENU_ITEM_SIZE 72 // item size, top line
 					#define MENU_MARGIN_Y 32 // space between main UI elements and quick menu
 					#define MENU_MARGIN_X 40 // space between main UI elements and quick menu

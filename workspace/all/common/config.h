@@ -84,6 +84,7 @@ typedef struct
 	bool showMenuTransitions;
 	bool showRecents;
 	bool showTools;
+	bool showQuickMenu;
 	bool showGameArt;
 	bool showFolderNamesAtRoot;
 	bool romsUseFolderBackground;
@@ -156,6 +157,7 @@ typedef struct
 #define CFG_DEFAULT_SHOWQUICKWITCHERUI true
 #define CFG_DEFAULT_WIFI_DIAG false
 #define CFG_DEFAULT_SHOWTOOLS true
+#define CFG_DEFAULT_SHOWQUICKMENU true
 #define CFG_DEFAULT_BLUETOOTH false
 #define CFG_DEFAULT_BLUETOOTH_DIAG false
 #define CFG_DEFAULT_BLUETOOTH_MAXRATE 48000
@@ -209,6 +211,9 @@ void CFG_setShowRecents(bool show);
 // Show/hide tools folder in the main menu.
 bool CFG_getShowTools(void);
 void CFG_setShowTools(bool show);
+// Show/hide quick menu.
+bool CFG_getShowQuickMenu(void);
+void CFG_setShowQuickMenu(bool show);
 // Show/hide game art in the main menu.
 bool CFG_getShowGameArt(void);
 void CFG_setShowGameArt(bool show);

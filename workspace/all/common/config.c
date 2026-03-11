@@ -44,6 +44,7 @@ void CFG_defaults(NextUISettings *cfg)
         .showMenuTransitions = CFG_DEFAULT_SHOWMENUTRANSITIONS,
         .showRecents = CFG_DEFAULT_SHOWRECENTS,
         .showTools = CFG_DEFAULT_SHOWTOOLS,
+        .showQuickMenu = CFG_DEFAULT_SHOWQUICKMENU,
         .showGameArt = CFG_DEFAULT_SHOWGAMEART,
         .gameSwitcherScaling = CFG_DEFAULT_GAMESWITCHERSCALING,
         .defaultView = CFG_DEFAULT_VIEW,
@@ -187,6 +188,11 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
             if (sscanf(line, "tools=%i", &temp_value) == 1)
             {
                 CFG_setShowTools((bool)temp_value);
+                continue;
+            }
+            if (sscanf(line, "quickmenu=%i", &temp_value) == 1)
+            {
+                CFG_setShowQuickMenu((bool)temp_value);
                 continue;
             }
             if (sscanf(line, "gameart=%i", &temp_value) == 1)
@@ -534,6 +540,17 @@ bool CFG_getShowTools(void)
 void CFG_setShowTools(bool show)
 {
     settings.showTools = show;
+    CFG_sync();
+}
+
+bool CFG_getShowQuickMenu(void)
+{
+    return settings.showQuickMenu;
+}
+
+void CFG_setShowQuickMenu(bool show)
+{
+    settings.showQuickMenu = show;
     CFG_sync();
 }
 
@@ -923,6 +940,7 @@ void CFG_sync(void)
     fprintf(file, "menutransitions=%i\n", settings.showMenuTransitions);
     fprintf(file, "recents=%i\n", settings.showRecents);
     fprintf(file, "tools=%i\n", settings.showTools);
+    fprintf(file, "quickmenu=%i\n", settings.showQuickMenu);
     fprintf(file, "gameart=%i\n", settings.showGameArt);
     fprintf(file, "showfoldernamesatroot=%i\n", settings.showFolderNamesAtRoot);
     fprintf(file, "screentimeout=%i\n", settings.screenTimeoutSecs);
@@ -967,6 +985,7 @@ void CFG_print(void)
     printf("\t\"menutransitions\": %i,\n", settings.showMenuTransitions);
     printf("\t\"recents\": %i,\n", settings.showRecents);
     printf("\t\"tools\": %i,\n", settings.showTools);
+    printf("\t\"quickmenu\": %i,\n", settings.showQuickMenu);
     printf("\t\"gameart\": %i,\n", settings.showGameArt);
     printf("\t\"showfoldernamesatroot\": %i,\n", settings.showFolderNamesAtRoot);
     printf("\t\"screentimeout\": %i,\n", settings.screenTimeoutSecs);

@@ -621,6 +621,8 @@ settings.show_recents=显示最近
 settings.show_recents.desc=在游戏列表中显示“最近游玩”入口。
 settings.show_tools=显示工具
 settings.show_tools.desc=在游戏列表中显示“工具”入口。
+settings.show_quick_menu=显示快捷菜单
+settings.show_quick_menu.desc=在游戏列表中显示快捷菜单按钮。关闭后，您仍可在设置中启用快捷菜单。
 settings.reset_defaults=恢复默认设置
 settings.reset_defaults.desc=将当前菜单中的选项恢复为默认值。
 
