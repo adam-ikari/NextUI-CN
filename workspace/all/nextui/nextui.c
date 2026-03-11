@@ -2406,11 +2406,7 @@ int main (int argc, char *argv[]) {
 				Entry *selected = qm_row == 0 ? quick->items[qm_col] : quickActions->items[qm_col];
 				if(selected->type != ENTRY_DIP) {
 					currentScreen = SCREEN_GAMELIST;
-					total = top->entries->count;
 					// prevent restoring list state, game list screen currently isnt our nav origin
-					top->selected = 0;
-					top->start = 0;
-					top->end = top->start + MAIN_ROW_COUNT;
 					restore_depth = -1;
 					restore_relative = -1;
 					restore_selected = 0;
@@ -2418,7 +2414,10 @@ int main (int argc, char *argv[]) {
 					restore_end = 0;
 					// For Tools directory, use openDirectory without auto_launch to avoid auto-starting ROMs
 					if (selected->type == ENTRY_DIR && strstr(selected->path, "/Tools/") != NULL) {
+						LOG_info("Opening Tools directory from quick menu: %s\n", selected->path);
 						openDirectory(selected->path, 0);
+						// Update total after opening directory
+						total = top->entries->count;
 					} else {
 						Entry_open(selected);
 					}
@@ -3015,10 +3014,19 @@ int main (int argc, char *argv[]) {
 			}
 			else { // if currentscreen == SCREEN_GAMELIST
 				// Safeguard: Check data validity before rendering to prevent black screen
-				if (!top || !stack || stack->count == 0 || top->entries->count == 0) {
+				if (!top || !stack || stack->count == 0) {
 					SDL_Rect msg_rect = {0, 0, screen->w, screen->h};
 					GFX_blitMessage(font.large, (char*)TR("common.loading"), screen, &msg_rect);
 					dirty = 1;
+					lastScreen = SCREEN_GAMELIST;
+					continue;
+				}
+				// Handle empty directory
+				if (top->entries->count == 0) {
+					SDL_Rect msg_rect = {0, 0, screen->w, screen->h};
+					GFX_blitMessage(font.large, (char*)TR("common.empty_directory"), screen, &msg_rect);
+					GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), NULL }, 1, screen, 1);
+					GFX_flipHidden();
 					lastScreen = SCREEN_GAMELIST;
 					continue;
 				}
