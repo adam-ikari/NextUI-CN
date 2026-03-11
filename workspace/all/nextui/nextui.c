@@ -2669,14 +2669,21 @@ int main (int argc, char *argv[]) {
 			}
 
 			// clear only background layer on start
-			if(lastScreen==SCREEN_GAME || lastScreen==SCREEN_OFF) {
+			if(lastScreen==SCREEN_GAME) {
 				GFX_clearLayers(LAYER_ALL);
 			}
-			else {	
+			else if(lastScreen==SCREEN_OFF) {
+				// Don't clear all layers on startup to prevent black screen
+				// Only clear transition layers that need to be reset
+				GFX_clearLayers(LAYER_TRANSITION);
+				GFX_clearLayers(LAYER_SCROLLTEXT);
+				GFX_clearLayers(LAYER_IDK2);
+			}
+			else {
 				GFX_clearLayers(LAYER_TRANSITION);
 				// Don't clear LAYER_THUMBNAIL when returning from quick menu to game list
 				// to avoid visual flicker
-				if(lastScreen!=SCREEN_GAMELIST && lastScreen!=SCREEN_QUICKMENU)	
+				if(lastScreen!=SCREEN_GAMELIST && lastScreen!=SCREEN_QUICKMENU)
 					GFX_clearLayers(LAYER_THUMBNAIL);
 				GFX_clearLayers(LAYER_SCROLLTEXT);
 				GFX_clearLayers(LAYER_IDK2);
@@ -2985,13 +2992,22 @@ int main (int argc, char *argv[]) {
 				lastScreen = SCREEN_GAMESWITCHER;
 			}
 			else { // if currentscreen == SCREEN_GAMELIST
+				// Safeguard: Check data validity before rendering to prevent black screen
+				if (!top || !stack || stack->count == 0 || top->entries->count == 0) {
+					SDL_Rect msg_rect = {0, 0, screen->w, screen->h};
+					GFX_blitMessage(font.large, (char*)TR("common.loading"), screen, &msg_rect);
+					dirty = 1;
+					lastScreen = SCREEN_GAMELIST;
+					continue;
+				}
+
 				// background and game art file path stuff
 				Entry* entry = top->entries->items[top->selected];
 				assert(entry);
 				char tmp_path[MAX_PATH];
 				strncpy(tmp_path, entry->path, sizeof(tmp_path) - 1);
 				tmp_path[sizeof(tmp_path) - 1] = '\0';
-			
+
 				char* res_name = strrchr(tmp_path, '/');
 				if (res_name) res_name++;
 
