@@ -925,8 +925,6 @@ static Array* getQuickEntries(void) {
 		e->display = strdup(TR("tools"));
 		if (!e->display) {
 			LOG_error("Failed to allocate memory for Tools display\n");
-			free(e->name);
-			e->name = NULL;
 			Entry_free(e);
 			return entries;
 		}
@@ -3113,7 +3111,7 @@ int main (int argc, char *argv[]) {
 				// buttons
 				if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
 				else if (can_resume) GFX_blitButtonGroup((char*[]){ "X",(char*)TR("common.resume"),  NULL }, 0, screen, 0);
-				else if (CFG_getShowQuickMenu() || !BTN_SLEEP==BTN_POWER) GFX_blitButtonGroup((char*[]){ 
+				else if (CFG_getShowQuickMenu() || BTN_SLEEP!=BTN_POWER) GFX_blitButtonGroup((char*[]){ 
 					(char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")),
 					(char*)(BTN_SLEEP==BTN_POWER||simple_mode?TR("common.sleep"):TR("common.info")),  
 					NULL }, 0, screen, 0);
