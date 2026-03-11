@@ -2694,11 +2694,9 @@ int main (int argc, char *argv[]) {
 				GFX_clearLayers(LAYER_ALL);
 			}
 			else if(lastScreen==SCREEN_OFF) {
-				// Don't clear all layers on startup to prevent black screen
-				// Only clear transition layers that need to be reset
-				GFX_clearLayers(LAYER_TRANSITION);
-				GFX_clearLayers(LAYER_SCROLLTEXT);
-				GFX_clearLayers(LAYER_IDK2);
+				// Clear all layers on startup to ensure clean state
+				// This prevents black screen when default view is game list
+				GFX_clearLayers(LAYER_ALL);
 			}
 			else {
 				GFX_clearLayers(LAYER_TRANSITION);
@@ -3205,14 +3203,16 @@ int main (int argc, char *argv[]) {
 							// update cpu surface here first
 							GFX_clearLayers(LAYER_ALL);
 							folderbgchanged=1;
-							
+
 							GFX_flipHidden();
 							GFX_animateSurface(switcherSur,0,0,0,0-screen->h,screen->w,screen->h,CFG_getMenuTransitions() ? 100:20,255,255,LAYER_BACKGROUND);
 							animationdirection = ANIM_NONE;
 						}
 					}
 					if(lastScreen==SCREEN_OFF) {
-						GFX_animateSurfaceOpacity(blackBG,0,0,screen->w,screen->h,255,0,CFG_getMenuTransitions() ? 200:20,LAYER_THUMBNAIL);
+						// Don't animate black background fade-in as it causes black screen on startup
+						// when default view is game list without background images
+						GFX_clearLayers(LAYER_THUMBNAIL);
 					}
 		
 					remember_row = selected_row;
