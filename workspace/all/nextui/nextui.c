@@ -3028,9 +3028,9 @@ int main (int argc, char *argv[]) {
 					SDL_Rect msg_rect = {0, 0, screen->w, screen->h};
 					GFX_blitMessage(font.large, (char*)TR("common.empty_directory"), screen, &msg_rect);
 					GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), NULL }, 1, screen, 1);
-					GFX_flipHidden();
 					lastScreen = SCREEN_GAMELIST;
-					continue;
+					// Don't use continue here - let the normal rendering flow handle flip
+					// This prevents screen flash and ensures proper state management
 				}
 
 				// background and game art file path stuff
