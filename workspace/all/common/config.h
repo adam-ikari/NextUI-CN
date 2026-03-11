@@ -211,7 +211,9 @@ void CFG_setShowRecents(bool show);
 // Show/hide tools folder in the main menu.
 bool CFG_getShowTools(void);
 void CFG_setShowTools(bool show);
-// Show/hide quick menu.
+// Show/hide quick menu in the main game list.
+// When disabled, the Menu button won't open the quick menu and the button hint won't be displayed.
+// Users can still enable it via Settings menu to avoid being locked out.
 bool CFG_getShowQuickMenu(void);
 void CFG_setShowQuickMenu(bool show);
 // Show/hide game art in the main menu.

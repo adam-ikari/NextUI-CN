@@ -908,10 +908,29 @@ static Array* getQuickEntries(void) {
 		char tools_path[256];
 		snprintf(tools_path, sizeof(tools_path), "%s/Tools/%s", SDCARD_PATH, PLATFORM);
 		Entry* e = Entry_new(tools_path, ENTRY_DIR);
+		if (!e) {
+			LOG_error("Failed to create Tools entry\n");
+			return entries;
+		}
+
 		// Icon assets are keyed by Entry->name (e.g. /res/Tools@2x.png)
 		if (e->name) free(e->name);
 		e->name = strdup("Tools");
+		if (!e->name) {
+			LOG_error("Failed to allocate memory for Tools name\n");
+			Entry_free(e);
+			return entries;
+		}
+
 		e->display = strdup(TR("tools"));
+		if (!e->display) {
+			LOG_error("Failed to allocate memory for Tools display\n");
+			free(e->name);
+			e->name = NULL;
+			Entry_free(e);
+			return entries;
+		}
+
         Array_push(entries, e);
     }
 
@@ -3094,7 +3113,7 @@ int main (int argc, char *argv[]) {
 				// buttons
 				if (show_setting && !GetHDMI()) GFX_blitHardwareHints(screen, show_setting);
 				else if (can_resume) GFX_blitButtonGroup((char*[]){ "X",(char*)TR("common.resume"),  NULL }, 0, screen, 0);
-				else GFX_blitButtonGroup((char*[]){ 
+				else if (CFG_getShowQuickMenu() || !BTN_SLEEP==BTN_POWER) GFX_blitButtonGroup((char*[]){ 
 					(char*)(BTN_SLEEP==BTN_POWER?TR("common.power"):TR("common.menu")),
 					(char*)(BTN_SLEEP==BTN_POWER||simple_mode?TR("common.sleep"):TR("common.info")),  
 					NULL }, 0, screen, 0);
