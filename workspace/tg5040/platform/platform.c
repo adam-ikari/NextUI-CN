@@ -27,11 +27,6 @@
 static int finalScaleFilter=GL_LINEAR;
 static int reloadShaderTextures = 1;
 
-// Smooth color transition for LEDs
-static uint32_t led_target_colors[MAX_LIGHTS] = {0};
-static uint32_t led_current_colors[MAX_LIGHTS] = {0};
-#define COLOR_SMOOTH_STEPS 8  // Number of steps for smooth transition
-
 // shader stuff
 
 typedef struct Shader {
@@ -2769,47 +2764,12 @@ void PLAT_setLedColor(LightSettings *led)
 {
     char filepath[256];
     FILE *file;
-    // Extract LED index from filename
-    int led_index = 0;
-    if (strcmp(led->filename, "m") == 0) led_index = 0;
-    else if (strcmp(led->filename, "f1") == 0) led_index = 1;
-    else if (strcmp(led->filename, "f2") == 0) led_index = 2;
-    else if (strcmp(led->filename, "f3") == 0) led_index = 3;
-
-    // Set target color
-    led_target_colors[led_index] = led->color1;
-
-    // Smooth transition from current to target color
-    uint32_t current = led_current_colors[led_index];
-    uint32_t target = led_target_colors[led_index];
-
-    // Extract RGB components
-    uint8_t cur_r = (current >> 16) & 0xFF;
-    uint8_t cur_g = (current >> 8) & 0xFF;
-    uint8_t cur_b = current & 0xFF;
-    uint8_t tgt_r = (target >> 16) & 0xFF;
-    uint8_t tgt_g = (target >> 8) & 0xFF;
-    uint8_t tgt_b = target & 0xFF;
-
-    // Interpolate towards target
-    int dr = tgt_r - cur_r;
-    int dg = tgt_g - cur_g;
-    int db = tgt_b - cur_b;
-
-    // Move one step towards target
-    if (dr != 0) cur_r += (dr > 0) ? 1 : -1;
-    if (dg != 0) cur_g += (dg > 0) ? 1 : -1;
-    if (db != 0) cur_b += (db > 0) ? 1 : -1;
-
-    // Update current color
-    led_current_colors[led_index] = (cur_r << 16) | (cur_g << 8) | cur_b;
-
-    // Write interpolated color to hardware
+    // first set brightness
     snprintf(filepath, sizeof(filepath), "/sys/class/led_anim/effect_rgb_hex_%s", led->filename);
     file = fopen(filepath, "w");
     if (file != NULL)
     {
-        fprintf(file, "%06X\n", led_current_colors[led_index]);
+        fprintf(file, "%06X\n", led->color1);
         fclose(file);
     }
     else

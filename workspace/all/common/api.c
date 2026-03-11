@@ -73,9 +73,13 @@ LightSettings lightsSleep[MAX_LIGHTS];
 LightSettings lightsAmbient[MAX_LIGHTS];
 LightSettings (*lights)[MAX_LIGHTS] = NULL;
 
-// Ambient LED smooth transition
-static uint32_t last_ambient_color = 0;
-#define COLOR_CHANGE_THRESHOLD 0x2000  // Minimum color change to update (ignore small jitter)
+// Ambient LED time-domain debouncing and smoothing
+#define COLOR_HISTORY_SIZE 5
+static uint32_t color_history[COLOR_HISTORY_SIZE] = {0};
+static int color_history_index = 0;
+static uint32_t stable_color = 0;
+static uint32_t last_stable_time = 0;
+#define STABLE_TIME_THRESHOLD_MS 50  // Time required for color to be considered stable
 
 #define PROFILE_OVERRIDE_SIZE 4
 int profile_override_top = -1;
@@ -584,15 +588,59 @@ void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size
 	}
 
 	// Update hardware if ambient profile is currently active
-	// Sync with screen refresh rate for smooth transitions
+	// Use time-domain debouncing and smoothing
 	if (lights_initialized && lights == lightsAmbient) {
-		uint32_t color_diff = (dominant_color > last_ambient_color) ?
-			(dominant_color - last_ambient_color) : (last_ambient_color - dominant_color);
+		uint32_t current_time = SDL_GetTicks();
 
-		// Only update if color changed significantly to filter out small jitter
-		if (color_diff >= COLOR_CHANGE_THRESHOLD) {
-			LEDS_updateLeds(false);
-			last_ambient_color = dominant_color;
+		// Add new color to history
+		color_history[color_history_index] = dominant_color;
+		color_history_index = (color_history_index + 1) % COLOR_HISTORY_SIZE;
+
+		// Calculate weighted average from history
+		uint32_t weighted_sum_r = 0, weighted_sum_g = 0, weighted_sum_b = 0;
+		int weight_sum = 0;
+
+		for (int i = 0; i < COLOR_HISTORY_SIZE; i++) {
+			uint32_t color = color_history[i];
+			if (color == 0) continue;  // Skip uninitialized entries
+
+			int weight = i + 1;  // Newer colors have higher weight
+			weighted_sum_r += ((color >> 16) & 0xFF) * weight;
+			weighted_sum_g += ((color >> 8) & 0xFF) * weight;
+			weighted_sum_b += (color & 0xFF) * weight;
+			weight_sum += weight;
+		}
+
+		if (weight_sum > 0) {
+			uint32_t smoothed_color = ((weighted_sum_r / weight_sum) << 16) |
+			                          ((weighted_sum_g / weight_sum) << 8) |
+			                          (weighted_sum_b / weight_sum);
+
+			// Check if color is stable (minimal variation in history)
+			uint32_t max_diff = 0;
+			for (int i = 0; i < COLOR_HISTORY_SIZE; i++) {
+				if (color_history[i] == 0) continue;
+				uint32_t diff = (color_history[i] > smoothed_color) ?
+					(color_history[i] - smoothed_color) : (smoothed_color - color_history[i]);
+				if (diff > max_diff) max_diff = diff;
+			}
+
+			// Color is considered stable if variation is small
+			if (max_diff < 0x1000) {  // Small variation threshold
+				if (smoothed_color != stable_color) {
+					stable_color = smoothed_color;
+					last_stable_time = current_time;
+				}
+
+				// Update LED if color has been stable for threshold time
+				if ((current_time - last_stable_time) >= STABLE_TIME_THRESHOLD_MS) {
+					// Update ambient LED color
+					for (int i = 0; i < 4; i++) {
+						lightsAmbient[i].color1 = stable_color;
+					}
+					LEDS_updateLeds(false);
+				}
+			}
 		}
 	}
 }
