@@ -67,7 +67,6 @@ float currentbufferms = 20.0;
 int lights_initialized = 0;
 LightSettings lightsDefault[MAX_LIGHTS];
 LightSettings lightsOff[MAX_LIGHTS];
-LightSettings lightsCharging[MAX_LIGHTS];
 LightSettings lightsLowBattery[MAX_LIGHTS];
 LightSettings lightsCriticalBattery[MAX_LIGHTS];
 LightSettings lightsSleep[MAX_LIGHTS];
@@ -3997,28 +3996,32 @@ void LEDS_setProfile(int profile)
 		case LIGHT_PROFILE_DEFAULT:
 			new_lights = lightsDefault;
 			indicator = false;
+			LOG_info("LEDS_setProfile: Switching to DEFAULT profile\n");
 			break;
 		case LIGHT_PROFILE_OFF:
 			new_lights = lightsOff;
 			indicator = false;
+			LOG_info("LEDS_setProfile: Switching to OFF profile\n");
 			break;
 		case LIGHT_PROFILE_LOW_BATTERY:
 			new_lights = lightsLowBattery;
+			LOG_info("LEDS_setProfile: Switching to LOW_BATTERY profile\n");
 			break;
 		case LIGHT_PROFILE_CRITICAL_BATTERY:
 			new_lights = lightsCriticalBattery;
-			break;
-		case LIGHT_PROFILE_CHARGING:
-			new_lights = lightsCharging;
+			LOG_info("LEDS_setProfile: Switching to CRITICAL_BATTERY profile\n");
 			break;
 		case LIGHT_PROFILE_SLEEP:
 			new_lights = lightsSleep;
+			LOG_info("LEDS_setProfile: Switching to SLEEP profile\n");
 			break;
 		case LIGHT_PROFILE_AMBIENT:
 			new_lights = lightsAmbient;
 			indicator = false;
+			LOG_info("LEDS_setProfile: Switching to AMBIENT profile\n");
 			break;
 		default:
+			LOG_warn("LEDS_setProfile: Unknown profile %d\n", profile);
 			return;
 	}
 	if (profile != LIGHT_PROFILE_AMBIENT && lights == (LightSettings (*)[MAX_LIGHTS])new_lights)
@@ -4140,15 +4143,6 @@ void LEDS_initLeds()
 		lightsCriticalBattery[i].effect = 3; // blink
 		lightsCriticalBattery[i].color1 = 0xFF0000;
 		lightsCriticalBattery[i].cycles = -1; // infinite
-
-		// LIGHT_PROFILE_CHARGING
-		// Hardcoded breathing effect for charging LED
-		lightsCharging[i] = lightsDefault[i];
-		lightsCharging[i].effect = 2; // breathe
-		lightsCharging[i].color1 = 0x00FF00; // green
-		lightsCharging[i].brightness = 100; // hardcoded brightness
-		lightsCharging[i].inbrightness = 0; // min brightness
-		lightsCharging[i].cycles = -1; // infinite
 
 		// LIGHT_PROFILE_SLEEP
 		lightsSleep[i] = lightsDefault[i];
