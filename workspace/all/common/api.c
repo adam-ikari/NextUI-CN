@@ -4055,15 +4055,8 @@ void LEDS_applyRules()
 	// e.g.
 	// - if charging and low battery, charging takes priority
 	if (pwr.initialized && pwr.is_charging) {
-		// Respect ambient override - don't override AMBIENT profile
-		int override = LEDS_getProfileOverride();
-		if (override == LIGHT_PROFILE_AMBIENT) {
-			// Keep ambient profile when charging
-			LEDS_setProfile(LIGHT_PROFILE_AMBIENT);
-		} else {
-			// Use default profile (user can configure via LedControl tool)
-			LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
-		}
+		// Use default profile (user can configure via LedControl tool)
+		LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
 	}
 	// - if critical battery, critical battery takes priority over everything
 	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE && !pwr.is_charging) {
