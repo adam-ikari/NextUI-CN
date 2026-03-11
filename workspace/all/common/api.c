@@ -73,9 +73,9 @@ LightSettings lightsSleep[MAX_LIGHTS];
 LightSettings lightsAmbient[MAX_LIGHTS];
 LightSettings (*lights)[MAX_LIGHTS] = NULL;
 
-// Ambient LED update throttling
-static uint32_t last_ambient_update_time = 0;
-#define AMBIENT_UPDATE_INTERVAL_MS 100
+// Ambient LED smooth transition
+static uint32_t last_ambient_color = 0;
+#define COLOR_CHANGE_THRESHOLD 0x2000  // Minimum color change to update (ignore small jitter)
 
 #define PROFILE_OVERRIDE_SIZE 4
 int profile_override_top = -1;
@@ -584,12 +584,15 @@ void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size
 	}
 
 	// Update hardware if ambient profile is currently active
-	// Use throttling to avoid frequent sysfs writes
+	// Sync with screen refresh rate for smooth transitions
 	if (lights_initialized && lights == lightsAmbient) {
-		uint32_t current_time = SDL_GetTicks();
-		if ((current_time - last_ambient_update_time) >= AMBIENT_UPDATE_INTERVAL_MS) {
+		uint32_t color_diff = (dominant_color > last_ambient_color) ?
+			(dominant_color - last_ambient_color) : (last_ambient_color - dominant_color);
+
+		// Only update if color changed significantly to filter out small jitter
+		if (color_diff >= COLOR_CHANGE_THRESHOLD) {
 			LEDS_updateLeds(false);
-			last_ambient_update_time = current_time;
+			last_ambient_color = dominant_color;
 		}
 	}
 }
