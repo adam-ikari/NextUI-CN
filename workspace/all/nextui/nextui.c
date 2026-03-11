@@ -2526,7 +2526,7 @@ int main (int argc, char *argv[]) {
 				folderbgchanged = 1; // The background painting code is a clusterfuck, just force a repaint here
 				if (!HAS_POWER_BUTTON && !simple_mode) PWR_enableSleep();
 			}
-			else if (PAD_tappedSelect(now)) {
+			else if (PAD_tappedSelect(now) && CFG_getShowQuickswitcherUI()) {
 				currentScreen = SCREEN_GAMESWITCHER;
 				switcher_selected = 0; 
 				dirty = 1;
@@ -2725,7 +2725,7 @@ int main (int argc, char *argv[]) {
 				
 				GFX_blitButtonGroup((char*[]){ "B",(char*)TR("common.back"), "A",(char*)TR("common.open"), NULL }, 1, screen, 1);
 
-				if(CFG_getShowQuickswitcherUI() && CFG_getShowQuickMenu()) {
+				if(CFG_getShowQuickMenu()) {
 					#define MENU_ITEM_SIZE 72 // item size, top line
 					#define MENU_MARGIN_Y 32 // space between main UI elements and quick menu
 					#define MENU_MARGIN_X 40 // space between main UI elements and quick menu
@@ -2858,7 +2858,7 @@ int main (int argc, char *argv[]) {
 				GFX_flipHidden();
 				GFX_animateSurfaceOpacity(tmpOldScreen,0,0,screen->w,screen->h,255,0,CFG_getMenuTransitions() ? 150:20,LAYER_BACKGROUND);
 			}
-			else if(currentScreen == SCREEN_GAMESWITCHER) {
+			else if(currentScreen == SCREEN_GAMESWITCHER && CFG_getShowQuickswitcherUI()) {
 				GFX_clearLayers(LAYER_ALL);
 				ox = 0;
 				oy = 0;
