@@ -4047,13 +4047,20 @@ void LEDS_applyRules()
 	// e.g.
 	// - if charging and low battery, charging takes priority
 	if (pwr.initialized && pwr.is_charging) {
-		// Check if charging breathing LED is enabled
-		if (InitializedSettings() && CFG_getChargingBreathingLed()) {
-			// Use hardcoded breathing profile
-			LEDS_setProfile(LIGHT_PROFILE_CHARGING);
+		// Respect ambient override - don't override AMBIENT profile
+		int override = LEDS_getProfileOverride();
+		if (override == LIGHT_PROFILE_AMBIENT) {
+			// Keep ambient profile when charging
+			LEDS_setProfile(LIGHT_PROFILE_AMBIENT);
 		} else {
-			// Use default profile (user can configure via LedControl tool)
-			LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
+			// Check if charging breathing LED is enabled
+			if (InitializedSettings() && CFG_getChargingBreathingLed()) {
+				// Use hardcoded breathing profile
+				LEDS_setProfile(LIGHT_PROFILE_CHARGING);
+			} else {
+				// Use default profile (user can configure via LedControl tool)
+				LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
+			}
 		}
 	}
 	// - if critical battery, critical battery takes priority over everything
