@@ -4047,14 +4047,8 @@ void LEDS_applyRules()
 	// e.g.
 	// - if charging and low battery, charging takes priority
 	if (pwr.initialized && pwr.is_charging) {
-		// Check if charging breathing LED is enabled
-		if (InitializedSettings() && CFG_getChargingBreathingLed()) {
-			// Use hardcoded breathing profile
-			LEDS_setProfile(LIGHT_PROFILE_CHARGING);
-		} else {
-			// Use default profile (user can configure via LedControl tool)
-			LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
-		}
+		// Use default profile (user can configure via LedControl tool)
+		LEDS_setProfile(LIGHT_PROFILE_DEFAULT);
 	}
 	// - if critical battery, critical battery takes priority over everything
 	else if (pwr.initialized && pwr.charge < PWR_LOW_CHARGE && !pwr.is_charging) {
