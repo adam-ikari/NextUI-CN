@@ -75,14 +75,7 @@ LightSettings (*lights)[MAX_LIGHTS] = NULL;
 
 // Ambient LED update throttling
 static uint32_t last_ambient_update_time = 0;
-static uint32_t last_ambient_color = 0;
 #define AMBIENT_UPDATE_INTERVAL_MS 100
-#define AMBIENT_COLOR_THRESHOLD 0x10000  // Minimum color change to trigger update
-
-// LED error tracking and recovery
-static int led_error_count = 0;
-static int leds_disabled = 0;
-#define LED_ERROR_THRESHOLD 10  // Disable LED after this many consecutive errors
 
 #define PROFILE_OVERRIDE_SIZE 4
 int profile_override_top = -1;
@@ -594,15 +587,9 @@ void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size
 	// Use throttling to avoid frequent sysfs writes
 	if (lights_initialized && lights == lightsAmbient) {
 		uint32_t current_time = SDL_GetTicks();
-		uint32_t color_diff = (dominant_color > last_ambient_color) ?
-			(dominant_color - last_ambient_color) : (last_ambient_color - dominant_color);
-
-		// Only update if color changed significantly and enough time has passed
-		if (color_diff >= AMBIENT_COLOR_THRESHOLD &&
-			(current_time - last_ambient_update_time) >= AMBIENT_UPDATE_INTERVAL_MS) {
+		if ((current_time - last_ambient_update_time) >= AMBIENT_UPDATE_INTERVAL_MS) {
 			LEDS_updateLeds(false);
 			last_ambient_update_time = current_time;
-			last_ambient_color = dominant_color;
 		}
 	}
 }
@@ -4115,12 +4102,6 @@ void LEDS_updateLeds(bool indicator_only)
 {
 	if(lights_initialized == 0) {
 		LOG_error("LEDS_updateLeds: lights not initialized, skipping\n");
-		return;
-	}
-
-	// Skip LED updates if hardware errors exceeded threshold
-	if (leds_disabled) {
-		LOG_debug("LEDS_updateLeds: LED functionality disabled due to hardware errors\n");
 		return;
 	}
 
