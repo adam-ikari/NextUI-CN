@@ -2673,6 +2673,10 @@ void PLAT_setLedInbrightness(LightSettings *led)
 			fprintf(file, "%i\n", led->inbrightness);
 			fclose(file);
 		}
+		else
+		{
+			LOG_warn("Failed to open LED path for inbrightness: %s\n", filepath);
+		}
 	}
 }
 void PLAT_setLedBrightness(LightSettings *led)
@@ -2699,6 +2703,10 @@ void PLAT_setLedBrightness(LightSettings *led)
 			fprintf(file, "%i\n", led->brightness);
 			fclose(file);
 		}
+		else
+		{
+			LOG_warn("Failed to open LED path for brightness: %s\n", filepath);
+		}
 	}
 }
 void PLAT_setLedEffect(LightSettings *led)
@@ -2713,6 +2721,10 @@ void PLAT_setLedEffect(LightSettings *led)
         fprintf(file, "%i\n", led->effect);
         fclose(file);
     }
+    else
+    {
+        LOG_warn("Failed to open LED path for effect: %s\n", filepath);
+    }
 }
 void PLAT_setLedEffectCycles(LightSettings *led)
 {
@@ -2725,6 +2737,10 @@ void PLAT_setLedEffectCycles(LightSettings *led)
     {
         fprintf(file, "%i\n", led->cycles);
         fclose(file);
+    }
+    else
+    {
+        LOG_warn("Failed to open LED path for effect cycles: %s\n", filepath);
     }
 }
 void PLAT_setLedEffectSpeed(LightSettings *led)
@@ -2739,6 +2755,10 @@ void PLAT_setLedEffectSpeed(LightSettings *led)
         fprintf(file, "%i\n", led->speed);
         fclose(file);
     }
+    else
+    {
+        LOG_warn("Failed to open LED path for effect speed: %s\n", filepath);
+    }
 }
 void PLAT_setLedColor(LightSettings *led)
 {
@@ -2751,6 +2771,10 @@ void PLAT_setLedColor(LightSettings *led)
     {
         fprintf(file, "%06X\n", led->color1);
         fclose(file);
+    }
+    else
+    {
+        LOG_warn("Failed to open LED path for color: %s\n", filepath);
     }
 }
 
