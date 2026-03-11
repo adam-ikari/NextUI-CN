@@ -726,7 +726,7 @@ void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size
 
 	// Update hardware if ambient profile is currently active
 	// Use time-domain debouncing and smoothing with NEON acceleration
-	if (lights_initialized && lights == lightsAmbient) {
+	if (lights_initialized && lights == (LightSettings (*)[MAX_LIGHTS])lightsAmbient) {
 		uint32_t current_time = SDL_GetTicks();
 
 		// Add new color to history
