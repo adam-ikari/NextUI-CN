@@ -3212,7 +3212,9 @@ int main (int argc, char *argv[]) {
 						}
 					}
 					if(lastScreen==SCREEN_OFF) {
-						GFX_animateSurfaceOpacity(blackBG,0,0,screen->w,screen->h,255,0,CFG_getMenuTransitions() ? 200:20,LAYER_THUMBNAIL);
+						// Don't animate black background fade-in as it can interfere with rendering
+						// when transitioning from quick menu to other screens
+						GFX_clearLayers(LAYER_THUMBNAIL);
 					}
 		
 					remember_row = selected_row;
