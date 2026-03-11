@@ -81,6 +81,143 @@ static uint32_t stable_color = 0;
 static uint32_t last_stable_time = 0;
 #define STABLE_TIME_THRESHOLD_MS 50  // Time required for color to be considered stable
 
+// NEON-optimized color processing
+#if defined(__ARM_NEON) || defined(__ARM_NEON__)
+#include <arm_neon.h>
+
+// NEON-optimized weighted average calculation
+static inline uint32_t calculate_weighted_average_neon(const uint32_t *colors, int count)
+{
+	if (count == 0) return 0;
+
+	// Initialize weighted sums with weights 1-5
+	float32x4_t sum_r = vdupq_n_f32(0);
+	float32x4_t sum_g = vdupq_n_f32(0);
+	float32x4_t sum_b = vdupq_n_f32(0);
+	float32_t weight_sum = 0;
+
+	for (int i = 0; i < count && i < COLOR_HISTORY_SIZE; i++) {
+		if (colors[i] == 0) continue;
+
+		float weight = (float)(i + 1);
+		weight_sum += weight;
+
+		// Extract RGB components
+		uint8_t r = (colors[i] >> 16) & 0xFF;
+		uint8_t g = (colors[i] >> 8) & 0xFF;
+		uint8_t b = colors[i] & 0xFF;
+
+		// Convert to float and multiply by weight
+		float32x4_t rgb = vdupq_n_f32(weight);
+		float32x4_t color_f = vsetq_lane_f32(r, vsetq_lane_f32(g, vsetq_lane_f32(b, vdupq_n_f32(0), 0), 1), 2);
+		float32x4_t weighted = vmulq_f32(rgb, color_f);
+
+		// Accumulate
+		sum_r = vsetq_lane_f32(vgetq_lane_f32(sum_r, 0) + vgetq_lane_f32(weighted, 0), sum_r, 0);
+		sum_g = vsetq_lane_f32(vgetq_lane_f32(sum_g, 1) + vgetq_lane_f32(weighted, 1), sum_g, 1);
+		sum_b = vsetq_lane_f32(vgetq_lane_f32(sum_b, 2) + vgetq_lane_f32(weighted, 2), sum_b, 2);
+	}
+
+	if (weight_sum > 0) {
+		uint8_t r = (uint8_t)(vgetq_lane_f32(sum_r, 0) / weight_sum);
+		uint8_t g = (uint8_t)(vgetq_lane_f32(sum_g, 1) / weight_sum);
+		uint8_t b = (uint8_t)(vgetq_lane_f32(sum_b, 2) / weight_sum);
+		return (r << 16) | (g << 8) | b;
+	}
+	return 0;
+}
+
+// NEON-optimized stability detection
+static inline uint32_t calculate_max_diff_neon(uint32_t target, const uint32_t *colors, int count)
+{
+	if (count == 0) return 0;
+
+	uint32_t max_diff = 0;
+	uint8_t target_r = (target >> 16) & 0xFF;
+	uint8_t target_g = (target >> 8) & 0xFF;
+	uint8_t target_b = target & 0xFF;
+
+	float32x4_t target_f = vdupq_n_f32(0);
+	target_f = vsetq_lane_f32(target_r, target_f, 0);
+	target_f = vsetq_lane_f32(target_g, target_f, 1);
+	target_f = vsetq_lane_f32(target_b, target_f, 2);
+
+	for (int i = 0; i < count && i < COLOR_HISTORY_SIZE; i++) {
+		if (colors[i] == 0) continue;
+
+		uint8_t r = (colors[i] >> 16) & 0xFF;
+		uint8_t g = (colors[i] >> 8) & 0xFF;
+		uint8_t b = colors[i] & 0xFF;
+
+		float32x4_t color_f = vdupq_n_f32(0);
+		color_f = vsetq_lane_f32(r, color_f, 0);
+		color_f = vsetq_lane_f32(g, color_f, 1);
+		color_f = vsetq_lane_f32(b, color_f, 2);
+
+		// Calculate absolute difference
+		float32x4_t diff = vabsq_f32(vsubq_f32(color_f, target_f));
+
+		// Get maximum component difference
+		float32_t max_comp = fmaxf(fmaxf(vgetq_lane_f32(diff, 0), vgetq_lane_f32(diff, 1)), vgetq_lane_f32(diff, 2));
+		uint32_t diff_value = (uint32_t)max_comp;
+
+		if (diff_value > max_diff) {
+			max_diff = diff_value;
+		}
+	}
+
+	return max_diff;
+}
+
+#define USE_NEON 1
+#else
+// Scalar fallback implementation
+static inline uint32_t calculate_weighted_average_neon(const uint32_t *colors, int count) { return 0; }
+static inline uint32_t calculate_max_diff_neon(uint32_t target, const uint32_t *colors, int count) { return 0; }
+#define USE_NEON 0
+#endif
+
+// Scalar implementation (fallback)
+static inline uint32_t calculate_weighted_average_scalar(const uint32_t *colors, int count)
+{
+	if (count == 0) return 0;
+
+	uint32_t weighted_sum_r = 0, weighted_sum_g = 0, weighted_sum_b = 0;
+	int weight_sum = 0;
+
+	for (int i = 0; i < count && i < COLOR_HISTORY_SIZE; i++) {
+		if (colors[i] == 0) continue;
+
+		int weight = i + 1;
+		weighted_sum_r += ((colors[i] >> 16) & 0xFF) * weight;
+		weighted_sum_g += ((colors[i] >> 8) & 0xFF) * weight;
+		weighted_sum_b += (colors[i] & 0xFF) * weight;
+		weight_sum += weight;
+	}
+
+	if (weight_sum > 0) {
+		return ((weighted_sum_r / weight_sum) << 16) |
+		       ((weighted_sum_g / weight_sum) << 8) |
+		       (weighted_sum_b / weight_sum);
+	}
+	return 0;
+}
+
+static inline uint32_t calculate_max_diff_scalar(uint32_t target, const uint32_t *colors, int count)
+{
+	if (count == 0) return 0;
+
+	uint32_t max_diff = 0;
+	for (int i = 0; i < count && i < COLOR_HISTORY_SIZE; i++) {
+		if (colors[i] == 0) continue;
+
+		uint32_t diff = (colors[i] > target) ?
+			(colors[i] - target) : (target - colors[i]);
+		if (diff > max_diff) max_diff = diff;
+	}
+	return max_diff;
+}
+
 #define PROFILE_OVERRIDE_SIZE 4
 int profile_override_top = -1;
 enum LightProfile profile_override[PROFILE_OVERRIDE_SIZE];
@@ -588,7 +725,7 @@ void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size
 	}
 
 	// Update hardware if ambient profile is currently active
-	// Use time-domain debouncing and smoothing
+	// Use time-domain debouncing and smoothing with NEON acceleration
 	if (lights_initialized && lights == lightsAmbient) {
 		uint32_t current_time = SDL_GetTicks();
 
@@ -596,34 +733,22 @@ void GFX_setAmbientColor(const void *data, unsigned width, unsigned height, size
 		color_history[color_history_index] = dominant_color;
 		color_history_index = (color_history_index + 1) % COLOR_HISTORY_SIZE;
 
-		// Calculate weighted average from history
-		uint32_t weighted_sum_r = 0, weighted_sum_g = 0, weighted_sum_b = 0;
-		int weight_sum = 0;
+		// Calculate weighted average using NEON if available
+		uint32_t smoothed_color;
+#if USE_NEON
+		smoothed_color = calculate_weighted_average_neon(color_history, COLOR_HISTORY_SIZE);
+#else
+		smoothed_color = calculate_weighted_average_scalar(color_history, COLOR_HISTORY_SIZE);
+#endif
 
-		for (int i = 0; i < COLOR_HISTORY_SIZE; i++) {
-			uint32_t color = color_history[i];
-			if (color == 0) continue;  // Skip uninitialized entries
-
-			int weight = i + 1;  // Newer colors have higher weight
-			weighted_sum_r += ((color >> 16) & 0xFF) * weight;
-			weighted_sum_g += ((color >> 8) & 0xFF) * weight;
-			weighted_sum_b += (color & 0xFF) * weight;
-			weight_sum += weight;
-		}
-
-		if (weight_sum > 0) {
-			uint32_t smoothed_color = ((weighted_sum_r / weight_sum) << 16) |
-			                          ((weighted_sum_g / weight_sum) << 8) |
-			                          (weighted_sum_b / weight_sum);
-
-			// Check if color is stable (minimal variation in history)
-			uint32_t max_diff = 0;
-			for (int i = 0; i < COLOR_HISTORY_SIZE; i++) {
-				if (color_history[i] == 0) continue;
-				uint32_t diff = (color_history[i] > smoothed_color) ?
-					(color_history[i] - smoothed_color) : (smoothed_color - color_history[i]);
-				if (diff > max_diff) max_diff = diff;
-			}
+		if (smoothed_color != 0) {
+			// Check if color is stable using NEON if available
+			uint32_t max_diff;
+#if USE_NEON
+			max_diff = calculate_max_diff_neon(smoothed_color, color_history, COLOR_HISTORY_SIZE);
+#else
+			max_diff = calculate_max_diff_scalar(smoothed_color, color_history, COLOR_HISTORY_SIZE);
+#endif
 
 			// Color is considered stable if variation is small
 			if (max_diff < 0x1000) {  // Small variation threshold
