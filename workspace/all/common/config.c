@@ -19,6 +19,42 @@ static inline uint32_t HexToUint32_unmapped(const char *hexColor) {
     return value;
 }
 
+static void CFG_migrateSettings(int fromVersion)
+{
+    if (fromVersion >= CFG_SETTINGS_VERSION) {
+        return; // No migration needed
+    }
+
+    printf("[CFG] Migrating settings from version %d to %d\n", fromVersion, CFG_SETTINGS_VERSION);
+
+    // Version 0 -> 1: Migration for quick menu and game switcher defaults
+    if (fromVersion < 1) {
+        // If user had quick menu enabled, keep it enabled
+        // Otherwise, use the new default (disabled)
+        if (settings.showQuickMenu) {
+            printf("[CFG] Keeping quick menu enabled (was user-configured)\n");
+        } else {
+            printf("[CFG] Using new default: quick menu disabled\n");
+            settings.showQuickMenu = CFG_DEFAULT_SHOWQUICKMENU;
+        }
+
+        // Same for game switcher
+        if (settings.showQuickSwitcherUi) {
+            printf("[CFG] Keeping game switcher enabled (was user-configured)\n");
+        } else {
+            printf("[CFG] Using new default: game switcher disabled\n");
+            settings.showQuickSwitcherUi = CFG_DEFAULT_SHOWQUICKWITCHERUI;
+        }
+    }
+
+    // Future migrations can be added here
+    // if (fromVersion < 2) { ... }
+
+    // Update to current version
+    settings.settingsVersion = CFG_SETTINGS_VERSION;
+    printf("[CFG] Settings migration complete\n");
+}
+
 void CFG_defaults(NextUISettings *cfg)
 {
     if (!cfg)
@@ -69,6 +105,8 @@ void CFG_defaults(NextUISettings *cfg)
         .bluetooth = CFG_DEFAULT_BLUETOOTH,
         .bluetoothDiagnostics = CFG_DEFAULT_BLUETOOTH_DIAG,
         .bluetoothSamplerateLimit = CFG_DEFAULT_BLUETOOTH_MAXRATE,
+
+        .settingsVersion = CFG_SETTINGS_VERSION,
 };
 
     *cfg = defaults;
@@ -87,6 +125,7 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
     // To keep existing installs consistent, we migrate legacy values by inverting them.
     int fontOrder = 0;      // 0 = legacy/unknown
     int loadedFontId = -1;  // deferred until we know fontOrder
+    int loadedSettingsVersion = CFG_SETTINGS_VERSION_LEGACY; // Default to legacy version
 
     char settingsPath[MAX_PATH];
     sprintf(settingsPath, "%s/minuisettings.txt", SHARED_USERDATA_PATH);
@@ -102,6 +141,12 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
         {
             int temp_value;
             uint32_t temp_color;
+            if (sscanf(line, "settingsVersion=%i", &temp_value) == 1)
+            {
+                loadedSettingsVersion = temp_value;
+                printf("[CFG] Found settings version: %d\n", loadedSettingsVersion);
+                continue;
+            }
             if (sscanf(line, "fontOrder=%i", &temp_value) == 1)
             {
                 fontOrder = temp_value;
@@ -302,6 +347,9 @@ void CFG_init(FontLoad_callback_t cb, ColorSet_callback_t ccb)
             }
         }
         fclose(file);
+
+        // Apply settings migration if needed
+        CFG_migrateSettings(loadedSettingsVersion);
     }
 
     if (fontLoaded)
@@ -923,6 +971,7 @@ void CFG_sync(void)
         return;
     }
 
+    fprintf(file, "settingsVersion=%i\n", settings.settingsVersion);
     fprintf(file, "fontOrder=2\n");
     fprintf(file, "font=%i\n", settings.font);
     fprintf(file, "color1=0x%06X\n", settings.color1_255);
