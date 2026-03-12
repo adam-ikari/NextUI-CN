@@ -731,6 +731,17 @@ int CFG_getDefaultView(void)
 
 void CFG_setDefaultView(int view)
 {
+    // Validate that the selected default view is available
+    // If not, fall back to SCREEN_GAMELIST
+    if (view == SCREEN_QUICKMENU && !settings.showQuickMenu) {
+        printf("[CFG] Quick menu is disabled, cannot set as default view. Using game list instead.\n");
+        view = SCREEN_GAMELIST;
+    }
+    else if (view == SCREEN_GAMESWITCHER && !settings.showQuickSwitcherUi) {
+        printf("[CFG] Game switcher is disabled, cannot set as default view. Using game list instead.\n");
+        view = SCREEN_GAMELIST;
+    }
+
     settings.defaultView = view;
     CFG_sync();
 }
