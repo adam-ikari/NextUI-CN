@@ -69,7 +69,7 @@ typedef struct
 	int thumbRadius;
 	int gameSwitcherScaling; // enum
 	double gameArtWidth;	 // [0,1] -> 0-100% of screen width
-	int settingsVersion; // settings file version for migration
+	int version; // settings file version for migration (following libmsettings pattern)
 
 	// font loading/unloading callback
     FontLoad_callback_t onFontChange;
@@ -163,9 +163,8 @@ typedef struct
 #define CFG_DEFAULT_BLUETOOTH_DIAG false
 #define CFG_DEFAULT_BLUETOOTH_MAXRATE 48000
 
-// Settings file version for migration
+// Settings file version for migration (following libmsettings pattern)
 #define CFG_SETTINGS_VERSION 2
-#define CFG_SETTINGS_VERSION_LEGACY 0
 
 void CFG_init(FontLoad_callback_t fontCallback, ColorSet_callback_t ccb);
 void CFG_print(void);
