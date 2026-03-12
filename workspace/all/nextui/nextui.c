@@ -2676,8 +2676,22 @@ int main (int argc, char *argv[]) {
 				if (total>0) readyResume(top->entries->items[top->selected]);
 			}
 			else if (PAD_justPressed(BTN_B) && stack->count<=1) {
-				// Stack is empty or at root - B key is ignored to prevent unwanted navigation
-				// User can navigate via Menu key (quick menu) or Select key (game switcher)
+				// At root directory - navigate to default view
+				int defaultView = CFG_getDefaultView();
+				if (defaultView == SCREEN_QUICKMENU && CFG_getShowQuickMenu()) {
+					currentScreen = SCREEN_QUICKMENU;
+					qm_col = 0;
+					qm_row = 0;
+					qm_shift = 0;
+					qm_slot = 0;
+					folderbgchanged = 1;
+				}
+				else if (defaultView == SCREEN_GAMESWITCHER && CFG_getShowQuickswitcherUI()) {
+					currentScreen = SCREEN_GAMESWITCHER;
+					switcher_selected = 0;
+				}
+				// If default is SCREEN_GAMELIST, stay in current view
+				dirty = 1;
 			}
 		}
 		
