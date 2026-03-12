@@ -326,7 +326,19 @@ int main(int argc, char *argv[])
             {(int)SCREEN_GAMELIST, (int)SCREEN_GAMESWITCHER, (int)SCREEN_QUICKMENU}, 
             {TR("settings.default_view.content_list"), TR("settings.default_view.game_switcher"), TR("settings.default_view.quick_menu")}, 
             []() -> std::any { return CFG_getDefaultView(); }, 
-            [](const std::any &value){ CFG_setDefaultView(std::any_cast<int>(value)); },
+            [](const std::any &value){ 
+                int selectedView = std::any_cast<int>(value);
+                // Prevent setting unavailable views as default
+                if (selectedView == SCREEN_QUICKMENU && !CFG_getShowQuickMenu()) {
+                    printf("[Settings] Cannot set quick menu as default view when it is disabled.\n");
+                    return;
+                }
+                if (selectedView == SCREEN_GAMESWITCHER && !CFG_getShowQuickswitcherUI()) {
+                    printf("[Settings] Cannot set game switcher as default view when it is disabled.\n");
+                    return;
+                }
+                CFG_setDefaultView(selectedView);
+            },
             []() { CFG_setDefaultView(CFG_DEFAULT_VIEW);}},
             new MenuItem{ListItemType::Generic, TR("settings.clock_24h"), TR("settings.clock_24h.desc"), {false, true}, on_off, []() -> std::any
             { return CFG_getClock24H(); },
