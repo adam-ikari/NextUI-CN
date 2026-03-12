@@ -2399,17 +2399,8 @@ int main (int argc, char *argv[]) {
 			int qm_total = qm_row == 0 ? quick->count : quickActions->count;
 
 			if (PAD_justPressed(BTN_B) || PAD_tappedMenu(now)) {
-				// Quick menu B key behavior: navigate to default view
-				// This makes quick menu consistent with game list root directory behavior
-				int defaultView = CFG_getDefaultView();
-				if (defaultView == SCREEN_GAMELIST) {
-					currentScreen = SCREEN_GAMELIST;
-				}
-				else if (defaultView == SCREEN_GAMESWITCHER && CFG_getShowQuickswitcherUI()) {
-					currentScreen = SCREEN_GAMESWITCHER;
-					switcher_selected = 0;
-				}
-				// If default is SCREEN_QUICKMENU, stay in quick menu
+				// Quick menu B key behavior: do nothing, stay in quick menu
+				// This is consistent with game list root directory behavior
 				dirty = 1;
 			}
 			else if (PAD_justReleased(BTN_A)) {
@@ -2503,23 +2494,9 @@ int main (int argc, char *argv[]) {
 		}
 		else if(currentScreen == SCREEN_GAMESWITCHER) {
 			if (PAD_justPressed(BTN_B) || PAD_tappedSelect(now)) {
-				// Game switcher B key behavior: navigate to default view
-				int defaultView = CFG_getDefaultView();
-				if (defaultView == SCREEN_GAMELIST) {
-					currentScreen = SCREEN_GAMELIST;
-				}
-				else if (defaultView == SCREEN_QUICKMENU && CFG_getShowQuickMenu()) {
-					currentScreen = SCREEN_QUICKMENU;
-					qm_col = 0;
-					qm_row = 0;
-					qm_shift = 0;
-					qm_slot = 0;
-					folderbgchanged = 1;
-				}
-				// If default is SCREEN_GAMESWITCHER, stay in game switcher
-				switcher_selected = 0;
+				// Game switcher B key behavior: do nothing, stay in game switcher
+				// This is consistent with game list root directory behavior
 				dirty = 1;
-				folderbgchanged = 1; // The background painting code is a clusterfuck, just force a repaint here
 			}
 			else if (recents->count > 0 && PAD_justReleased(BTN_A)) {
 				// this will drop us back into game switcher after leaving the game
@@ -2700,7 +2677,6 @@ int main (int argc, char *argv[]) {
 			}
 			else if (PAD_justPressed(BTN_B) && stack->count<=1) {
 				// At root directory - do nothing, stay in game list
-				// Quick menu B key behavior now handles navigation to default view
 				dirty = 1;
 			}
 		}
